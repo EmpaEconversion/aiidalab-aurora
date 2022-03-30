@@ -1,0 +1,12 @@
+manufacturer,composition.description,capacity.nominal,capacity.units,form_factor
+BIG-MAP,C | LP57 | NMC811,1.539,mAh,2032
+BIG-MAP,C | LP57 | LNO,1.539,mAh,2032
+BIG-MAP,Si-C | LP57 | NMC811,1.539,mAh,2032
+BIG-MAP,Si-C | LNMO | NMC622,1.539,mAh,2032
+BIG-MAP,C | LP57 | NMC811,4.618,mAh,2032
+BIG-MAP,C | LP57 | LNO,4.618,mAh,2032
+BIG-MAP,Si-C | LP57 | NMC811,4.618,mAh,2032
+BIG-MAP,Si-C | LNMO | NMC622,4.618,mAh,2032
+Conrad energy,Li-based,45,mAh,2032
+Conrad energy,Li-based,60,mAh,2032
+Maxell,LiMgO2-based,60,mAh,2016
