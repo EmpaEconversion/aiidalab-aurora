@@ -8,7 +8,7 @@ def _remove_empties_from_dict(a_dict):
     new_dict = {}
     for k, v in a_dict.items():
         if isinstance(v, dict):
-            v = remove_empties_from_dict(v)
+            v = _remove_empties_from_dict(v)
         if v is not None and v is not NaN and v != "":
             new_dict[k] = v
     return new_dict
@@ -30,7 +30,7 @@ def _make_formatted_dict(my_dict, key_arr, val):
                 print("Given dictionary is not compatible with key structure requested")
                 raise ValueError("Dictionary key already occupied")
         current = current[key]
-    # return remove_empties_from_dict(my_dict)
+    # return _remove_empties_from_dict(my_dict)
     return my_dict
 
 def pd_dataframe_to_formatted_json(df, sep="."):
@@ -46,12 +46,12 @@ def pd_dataframe_to_formatted_json(df, sep="."):
         result.append(parsed_row)
     return result
 
-def pd_series_to_formatted_json(series, sep="."):
-    """Convert a pandas.Series to a nested dictionary."""
-    if not isinstance(series, Series):
+def dict_to_formatted_json(series, sep="."):
+    """Convert a flat dictionary or a pandas.Series to a nested dictionary."""
+    if not isinstance(series, (dict, Series)):
         raise TypeError('series should be a pandas.Series object')
     parsed_series = {}
-    for idx, val in series.iteritems():
+    for idx, val in series.items():
         keys = idx.split(sep)
         parsed_series = _make_formatted_dict(parsed_series, keys, val)
     return parsed_series

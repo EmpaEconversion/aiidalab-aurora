@@ -3,7 +3,7 @@
 import ipywidgets as ipw
 from IPython.display import display
 from ...query import update_available_samples, query_available_samples, write_pd_query_from_dict
-from ...schemas.convert import pd_series_to_formatted_json
+from ...schemas.convert import dict_to_formatted_json
 
 class SampleFromId(ipw.VBox):
     
@@ -57,7 +57,7 @@ class SampleFromId(ipw.VBox):
     
     @property
     def selected_sample_dict(self):
-        return pd_series_to_formatted_json(
+        return dict_to_formatted_json(
             query_available_samples(write_pd_query_from_dict({'battery_id': self.w_id_list.value})).iloc[0])
 
     @staticmethod

@@ -2,8 +2,8 @@
 
 import ipywidgets as ipw
 from IPython.display import display
-from ...query import update_available_specs, query_available_samples, query_available_specs, write_pd_query_from_dict
-from ...schemas.convert import pd_series_to_formatted_json
+from ...query import update_available_samples, query_available_samples, update_available_specs, query_available_specs, write_pd_query_from_dict
+from ...schemas.convert import dict_to_formatted_json
 
 class SampleFromSpecs(ipw.VBox):
 
@@ -115,7 +115,7 @@ class SampleFromSpecs(ipw.VBox):
 
     @property
     def selected_sample_dict(self):
-        return pd_series_to_formatted_json(
+        return dict_to_formatted_json(
             query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})).iloc[0])
 
     @property
@@ -220,6 +220,7 @@ class SampleFromSpecs(ipw.VBox):
 
     def on_update_button_clicked(self, _=None):
         update_available_specs()
+        update_available_samples()
         self.update_options()
         self.display_query_result()
         # notice: if the old value is not available anymore, an error might be raised!

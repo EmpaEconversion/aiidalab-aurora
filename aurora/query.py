@@ -14,7 +14,8 @@ def load_available_samples():
     with open('available_samples.json', 'r') as f:
         data = json.load(f)
     # load json and enforce data types
-    AVAIL_SAMPLES_DF = pd.json_normalize(data).astype(dtype=BatterySampleJsonTypes)
+    AVAIL_SAMPLES_DF = pd.json_normalize(data)
+    AVAIL_SAMPLES_DF = AVAIL_SAMPLES_DF.astype(dtype={col: typ for col, typ in BatterySampleJsonTypes.items() if col in AVAIL_SAMPLES_DF.columns})
     AVAIL_SAMPLES_DF["metadata.creation_datetime"] = pd.to_datetime(AVAIL_SAMPLES_DF["metadata.creation_datetime"])
     return AVAIL_SAMPLES_DF
 
@@ -26,7 +27,8 @@ STD_RECIPIES = {
 }
 
 def load_available_recipies():
-    return STD_RECIPIES
+    global STD_RECIPIES
+    return STD_RECIPIES.copy()
 
 def update_available_samples():
     global available_samples
@@ -38,7 +40,7 @@ def update_available_specs():
 
 def update_available_recipies():
     global available_recipies
-    available_specs = load_available_recipies()
+    available_recipies = load_available_recipies()
 
 def query_available_specs(field: str = None):
     """
@@ -76,7 +78,8 @@ def query_available_samples(query=None, project=None):
 
 def query_available_recipies():
     """A mock function that returns the available synthesis recipies."""
-    return STD_RECIPIES
+    global available_recipies
+    return available_recipies
 
 def write_pd_query_from_dict(query_dict):
     """
