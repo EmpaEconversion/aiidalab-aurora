@@ -4,6 +4,7 @@ from typing import TypedDict, Union, Optional
 from datetime import datetime
 from pydantic import BaseModel, validator, root_validator
 from numpy import datetime64
+from .convert import extract_schema_types
 
 class BatteryComposition(BaseModel):  # TypedDict?
     description: str = None
@@ -52,6 +53,7 @@ class BatteryCapacity(BaseModel): # TypedDict?
     # TODO: Possibility of entering a string e.g. '1.00 mAh'
 
 class BatteryMetadata(BaseModel):
+    name: str
     creation_datetime: datetime
     creation_process: str
     
@@ -63,7 +65,6 @@ class BatterySpecs(BaseModel):
     composition: BatteryComposition
     form_factor: str
     capacity: BatteryCapacity
-    metadata: BatteryMetadata
     
     # should we add a validator?
     # to check that e.g. manufacturer is one of the available ones
@@ -76,29 +77,8 @@ class BatterySample(BatterySpecs):
     Battery sample schema.
     """
     battery_id: int
-    name: str = None
+    metadata: BatteryMetadata
 
-# data types imposed when reading the JSON of available specs/samples
-# TODO: write a function that generates this dict automatically from the pydantic schema
-BatterySpecsJsonTypes = {
-    'manufacturer': str,
-    'form_factor': str,
-    'composition.description': str,
-    'capacity.nominal': float,
-    'capacity.actual': float,
-    'capacity.units': str,
-    'metadata.creation_datetime': str, #datetime64,
-    'metadata.creation_process': str
-}
-BatterySampleJsonTypes = {
-    'manufacturer': str,
-    'form_factor': str,
-    'battery_id': int,
-    'name': str,
-    'composition.description': str,
-    'capacity.nominal': float,
-    'capacity.actual': float,
-    'capacity.units': str,
-    'metadata.creation_datetime': str, #datetime64,
-    'metadata.creation_process': str
-}
+
+BatterySpecsJsonTypes = extract_schema_types(BatterySpecs)
+BatterySampleJsonTypes = extract_schema_types(BatterySample)

@@ -19,6 +19,7 @@ class SampleFromSpecs(ipw.VBox):
     BOX_LAYOUT_2 = {'width': '100%', 'height': '100px'}
     BOX_STYLE = {'description_width': '25%'}
     BUTTON_STYLE = {'description_width': '30%'}
+    BUTTON_LAYOUT = {'margin': '5px'}
     OUTPUT_LAYOUT = {'max_height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'}
     SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
     
@@ -28,35 +29,35 @@ class SampleFromSpecs(ipw.VBox):
         self.w_specs_manufacturer = ipw.Select(
             description="Manufacturer:",
             placeholder="Enter manufacturer",
-            ensure_option=True, layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
         self.w_specs_composition = ipw.Select(
             description="Composition:",
             placeholder="Enter composition",
-            ensure_option=True, layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
         self.w_specs_capacity = ipw.Select(
             description="Nominal capacity:",
             placeholder="Enter nominal capacity",
-            ensure_option=True, layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
         self.w_specs_form_factor = ipw.Select(
             description="Form factor:",
             placeholder="Enter form factor",
-            ensure_option=True, layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
         # self.w_specs_metadata_creation_date = ipydatetime.DatetimePicker(
-        #     description='Creation time:',
+        #     description="Creation time:",
         #     style=BOX_STYLE)
         # self.w_specs_metadata_creation_process = ipw.Text(
-        #     description='Creation process',
-        #     placeholder='Describe creation process',
+        #     description="Creation process",
+        #     placeholder="Describe creation process",
         #     style=BOX_STYLE)
 
         self.w_update = ipw.Button(
             description="Update",
             button_style='', tooltip="Update available samples", icon='refresh',
-            style=self.BUTTON_STYLE)
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_reset = ipw.Button(
             description="Reset",
             button_style='danger', tooltip="Clear fields", icon='times',
-            style=self.BUTTON_STYLE)
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_query_result = ipw.Output(layout=self.OUTPUT_LAYOUT)
 
         self.w_select_sample_id = ipw.Dropdown(
@@ -65,13 +66,13 @@ class SampleFromSpecs(ipw.VBox):
         self.w_cookit = ipw.Button(
             description="Load/Synthesize new", #['primary', 'success', 'info', 'warning', 'danger', '']
             button_style='primary', tooltip="Synthesize sample with these specs", icon='',
-            style=self.BUTTON_STYLE)
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_sample_preview = ipw.Output()
         self.w_validate = ipw.Button(
             description="Validate",
             button_style='success', tooltip="Validate the selected sample", icon='check',
             disabled=True,
-            style=self.BUTTON_STYLE)
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
 
         super().__init__()
         self.children = [
@@ -95,7 +96,6 @@ class SampleFromSpecs(ipw.VBox):
         # initialize options
         if not callable(validate_callback_f):
             raise TypeError("validate_callback_f should be a callable function")
-        # self.validate_callback_f = validate_callback_f
         self.on_reset_button_clicked()
         update_available_specs()
         self._update_options()
@@ -106,8 +106,7 @@ class SampleFromSpecs(ipw.VBox):
         self.w_reset.on_click(self.on_reset_button_clicked)
         self._set_specs_observers()
         self.w_select_sample_id.observe(handler=self.on_battery_id_change, names='value')
-        # self.w_validate.on_click(self.on_validate_button_clicked)
-        self.w_validate.on_click(lambda arg: validate_callback_f(self))
+        self.w_validate.on_click(lambda arg: self.on_validate_button_clicked(validate_callback_f))
 
 
     @property
@@ -166,7 +165,7 @@ class SampleFromSpecs(ipw.VBox):
     def _build_sample_id_options(self):
         """Returns a (option_string, battery_id) list."""
         table = query_available_samples(write_pd_query_from_dict(self.current_specs)).sort_values('battery_id')
-        return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['name']}\"", row['battery_id']) for index, row in table.iterrows()]
+        return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['metadata.name']}\"", row['battery_id']) for index, row in table.iterrows()]
     
     def _update_options(self):
         # first save current values to preserve them
@@ -220,7 +219,6 @@ class SampleFromSpecs(ipw.VBox):
         self.display_query_result()
 
     def on_update_button_clicked(self, _=None):
-        # global available_specs
         update_available_specs()
         self.update_options()
         self.display_query_result()
@@ -238,9 +236,9 @@ class SampleFromSpecs(ipw.VBox):
         self.display_sample_preview()
         self.update_validate_button_state()
 
-#     def on_validate_button_clicked(self, _=None):
-#         # call the callback function
-#         return self.validate_callback_f(self)
+    def on_validate_button_clicked(self, callback_function):
+        # call the validation callback function
+        return callback_function(self)
 
     def _set_specs_observers(self):
         self.w_specs_manufacturer.observe(handler=self.on_specs_value_change, names='value')

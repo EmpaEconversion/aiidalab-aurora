@@ -7,7 +7,7 @@ from ...schemas.convert import pd_series_to_formatted_json
 
 class SampleFromId(ipw.VBox):
     
-    BOX_LAYOUT_1 = {'width': '50%'}
+    BOX_LAYOUT_1 = {'width': '40%'}
     BOX_STYLE = {'description_width': 'initial'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
@@ -48,8 +48,7 @@ class SampleFromId(ipw.VBox):
         # setup automations
         self.w_update.on_click(self.on_update_button_clicked)
         self.w_id_list.observe(handler=self.on_battery_id_change, names='value')
-        # self.w_validate.on_click(self.on_validate_button_clicked)
-        self.w_validate.on_click(lambda arg: validate_callback_f(self))
+        self.w_validate.on_click(lambda arg: self.on_validate_button_clicked(validate_callback_f))
 
 
     @property
@@ -64,8 +63,8 @@ class SampleFromId(ipw.VBox):
     @staticmethod
     def _build_sample_id_options():
         """Returns a (option_string, battery_id) list."""
-        table = query_available_samples(project=['battery_id', 'name']).sort_values('battery_id')
-        return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['name']}\"", row['battery_id']) for index, row in table.iterrows()]
+        table = query_available_samples(project=['battery_id', 'metadata.name']).sort_values('battery_id')
+        return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['metadata.name']}\"", row['battery_id']) for index, row in table.iterrows()]
 
     def display_sample_preview(self):
         self.w_sample_preview.clear_output()
@@ -76,14 +75,14 @@ class SampleFromId(ipw.VBox):
     def update_validate_button_state(self):
         self.w_validate.disabled = (self.w_id_list.value is None)
 
-    def on_battery_id_change(self, _=None):
+    def on_battery_id_change(self, _ = None):
         self.display_sample_preview()
         self.update_validate_button_state()
 
-    def on_update_button_clicked(self, _=None):
+    def on_update_button_clicked(self, _ = None):
         update_available_samples()
         self.w_id_list.options = self._build_sample_id_options()
-    
-    # def on_validate_button_clicked(self, _=None):
-    #     # call the callback function
-    #     self.validate_callback_f(self)
+
+    def on_validate_button_clicked(self, callback_function):
+        # call the validation callback function
+        return callback_function(self)
