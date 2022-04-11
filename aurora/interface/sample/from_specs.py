@@ -23,7 +23,12 @@ class SampleFromSpecs(ipw.VBox):
     OUTPUT_LAYOUT = {'max_height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'}
     SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
     
-    def __init__(self, validate_callback_f):
+    def __init__(self, validate_callback_f, recipe_callback_f):
+
+        if not callable(validate_callback_f):
+            raise TypeError("validate_callback_f should be a callable function")
+        if not callable(recipe_callback_f):
+            raise TypeError("recipe_callback_f should be a callable function")
 
         # initialize widgets
         self.w_specs_manufacturer = ipw.Select(
@@ -94,8 +99,6 @@ class SampleFromSpecs(ipw.VBox):
         ]
 
         # initialize options
-        if not callable(validate_callback_f):
-            raise TypeError("validate_callback_f should be a callable function")
         self.on_reset_button_clicked()
         update_available_specs()
         self._update_options()
@@ -106,7 +109,8 @@ class SampleFromSpecs(ipw.VBox):
         self.w_reset.on_click(self.on_reset_button_clicked)
         self._set_specs_observers()
         self.w_select_sample_id.observe(handler=self.on_battery_id_change, names='value')
-        self.w_validate.on_click(lambda arg: self.on_validate_button_clicked(validate_callback_f))
+        self.w_validate.on_click(lambda arg: self.callback_call(validate_callback_f))
+        self.w_cookit.on_click(lambda arg: self.callback_call(recipe_callback_f))
 
 
     @property
@@ -237,8 +241,8 @@ class SampleFromSpecs(ipw.VBox):
         self.display_sample_preview()
         self.update_validate_button_state()
 
-    def on_validate_button_clicked(self, callback_function):
-        # call the validation callback function
+    def callback_call(self, callback_function):
+        # call a callback function and pass it this class instance
         return callback_function(self)
 
     def _set_specs_observers(self):

@@ -161,7 +161,7 @@ class SampleFromRecipe(ipw.VBox):
         self.w_specs_capacity.value = None
         self.w_recipe_select.value = None
         self.w_sample_metadata_name.value = ''
-        self.w_sample_metadata_creation_process = ''
+        self.w_sample_metadata_creation_process.value = ''
 
     def on_validate_button_clicked(self, callback_function):
         # call the validation callback function

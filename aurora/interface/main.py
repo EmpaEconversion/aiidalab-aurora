@@ -22,6 +22,14 @@ class MainPanel(ipw.VBox):
         self.selected_battery_specs = BatterySpecs.parse_obj(sample_widget_obj.selected_specs_dict)
         self.selected_recipe = sample_widget_obj.selected_recipe_dict
     
+    def switch_to_recipe(self, specs_widget_obj):
+        # switch tab to sample_from_recipe tab, copying over the selected specs
+        self.w_sample_selection_tab.selected_index = 2
+        self.w_sample_from_recipe.w_specs_manufacturer.value = specs_widget_obj.w_specs_manufacturer.value
+        self.w_sample_from_recipe.w_specs_composition.value = specs_widget_obj.w_specs_composition.value
+        self.w_sample_from_recipe.w_specs_form_factor.value = specs_widget_obj.w_specs_form_factor.value
+        self.w_sample_from_recipe.w_specs_capacity.value = specs_widget_obj.w_specs_capacity.value
+
     def post_sample_selection(self):
         print('POST')
         self.w_main_accordion.selected_index = 1
@@ -43,7 +51,7 @@ class MainPanel(ipw.VBox):
 
         # Sample selection
         self.w_sample_from_id = SampleFromId(self.return_selected_sample)
-        self.w_sample_from_specs = SampleFromSpecs(self.return_selected_sample)
+        self.w_sample_from_specs = SampleFromSpecs(self.return_selected_sample, self.switch_to_recipe)
         self.w_sample_from_recipe = SampleFromRecipe(self.return_selected_specs_recipe)
 
         self.w_sample_selection_tab = ipw.Tab(
