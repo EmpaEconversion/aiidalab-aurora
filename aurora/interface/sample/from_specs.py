@@ -22,6 +22,8 @@ class SampleFromSpecs(ipw.VBox):
     BUTTON_LAYOUT = {'margin': '5px'}
     OUTPUT_LAYOUT = {'max_height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'}
     SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
+    QUERY_PRINT_COLUMNS = ['manufacturer', 'composition.description', 'capacity.nominal', 'capacity.actual', 'capacity.units', 'form_factor',# 'metadata.name',
+                       'metadata.creation_datetime'] #, 'metadata.creation_process']
     
     def __init__(self, validate_callback_f, recipe_callback_f):
 
@@ -31,6 +33,7 @@ class SampleFromSpecs(ipw.VBox):
             raise TypeError("recipe_callback_f should be a callable function")
 
         # initialize widgets
+        self.w_specs_header = ipw.HTML(value="<h2>Battery Specifications</h2>")
         self.w_specs_manufacturer = ipw.Select(
             description="Manufacturer:",
             placeholder="Enter manufacturer",
@@ -81,6 +84,7 @@ class SampleFromSpecs(ipw.VBox):
 
         super().__init__()
         self.children = [
+            self.w_specs_header,
             ipw.GridBox([
                 self.w_specs_manufacturer,
                 self.w_specs_composition,
@@ -199,8 +203,11 @@ class SampleFromSpecs(ipw.VBox):
     def display_query_result(self):
         self.w_query_result.clear_output()
         with self.w_query_result:
-            print(f'Query:\n  {self.current_specs}')
-            display(query_available_samples(write_pd_query_from_dict(self.current_specs)))
+            # print(f'Query:\n  {self.current_specs}')
+            query_res = query_available_samples(write_pd_query_from_dict(self.current_specs)).set_index('battery_id')[self.QUERY_PRINT_COLUMNS]
+            # query_res['metadata.creation_datetime'] = query_res['metadata.creation_datetime'].dt.strftime("%d-%m-%Y %H:%m")
+            # display(query_res.style.format(formatter={'metadata.creation_datetime': lambda t: t.strftime("%d-%m-%Y")}))
+            display(query_res)
 
     def display_sample_preview(self):
         self.w_sample_preview.clear_output()

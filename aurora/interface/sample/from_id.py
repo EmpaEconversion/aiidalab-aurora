@@ -7,17 +7,19 @@ from ...schemas.convert import dict_to_formatted_json
 
 class SampleFromId(ipw.VBox):
     
-    BOX_LAYOUT_1 = {'width': '40%'}
-    BOX_STYLE = {'description_width': 'initial'}
+    BOX_LAYOUT_1 = {'width': '50%'}
+    BOX_STYLE = {'description_width': '15%'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
+    MAIN_LAYOUT = {'width': '100%', 'padding': '10px', 'border': 'solid blue 2px'}
 
     def __init__(self, validate_callback_f):
         
         # initialize widgets
+        self.w_header_label = ipw.HTML(value="<h2>Battery Selection</h2>")
         self.w_id_list = ipw.Select(
             rows=10,
-            description="Select Battery ID:",
+            description="Battery ID:",
             style=self.BOX_STYLE, layout=self.BOX_LAYOUT_1)
         self.w_update = ipw.Button(
             description="Update",
@@ -32,10 +34,13 @@ class SampleFromId(ipw.VBox):
         
         super().__init__()
         self.children = [
-            self.w_id_list,
-            self.w_update,
-            self.w_sample_preview,
-            self.w_validate,
+            self.w_header_label,
+            ipw.VBox([
+                ipw.HBox([self.w_id_list,
+                self.w_update,]),
+                self.w_sample_preview,
+                self.w_validate,
+            ], layout=self.MAIN_LAYOUT),
         ]
         
         # initialize options
@@ -63,8 +68,12 @@ class SampleFromId(ipw.VBox):
     @staticmethod
     def _build_sample_id_options():
         """Returns a (option_string, battery_id) list."""
-        table = query_available_samples(project=['battery_id', 'metadata.name']).sort_values('battery_id')
-        return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['metadata.name']}\"", row['battery_id']) for index, row in table.iterrows()]
+        # table = query_available_samples(project=['battery_id', 'metadata.name']).sort_values('battery_id')
+        table = query_available_samples().sort_values('battery_id')
+        def row_label(row):
+            # return f"<{row['battery_id']:8}>   \"{row['metadata.name']}\""
+            return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['composition.description']}"
+        return [("", None)] + [(row_label(row), row['battery_id']) for index, row in table.iterrows()]
 
     def display_sample_preview(self):
         self.w_sample_preview.clear_output()
