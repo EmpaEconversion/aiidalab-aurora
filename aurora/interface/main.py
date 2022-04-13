@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 
+import pandas as pd
 import ipywidgets as ipw
 from IPython.display import display
 # from ..query import (update_available_samples, update_available_specs, update_available_recipies,
 #     query_available_samples, query_available_specs, query_available_recipies,
 #     write_pd_query_from_dict)
 from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
+from .cycling import CyclingStandard
 from ..schemas.data_schemas import BatterySample, BatterySpecs
 
 class MainPanel(ipw.VBox):
     
     _SAMPLE_INPUT_LABELS = ['Select from ID', 'Select from Specs', 'Make from Recipe']
     _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
+    _TEST_METHOD_LABELS = ['Standardized', 'Customized']
     w_header = ipw.HTML(value="<h1>Aurora</h1>")
+    _SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
 
     def return_selected_sample(self, sample_widget_obj):
         self.selected_battery_sample = BatterySample.parse_obj(sample_widget_obj.selected_sample_dict)
@@ -31,13 +35,20 @@ class MainPanel(ipw.VBox):
         self.w_sample_from_recipe.w_specs_capacity.value = specs_widget_obj.w_specs_capacity.value
 
     def post_sample_selection(self):
-        print('POST')
         self.w_main_accordion.selected_index = 1
+        self.display_tested_sample_preview()
     
     def reset_sample_selection(self, _=None):
         self.selected_battery_sample = None
         self.selected_battery_specs = None
         self.selected_recipe = None
+    
+    def display_tested_sample_preview(self):
+        self.w_test_sample.clear_output()
+        if self.selected_battery_sample is not None:
+            with self.w_test_sample:
+                # display(query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})))
+                display(pd.json_normalize(self.selected_battery_sample.dict()).iloc[0])
     
     @property
     def sample_selection_method(self):
@@ -61,7 +72,19 @@ class MainPanel(ipw.VBox):
             self.w_sample_selection_tab.set_title(i, title)
 
         # Cycling
-        self.w_test = ipw.Label('This is the Test part')
+        self.w_test_sample_label = ipw.HTML("Selected sample:")
+        self.w_test_sample = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
+        self.w_test_standard = CyclingStandard(lambda x: x)
+        self.w_test_custom = ipw.Label(value='Page to build a customized testing protocol.')
+        self.w_test_method_tab = ipw.Tab(
+            children=[self.w_test_standard, self.w_test_custom],
+            selected_index=0)
+        for i, title in enumerate(self._TEST_METHOD_LABELS):
+            self.w_test_method_tab.set_title(i, title)
+        self.w_test = ipw.VBox([
+            self.w_test_sample_label,
+            self.w_test_sample,
+            self.w_test_method_tab])
         
         # MAIN ACCORDION
         self.w_main_accordion = ipw.Accordion(children=[self.w_sample_selection_tab, self.w_test])

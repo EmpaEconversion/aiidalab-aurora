@@ -20,10 +20,9 @@ def load_available_samples():
     return AVAIL_SAMPLES_DF
 
 STD_RECIPIES = {
-    'Margherita': ['pomodoro', 'mozzarella'],
-    'Capricciosa': ['pomodoro', 'mozzarella', 'funghi', 'prosciutto', 'carciofini', 'olive nere'],
-    'Quattro formaggi': ['mozzarella', 'gorgonzola', 'parmigiano', 'fontina'],
-    'Vegetariana': ['pomodoro', 'mozzarella', 'funghi', 'zucchine', 'melanzane', 'peperoni']
+    'Load fresh battery into cycler': ['Request the user to load a battery with the desired specs.'],
+    'Synthesize - Recipe 1': ['step 1', 'step 2', 'step 3'],
+    'Synthesize - Recipe 2': ['step 1', 'step 2', 'step 3'],
 }
 
 def load_available_recipies():
@@ -91,3 +90,53 @@ def write_pd_query_from_dict(query_dict):
     query = " and ".join(["(`{}` == {})".format(k, f"{v}" if isinstance(v, (int, float)) else f"'{v}'") for k, v in query_dict.items() if v])
     if query:
         return query
+
+
+STD_PROTOCOLS = {
+    "Formation cycles": {
+        "Procedure": [
+            "6h rest",
+            "CCCV Charge, C/10 (CV condition: i<C/50)",
+            "CC Discharge, D/10",
+            "Repeat 3 times"],
+        "Cutoff conditions": "2.5 to 4.2 V, upper voltage to be changed depending on the chemistry",},
+    "Power test Charge focus": {
+        "Procedure": [
+            "6h rest",
+            "CC Charge (CV condition: i<C/50)",
+            "(C/20 + D/20) x 5",
+            "(C/10 + D/20) x 5",
+            "(C/5 + D/20) x 5",
+            "(C/2 + D/20) x 5",
+            "(1C + D/20) x 5",
+            "(2C + D/20) x 5",
+            "(5C + D/20) x 5",
+            "(C/20 + D/20) x 5"],
+        "Cutoff conditions": "2.5 to 4.2 V, upper voltage to be changed depending on the chemistry",},
+    "Power test Discharge focus": {
+        "Procedure": [
+            "6h rest",
+            "CCCV Charge (CV condition: i<C/50)",
+            "(C/20 + D/20) x 5",
+            "(C/20 + D/10) x 5",
+            "(C/20 + D/50) x 5",
+            "(C/20 + D/2) x 5",
+            "(C/20 + 1D) x 5",
+            "(C/20 + 2D) x 5",
+            "(C/20 + 5D) x 5",
+            "(C/20 + D/20) x 5"],
+        "Cutoff conditions": "2.5 to 4.2 V, upper voltage to be changed depending on the chemistry",},
+}
+
+def load_available_protocols():
+    global STD_PROTOCOLS
+    return STD_PROTOCOLS.copy()
+
+def update_available_protocols():
+    global available_protocols
+    available_protocols = load_available_protocols()
+    
+def query_available_protocols():
+    """A mock function that returns the available synthesis recipies."""
+    global available_protocols
+    return available_protocols
