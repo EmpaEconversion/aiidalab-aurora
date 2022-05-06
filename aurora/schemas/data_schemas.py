@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from typing import TypedDict, Union, Optional
+from typing import Literal, TypedDict, Union, Optional, Literal
 from datetime import datetime
-from pydantic import BaseModel, validator, root_validator
+from pydantic import BaseModel, PositiveFloat, validator, root_validator
 from numpy import datetime64
 from .convert import extract_schema_types
 
@@ -47,10 +47,9 @@ class BatteryComposition(BaseModel):  # TypedDict?
         return values
     
 class BatteryCapacity(BaseModel): # TypedDict?
-    nominal: float
-    actual: Optional[float]
-    units: str
-    # TODO: Possibility of entering a string e.g. '1.00 mAh'
+    nominal: PositiveFloat
+    actual: Optional[PositiveFloat]
+    units: Literal["mAh", "Ah"]
 
 class BatteryMetadata(BaseModel):
     name: str
@@ -66,11 +65,10 @@ class BatterySpecs(BaseModel):
     form_factor: str
     capacity: BatteryCapacity
     
-    # should we add a validator?
-    # to check that e.g. manufacturer is one of the available ones
-    # ...
+    # manufacturer, form_factor:
+    # should we use a Literal or a validator to check that they are one of the available ones?
     
-    # add pre-validator to allow capacity: str (e.g. '4.8 mAh')
+    # add pre-validator to specify capacity as str (e.g. '4.8 mAh')?
 
 class BatterySample(BatterySpecs):
     """

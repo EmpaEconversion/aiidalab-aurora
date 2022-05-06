@@ -1,0 +1,19 @@
+{
+  "632e7a99-0426-4425-a06a-4e5a3f78c2fb":   {
+    "meta": "http://onto-ns.com/meta/0.1/Collection",
+    "dimensions": {
+      "nrelations": 4
+    },
+    "properties": {
+      "relations": [["myobj", "_is-a", "Instance"], ["myobj", "_has-uuid", "41573ef9-4c1a-4f97-9719-5d58138bf75d"], ["myobj", "_has-meta", "http://address.to.big-map/meta/0.1/BatterySpecs"], ["myobj", "mapsTo", "http://iri.to.ontology"]]
+    }
+  },
+  "41573ef9-4c1a-4f97-9719-5d58138bf75d":   {
+    "meta": "http://address.to.big-map/meta/0.1/BatterySpecs",
+    "dimensions": {
+    },
+    "properties": {
+      "manufacturer": "Philips"
+    }
+  }
+}
