@@ -31,7 +31,7 @@ class SampleFromId(ipw.VBox):
             button_style='success', tooltip="Validate the selected sample", icon='check',
             disabled=True,
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
-        
+
         super().__init__()
         self.children = [
             self.w_header_label,
@@ -42,14 +42,14 @@ class SampleFromId(ipw.VBox):
                 self.w_validate,
             ], layout=self.MAIN_LAYOUT),
         ]
-        
+
         # initialize options
         if not callable(validate_callback_f):
             raise TypeError("validate_callback_f should be a callable function")
         # self.validate_callback_f = validate_callback_f
         self.w_id_list.value = None
         self.on_update_button_clicked()
-        
+
         # setup automations
         self.w_update.on_click(self.on_update_button_clicked)
         self.w_id_list.observe(handler=self.on_battery_id_change, names='value')

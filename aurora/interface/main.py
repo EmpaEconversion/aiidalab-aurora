@@ -7,7 +7,7 @@ from IPython.display import display
 #     query_available_samples, query_available_specs, query_available_recipies,
 #     write_pd_query_from_dict)
 from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
-from .cycling import CyclingStandard
+from .cycling import CyclingStandard, CyclingCustom
 from ..schemas.data_schemas import BatterySample, BatterySpecs
 
 class MainPanel(ipw.VBox):
@@ -15,7 +15,7 @@ class MainPanel(ipw.VBox):
     _SAMPLE_INPUT_LABELS = ['Select from ID', 'Select from Specs', 'Make from Recipe']
     _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
     _TEST_METHOD_LABELS = ['Standardized', 'Customized']
-    w_header = ipw.HTML(value="<h1>Aurora</h1>")
+    w_header = ipw.HTML(value="<h2>Aurora</h2>")
     _SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
 
     def return_selected_sample(self, sample_widget_obj):
@@ -27,7 +27,7 @@ class MainPanel(ipw.VBox):
         self.selected_recipe = sample_widget_obj.selected_recipe_dict
     
     def switch_to_recipe(self, specs_widget_obj):
-        # switch tab to sample_from_recipe tab, copying over the selected specs
+        "Switch Sample tab to sample-from-recipe, copying over the selected specs"
         self.w_sample_selection_tab.selected_index = 2
         self.w_sample_from_recipe.w_specs_manufacturer.value = specs_widget_obj.w_specs_manufacturer.value
         self.w_sample_from_recipe.w_specs_composition.value = specs_widget_obj.w_specs_composition.value
@@ -35,6 +35,7 @@ class MainPanel(ipw.VBox):
         self.w_sample_from_recipe.w_specs_capacity.value = specs_widget_obj.w_specs_capacity.value
 
     def post_sample_selection(self):
+        "Switch to cycling accordion tab"
         self.w_main_accordion.selected_index = 1
         self.display_tested_sample_preview()
     
@@ -61,9 +62,9 @@ class MainPanel(ipw.VBox):
         self.reset_sample_selection()
 
         # Sample selection
-        self.w_sample_from_id = SampleFromId(self.return_selected_sample)
-        self.w_sample_from_specs = SampleFromSpecs(self.return_selected_sample, self.switch_to_recipe)
-        self.w_sample_from_recipe = SampleFromRecipe(self.return_selected_specs_recipe)
+        self.w_sample_from_id = SampleFromId(validate_callback_f=self.return_selected_sample)
+        self.w_sample_from_specs = SampleFromSpecs(validate_callback_f=self.return_selected_sample, recipe_callback_f=self.switch_to_recipe)
+        self.w_sample_from_recipe = SampleFromRecipe(validate_callback_f=self.return_selected_specs_recipe)
 
         self.w_sample_selection_tab = ipw.Tab(
             children=[self.w_sample_from_id, self.w_sample_from_specs, self.w_sample_from_recipe],
@@ -75,7 +76,7 @@ class MainPanel(ipw.VBox):
         self.w_test_sample_label = ipw.HTML("Selected sample:")
         self.w_test_sample = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
         self.w_test_standard = CyclingStandard(lambda x: x)
-        self.w_test_custom = ipw.Label(value='Page to build a customized testing protocol.')
+        self.w_test_custom = CyclingCustom(lambda x: x)
         self.w_test_method_tab = ipw.Tab(
             children=[self.w_test_standard, self.w_test_custom],
             selected_index=0)

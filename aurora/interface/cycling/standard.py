@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import ipywidgets as ipw
-from IPython.display import display
 from ...query import update_available_protocols, query_available_protocols
-# from ...schemas.convert import dict_to_formatted_json
 
 class CyclingStandard(ipw.VBox):
 
@@ -18,7 +16,7 @@ class CyclingStandard(ipw.VBox):
     def __init__(self, validate_callback_f):
 
         # initialize widgets
-        self.w_protocol_label = ipw.HTML(value="<h3>BIG-MAP WP8 Standardized Protocols</h3>")
+        self.w_protocol_label = ipw.HTML(value="<h2>BIG-MAP WP8 Standardized Protocols</h2>")
         self.w_protocol_select = ipw.Select(
             rows=10, value=None,
             description="Select Protocol:",
@@ -36,14 +34,14 @@ class CyclingStandard(ipw.VBox):
         # initialize widgets
         super().__init__()
         self.children = [
+            self.w_protocol_label,
             ipw.VBox([
-                self.w_protocol_label,
                 ipw.HBox([
                     self.w_protocol_select,
                     self.w_protocol_preview,
                     # self.w_sample_metadata_name,
                     # self.w_sample_metadata_creation_process,
-                ]), #, layout=ipw.Layout(grid_template_columns="grid_template_columns='25% 75%'")),
+                ]), #, layout=ipw.Layout(grid_template_columns='25% 75%')),
                 # ipw.HBox([self.w_update, self.w_reset], layout={'justify_content': 'center', 'margin': '5px'}),
                 self.w_protocol_parameters,
             ], layout=self.MAIN_LAYOUT),

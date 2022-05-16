@@ -22,7 +22,7 @@ class SampleFromSpecs(ipw.VBox):
     BUTTON_LAYOUT = {'margin': '5px'}
     OUTPUT_LAYOUT = {'max_height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'}
     SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
-    QUERY_PRINT_COLUMNS = ['manufacturer', 'composition.description', 'capacity.nominal', 'capacity.actual', 'capacity.units', 'form_factor',# 'metadata.name',
+    QUERY_PRINT_COLUMNS = ['manufacturer', 'composition.description', 'capacity.nominal', 'capacity.actual', 'capacity.units', 'form_factor', 'metadata.name',
                        'metadata.creation_datetime'] #, 'metadata.creation_process']
     
     def __init__(self, validate_callback_f, recipe_callback_f):
@@ -174,7 +174,7 @@ class SampleFromSpecs(ipw.VBox):
         """Returns a (option_string, battery_id) list."""
         table = query_available_samples(write_pd_query_from_dict(self.current_specs)).sort_values('battery_id')
         return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['metadata.name']}\"", row['battery_id']) for index, row in table.iterrows()]
-    
+
     def _update_options(self):
         # first save current values to preserve them
         w_specs_manufacturer_value = self.w_specs_manufacturer.value
@@ -249,7 +249,7 @@ class SampleFromSpecs(ipw.VBox):
         self.update_validate_button_state()
 
     def callback_call(self, callback_function):
-        # call a callback function and pass it this class instance
+        "Call a callback function and this class instance to it."
         return callback_function(self)
 
     def _set_specs_observers(self):
@@ -258,7 +258,7 @@ class SampleFromSpecs(ipw.VBox):
         self.w_specs_capacity.observe(handler=self.on_specs_value_change, names='value')
         self.w_specs_form_factor.observe(handler=self.on_specs_value_change, names='value')
         # self.w_specs_metadata_creation_date.observe(handler=self.update_options, names='value')
-    
+
     def _unset_specs_observers(self):
         self.w_specs_manufacturer.unobserve(handler=self.on_specs_value_change, names='value')
         self.w_specs_composition.unobserve(handler=self.on_specs_value_change, names='value')
