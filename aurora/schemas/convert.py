@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from numpy import NaN
-from pandas import Series, DataFrame
+from pandas import Series, DataFrame, isna
 from . import data_schemas
 
 def _remove_empties_from_dict(a_dict):
@@ -9,7 +8,7 @@ def _remove_empties_from_dict(a_dict):
     for k, v in a_dict.items():
         if isinstance(v, dict):
             v = _remove_empties_from_dict(v)
-        if v is not None and v is not NaN and v != "":
+        if v is not None and not isna(v) and v != "":
             new_dict[k] = v
     return new_dict
 

@@ -21,11 +21,11 @@ class MainPanel(ipw.VBox):
     def return_selected_sample(self, sample_widget_obj):
         self.selected_battery_sample = BatterySample.parse_obj(sample_widget_obj.selected_sample_dict)
         self.post_sample_selection()
-    
+
     def return_selected_specs_recipe(self, sample_widget_obj):
         self.selected_battery_specs = BatterySpecs.parse_obj(sample_widget_obj.selected_specs_dict)
         self.selected_recipe = sample_widget_obj.selected_recipe_dict
-    
+
     def switch_to_recipe(self, specs_widget_obj):
         "Switch Sample tab to sample-from-recipe, copying over the selected specs"
         self.w_sample_selection_tab.selected_index = 2
@@ -38,24 +38,24 @@ class MainPanel(ipw.VBox):
         "Switch to cycling accordion tab"
         self.w_main_accordion.selected_index = 1
         self.display_tested_sample_preview()
-    
+
     def reset_sample_selection(self, _=None):
         self.selected_battery_sample = None
         self.selected_battery_specs = None
         self.selected_recipe = None
-    
+
     def display_tested_sample_preview(self):
         self.w_test_sample.clear_output()
         if self.selected_battery_sample is not None:
             with self.w_test_sample:
                 # display(query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})))
                 display(pd.json_normalize(self.selected_battery_sample.dict()).iloc[0])
-    
+
     @property
     def sample_selection_method(self):
         if self.w_sample_selection_tab.selected_index is not None:
             return self._SAMPLE_INPUT_METHODS[self.w_sample_selection_tab.selected_index]
-    
+
     def __init__(self):
         
         # initialize variables
@@ -97,7 +97,7 @@ class MainPanel(ipw.VBox):
             self.w_header,
             self.w_main_accordion,
         ]
-        
+
         # setup automations
         # reset selected sample/specs/recipe when the user selects another input tab
         self.w_sample_selection_tab.observe(self.reset_sample_selection, names='selected_index')
