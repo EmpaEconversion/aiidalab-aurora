@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-from pydantic import (BaseModel, Extra, validator, root_validator, Field, NonNegativeFloat, NonNegativeInt)
+from pydantic import (BaseModel, Extra, validator, validator, Field, NonNegativeFloat, NonNegativeInt)
 from typing import Dict, Generic, TypeVar, Literal, Union
 from pydantic.generics import GenericModel
 
@@ -23,8 +22,9 @@ class CyclingParameter(GenericModel, Generic[DataT]):
         # return f'{params[0].__name__.title()}CyclingParameter'
 
 class CyclingTechnique(BaseModel):
-    short_name: str
-    name: str
+    technique: str  # the technique name for tomato
+    short_name: str  # short name for the technique
+    name: str  # a custom name
     description: str = ""
     parameters: Dict[str, CyclingParameter]
     
@@ -41,8 +41,9 @@ allowed_E_ranges = Literal[
 ]
 
 class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
+    technique = Field("open_circuit_voltage", const=True)
     short_name = Field("OCV", const=True)
-    name = Field("open_circuit_voltage", const=True)
+    name = "OCV"
     description = "Open circuit voltage"
     parameters: Dict[str, CyclingParameter] = {
         "time": CyclingParameter[NonNegativeFloat](
@@ -77,28 +78,33 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
     }
 
 class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
+    technique = Field("constant_voltage", const=True)
     short_name = Field("CALIMIT", const=True)
-    name = Field("constant_voltage", const=True)
+    name = "CALIMIT"
     description = "Controlled voltage technique, with optional current and voltage limits"
 
 class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
+    technique = Field("constant_current", const=True)
     short_name = Field("CPLIMIT", const=True)
-    name = Field("constant_current", const=True)
+    name = "CPLIMIT"
     description = "Controlled current technique, with optional voltage and current limits"
 
 class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
+    technique = Field("sweep_voltage", const=True)
     short_name = Field("VSCANLIMIT", const=True)
-    name = Field("sweep_voltage", const=True)
+    name = "VSCANLIMIT"
     description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
+    technique = Field("sweep_voltage", const=True)
     short_name = Field("ISCANLIMIT", const=True)
-    name = Field("sweep_current", const=True)
+    name = "ISCANLIMIT"
     description = "Controlled current technique, allowing linear change of current between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class Loop(CyclingTechnique, extra=Extra.forbid):
+    technique = Field("loop", const=True)
     short_name = Field("LOOP", const=True)
-    name = Field("loop", const=True)
+    name = "LOOP"
     description = "Loop technique, allowing to repeat a set of preceding techniques in a technique array"
     parameters: Dict[str, CyclingParameter] = {
         "n_gotos": CyclingParameter[int](

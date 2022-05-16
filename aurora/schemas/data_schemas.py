@@ -2,7 +2,7 @@
 
 from typing import Literal, TypedDict, Union, Optional, Literal
 from datetime import datetime
-from pydantic import BaseModel, PositiveFloat, validator, root_validator
+from pydantic import BaseModel, PositiveFloat, NonNegativeFloat, validator, root_validator
 from numpy import datetime64
 from .convert import extract_schema_types
 
@@ -48,7 +48,7 @@ class BatteryComposition(BaseModel):  # TypedDict?
     
 class BatteryCapacity(BaseModel): # TypedDict?
     nominal: PositiveFloat
-    actual: Optional[PositiveFloat]
+    actual: Optional[NonNegativeFloat]
     units: Literal["mAh", "Ah"]
 
 class BatteryMetadata(BaseModel):
