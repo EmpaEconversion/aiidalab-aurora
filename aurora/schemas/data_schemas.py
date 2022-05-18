@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import Literal, TypedDict, Union, Optional, Literal
+from enum import Flag
 from datetime import datetime
 from pydantic import BaseModel, PositiveFloat, NonNegativeFloat, validator, root_validator
 from numpy import datetime64
@@ -77,6 +78,17 @@ class BatterySample(BatterySpecs):
     battery_id: int
     metadata: BatteryMetadata
 
+class ChargeState(Flag):
+    """Defines the charge state of a battery."""
+    CHARGED = True
+    DISCHARGED = False
+
+class BatteryState(BatterySample):
+    """
+    Battery state schema.
+    """
+    state_id: int
+    charged: ChargeState = ChargeState.CHARGED
 
 BatterySpecsJsonTypes = extract_schema_types(BatterySpecs)
 BatterySampleJsonTypes = extract_schema_types(BatterySample)
