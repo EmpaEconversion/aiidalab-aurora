@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pydantic import (BaseModel, Extra, validator, validator, Field, NonNegativeFloat, NonNegativeInt)
-from typing import Dict, Generic, TypeVar, Literal, Union
+from typing import Dict, Generic, Sequence, TypeVar, Literal, Union
 from pydantic.generics import GenericModel
 
 DataT = TypeVar('DataT')
@@ -41,8 +41,8 @@ allowed_E_ranges = Literal[
 ]
 
 class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
-    technique = Field("open_circuit_voltage", const=True)
-    short_name = Field("OCV", const=True)
+    technique: Literal["open_circuit_voltage"] = "open_circuit_voltage"
+    short_name: Literal["OCV"] = "OCV"
     name = "OCV"
     description = "Open circuit voltage"
     parameters: Dict[str, CyclingParameter] = {
@@ -78,32 +78,32 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
     }
 
 class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
-    technique = Field("constant_voltage", const=True)
-    short_name = Field("CALIMIT", const=True)
+    technique: Literal["constant_voltage"] = "constant_voltage"
+    short_name: Literal["CALIMIT"] = "CALIMIT"
     name = "CALIMIT"
     description = "Controlled voltage technique, with optional current and voltage limits"
 
 class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
-    technique = Field("constant_current", const=True)
-    short_name = Field("CPLIMIT", const=True)
+    technique: Literal["constant_current"] = "constant_current"
+    short_name: Literal["CPLIMIT"] = "CPLIMIT"
     name = "CPLIMIT"
     description = "Controlled current technique, with optional voltage and current limits"
 
 class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
-    technique = Field("sweep_voltage", const=True)
-    short_name = Field("VSCANLIMIT", const=True)
+    technique: Literal["sweep_voltage"] = "sweep_voltage"
+    short_name: Literal["VSCANLIMIT"] = "VSCANLIMIT"
     name = "VSCANLIMIT"
     description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
-    technique = Field("sweep_voltage", const=True)
-    short_name = Field("ISCANLIMIT", const=True)
+    technique: Literal["sweep_voltage"] = "sweep_voltage"
+    short_name: Literal["ISCANLIMIT"] = "ISCANLIMIT"
     name = "ISCANLIMIT"
     description = "Controlled current technique, allowing linear change of current between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class Loop(CyclingTechnique, extra=Extra.forbid):
-    technique = Field("loop", const=True)
-    short_name = Field("LOOP", const=True)
+    technique: Literal["loop"] = "loop"
+    short_name: Literal["LOOP"] = "LOOP"
     name = "LOOP"
     description = "Loop technique, allowing to repeat a set of preceding techniques in a technique array"
     parameters: Dict[str, CyclingParameter] = {
@@ -121,7 +121,6 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
         ),
     }
 
-
 ElectroChemPayloads = Union[
     OpenCircuitVoltage,
     ConstantCurrent,
@@ -130,3 +129,31 @@ ElectroChemPayloads = Union[
     SweepVoltage,
     Loop,
 ]
+
+class ElectroChemSequence(BaseModel):
+    sequence: Sequence[ElectroChemPayloads]
+    
+    @property
+    def n_steps(self):
+        "Number of steps of the sequence"
+        return len(self.sequence)
+
+    def add_step(self, elem):
+        if not isinstance(elem, ElectroChemPayloads.__args__):
+            raise ValueError("Invalid technique")
+        self.sequence.append(elem)
+    
+    def remove_step(self, index):
+        self.sequence.pop(index)
+    
+    def move_step_backward(self, index):
+        if index > 0:
+            self.sequence[index-1], self.sequence[index] = self.sequence[index], self.sequence[index-1]
+
+    def move_step_forward(self, index):
+        if index < self.n_steps - 1:
+            self.sequence[index], self.sequence[index+1] = self.sequence[index+1], self.sequence[index]
+        
+    class Config:
+        validate_assignment = True
+        extra = Extra.forbid

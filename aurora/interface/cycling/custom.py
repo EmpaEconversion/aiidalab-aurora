@@ -3,7 +3,7 @@
 import logging
 import ipywidgets as ipw
 import aurora.schemas.cycling
-from aurora.schemas.cycling import ElectroChemPayloads
+from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
 from .protocol import ProtocolList
 from .technique_widget import TechniqueParametersWidget
 
@@ -18,7 +18,7 @@ class CyclingCustom(ipw.VBox):
     BUTTON_LAYOUT_2 = {'width': '20%', 'margin': '5px'}
     MAIN_LAYOUT = {"grid_template_columns": "30% 65%", 'width': '100%', 'margin': '5px'} # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
     DEFAULT_PROTOCOL = aurora.schemas.cycling.OpenCircuitVoltage
-    _TECHNIQUES_OPTIONS = {f"{Technique.schema()['properties']['short_name']['const']}  ({Technique.schema()['properties']['technique']['const']})": Technique
+    _TECHNIQUES_OPTIONS = {f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})": Technique
                              for Technique in ElectroChemPayloads.__args__}
 
     def __init__(self, validate_callback_f):
@@ -47,7 +47,7 @@ class CyclingCustom(ipw.VBox):
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
         
         # initialize protocol steps list
-        self._protocol_steps_list = ProtocolList()
+        self._protocol_steps_list = ElectroChemSequence(sequence=[])
         self.add_protocol_step()
 
         # initialize current step properties widget
@@ -117,46 +117,46 @@ class CyclingCustom(ipw.VBox):
     @property
     def selected_step_technique(self):
         "The step that is currently selected."
-        return self.protocol_steps_list[self.w_protocol_steps_list.index]
+        return self.protocol_steps_list.sequence[self.w_protocol_steps_list.index]
     
     @selected_step_technique.setter
     def selected_step_technique(self, technique):
-        self.protocol_steps_list[self.w_protocol_steps_list.index] = technique
+        self.protocol_steps_list.sequence[self.w_protocol_steps_list.index] = technique
     
     def _count_technique_occurencies(self, technique):
-        return [type(step) for step in self.protocol_steps_list].count(technique)
+        return [type(step) for step in self.protocol_steps_list.sequence].count(technique)
 
     def _update_protocol_steps_list_widget_options(self, new_index=None):
         old_selected_index = self.w_protocol_steps_list.index
-        self.w_protocol_steps_list.options = [step.name for step in self.protocol_steps_list]
+        self.w_protocol_steps_list.options = [step.name for step in self.protocol_steps_list.sequence]
         if new_index is not None:
             old_selected_index = new_index
         if (old_selected_index is None) or (old_selected_index < 0):
             self.w_protocol_steps_list.index = 0
-        elif old_selected_index >= len(self.protocol_steps_list):
-            self.w_protocol_steps_list.index = len(self.protocol_steps_list) - 1
+        elif old_selected_index >= self.protocol_steps_list.n_steps:
+            self.w_protocol_steps_list.index = self.protocol_steps_list.n_steps - 1
         else:
             self.w_protocol_steps_list.index = old_selected_index
 
     def DEFAULT_STEP_NAME(self, technique):
-        return f"{technique.schema()['properties']['short_name']['const']}_{self._count_technique_occurencies(technique) + 1}"
+        return f"{technique.schema()['properties']['short_name']['default']}_{self._count_technique_occurencies(technique) + 1}"
 
     def add_protocol_step(self, dummy=None):
         name = self.DEFAULT_STEP_NAME(self.DEFAULT_PROTOCOL)
         logging.debug(f"Adding protocol step {name}")
-        self.protocol_steps_list.add(self.DEFAULT_PROTOCOL(name=name))
-        self._update_protocol_steps_list_widget_options(new_index=len(self.protocol_steps_list)-1)
+        self.protocol_steps_list.add_step(self.DEFAULT_PROTOCOL(name=name))
+        self._update_protocol_steps_list_widget_options(new_index=self.protocol_steps_list.n_steps-1)
     
     def remove_protocol_step(self, dummy=None):
-        self.protocol_steps_list.remove(self.w_protocol_steps_list.index)
+        self.protocol_steps_list.remove_step(self.w_protocol_steps_list.index)
         self._update_protocol_steps_list_widget_options()
     
     def move_protocol_step_up(self, dummy=None):
-        self.protocol_steps_list.move_up(self.w_protocol_steps_list.index)
+        self.protocol_steps_list.move_step_backward(self.w_protocol_steps_list.index)
         self._update_protocol_steps_list_widget_options(new_index=self.w_protocol_steps_list.index - 1)
 
     def move_protocol_step_down(self, dummy=None):
-        moved = self.protocol_steps_list.move_down(self.w_protocol_steps_list.index)
+        moved = self.protocol_steps_list.move_step_forward(self.w_protocol_steps_list.index)
         self._update_protocol_steps_list_widget_options(new_index=self.w_protocol_steps_list.index + 1)
 
     ## SELECTED STEP METHODS
