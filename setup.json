@@ -1,0 +1,28 @@
+{
+    "name": "aurora",
+    "author": "Loris Ercole",
+    "author_email": "loris.ercole@epfl.ch",
+    "description": "Aurora AiiDAlab app.",
+    "url": "https://github.com/epfl-theos/aiida-app",
+    "license": "MIT",
+    "classifiers": [
+        "Programming Language :: Python",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Development Status :: 3 - Alpha",
+        "Framework :: AiiDA"
+    ],
+    "version": "0.1.0a0",
+    "entry_points": {},
+    "include_package_data": true,
+    "setup_requires": [],
+    "reentry_register": true,
+    "install_requires": [
+        "ipywidgets",
+        "numpy",
+        "pandas",
+        "pydantic"
+    ],
+    "extras_require": {}
+}
