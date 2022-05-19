@@ -82,6 +82,79 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
     short_name: Literal["CALIMIT"] = "CALIMIT"
     name = "CALIMIT"
     description = "Controlled voltage technique, with optional current and voltage limits"
+    parameters: Dict[str, CyclingParameter] = {
+        "time": CyclingParameter[NonNegativeFloat](
+            label = "Time:",
+            description = "Maximum duration of the CV step",
+            units = "s",
+            value = 0.0,
+            required = True,
+        ),
+        "voltage": CyclingParameter[float](
+            label = "Step voltage:",
+            description = "Voltage of the current step",
+            units = "V",
+            value = 0.0,
+            required = True,
+        ),
+        "record_every_dt": CyclingParameter[NonNegativeFloat](
+            label = "Record every $dt$:",
+            description = "Record a datapoint at prescribed time spacing",
+            units = "s",
+            value = 30.0
+        ),
+        "record_every_dI": CyclingParameter[NonNegativeFloat](
+            label = "Record every $dI$:",
+            description = "Record a datapoint at prescribed current spacing",
+            units = "I",
+            value = 0.001
+        ),
+        "I_range": CyclingParameter[allowed_I_ranges](
+            label = "I range",
+            description = "Select the current range of the potentiostat",
+            value = "keep"
+        ),
+        "E_range": CyclingParameter[allowed_E_ranges](
+            label = "E range",
+            description = "Select the voltage range of the potentiostat",
+            value = "auto"
+        ),
+        "n_cycles": CyclingParameter[NonNegativeInt](
+            label = "Number of cycles:",
+            description = "Cycle through the current technique N times.",
+            value = 0,
+        ),
+        "is_delta": CyclingParameter[bool](
+            label = "$\delta V$:",
+            description = "Is the step voltage a $\delta$ from previous step?",
+            value = False
+        ),
+        "exit_on_limit": CyclingParameter[bool](
+            label = "Exit when limits reached?",
+            description = "Stop the whole experiment when limit is reached?",
+            value = False
+        ),
+        "limit_voltage_max": CyclingParameter[float](
+            label = "Maximum voltage:",
+            description = "Define the upper limit of voltage for this step",
+            value = None
+        ),
+        "limit_voltage_min": CyclingParameter[float](
+            label = "Minimum voltage:",
+            description = "Define the lower limit of voltage for this step",
+            value = None
+        ),
+        "limit_current_max": CyclingParameter[float](
+            label = "Maximum current:",
+            description = "Define the upper limit of current for this step",
+            value = None
+        ),
+        "limit_current_min": CyclingParameter[float](
+            label = "Minimum current:",
+            description = "Define the lower limit of current for this step",
+            value = None
+        )
+    }
 
 class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
     technique: Literal["constant_current"] = "constant_current"
