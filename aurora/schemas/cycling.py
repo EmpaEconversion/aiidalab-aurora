@@ -79,8 +79,8 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
 
 class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
     technique: Literal["constant_voltage"] = "constant_voltage"
-    short_name: Literal["CALIMIT"] = "CALIMIT"
-    name = "CALIMIT"
+    short_name: Literal["CV"] = "CV"
+    name = "CV"
     description = "Controlled voltage technique, with optional current and voltage limits"
     parameters: Dict[str, CyclingParameter] = {
         "time": CyclingParameter[NonNegativeFloat](
@@ -144,12 +144,12 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
             description = "Define the lower limit of voltage for this step",
             value = None
         ),
-        "limit_current_max": CyclingParameter[float](
+        "limit_current_max": CyclingParameter[Union[float, str]](
             label = "Maximum current:",
             description = "Define the upper limit of current for this step",
             value = None
         ),
-        "limit_current_min": CyclingParameter[float](
+        "limit_current_min": CyclingParameter[Union[float, str]](
             label = "Minimum current:",
             description = "Define the lower limit of current for this step",
             value = None
@@ -158,21 +158,94 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
 
 class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
     technique: Literal["constant_current"] = "constant_current"
-    short_name: Literal["CPLIMIT"] = "CPLIMIT"
-    name = "CPLIMIT"
+    short_name: Literal["CC"] = "CC"
+    name = "CC"
     description = "Controlled current technique, with optional voltage and current limits"
+    parameters: Dict[str, CyclingParameter] = {
+        "time": CyclingParameter[NonNegativeFloat](
+            label = "Time:",
+            description = "Maximum duration of the CC step",
+            units = "s",
+            value = 0.0,
+            required = True,
+        ),
+        "current": CyclingParameter[Union[float, str]](
+            label = "Step current:",
+            description = "Current during the current step",
+            units = "I",
+            value = 0.0,
+            required = True,
+        ),
+        "record_every_dt": CyclingParameter[NonNegativeFloat](
+            label = "Record every $dt$:",
+            description = "Record a datapoint at prescribed time spacing",
+            units = "s",
+            value = 30.0
+        ),
+        "record_every_dE": CyclingParameter[NonNegativeFloat](
+            label = "Record every $dE$:",
+            description = "Record a datapoint at prescribed voltage spacing",
+            units = "V",
+            value = 0.001
+        ),
+        "I_range": CyclingParameter[allowed_I_ranges](
+            label = "I range",
+            description = "Select the current range of the potentiostat",
+            value = "keep"
+        ),
+        "E_range": CyclingParameter[allowed_E_ranges](
+            label = "E range",
+            description = "Select the voltage range of the potentiostat",
+            value = "auto"
+        ),
+        "n_cycles": CyclingParameter[NonNegativeInt](
+            label = "Number of cycles:",
+            description = "Cycle through the current technique N times.",
+            value = 0,
+        ),
+        "is_delta": CyclingParameter[bool](
+            label = "$\delta I$:",
+            description = "Is the step current a $\delta$ from previous step?",
+            value = False
+        ),
+        "exit_on_limit": CyclingParameter[bool](
+            label = "Exit when limits reached?",
+            description = "Stop the whole experiment when limit is reached?",
+            value = False
+        ),
+        "limit_voltage_max": CyclingParameter[float](
+            label = "Maximum voltage:",
+            description = "Define the upper limit of voltage for this step",
+            value = None
+        ),
+        "limit_voltage_min": CyclingParameter[float](
+            label = "Minimum voltage:",
+            description = "Define the lower limit of voltage for this step",
+            value = None
+        ),
+        "limit_current_max": CyclingParameter[Union[float, str]](
+            label = "Maximum current:",
+            description = "Define the upper limit of current for this step",
+            value = None
+        ),
+        "limit_current_min": CyclingParameter[Union[float, str]](
+            label = "Minimum current:",
+            description = "Define the lower limit of current for this step",
+            value = None
+        )
+    }
 
-class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
-    technique: Literal["sweep_voltage"] = "sweep_voltage"
-    short_name: Literal["VSCANLIMIT"] = "VSCANLIMIT"
-    name = "VSCANLIMIT"
-    description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
+#class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
+#    technique: Literal["sweep_voltage"] = "sweep_voltage"
+#    short_name: Literal["LSV"] = "LSV"
+#    name = "LSV"
+#    description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
-class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
-    technique: Literal["sweep_voltage"] = "sweep_voltage"
-    short_name: Literal["ISCANLIMIT"] = "ISCANLIMIT"
-    name = "ISCANLIMIT"
-    description = "Controlled current technique, allowing linear change of current between pre-defined endpoints as a function of time, with optional current and voltage limits"
+#class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
+#    technique: Literal["sweep_current"] = "sweep_current"
+#    short_name: Literal["LSC"] = "LSC"
+#    name = ""
+#    description = "Controlled current technique, allowing linear change of current between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class Loop(CyclingTechnique, extra=Extra.forbid):
     technique: Literal["loop"] = "loop"
@@ -198,8 +271,8 @@ ElectroChemPayloads = Union[
     OpenCircuitVoltage,
     ConstantCurrent,
     ConstantVoltage,
-    SweepCurrent,
-    SweepVoltage,
+#    SweepCurrent,
+#    SweepVoltage,
     Loop,
 ]
 
