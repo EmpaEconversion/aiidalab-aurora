@@ -137,21 +137,25 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
             description = "Define the upper limit of voltage for this step",
+            units = "V",
             value = None
         ),
         "limit_voltage_min": CyclingParameter[float](
             label = "Minimum voltage:",
             description = "Define the lower limit of voltage for this step",
+            units = "V",
             value = None
         ),
         "limit_current_max": CyclingParameter[Union[float, str]](
             label = "Maximum current:",
             description = "Define the upper limit of current for this step",
+            units = "mA",
             value = None
         ),
         "limit_current_min": CyclingParameter[Union[float, str]](
             label = "Minimum current:",
             description = "Define the lower limit of current for this step",
+            units = "mA",
             value = None
         )
     }
@@ -216,21 +220,25 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
             description = "Define the upper limit of voltage for this step",
+            units = "V",
             value = None
         ),
         "limit_voltage_min": CyclingParameter[float](
             label = "Minimum voltage:",
             description = "Define the lower limit of voltage for this step",
+            units = "V",
             value = None
         ),
         "limit_current_max": CyclingParameter[Union[float, str]](
             label = "Maximum current:",
             description = "Define the upper limit of current for this step",
+            units = "mA",
             value = None
         ),
         "limit_current_min": CyclingParameter[Union[float, str]](
             label = "Minimum current:",
             description = "Define the lower limit of current for this step",
+            units = "mA",
             value = None
         )
     }
