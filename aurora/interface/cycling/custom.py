@@ -4,7 +4,6 @@ import logging
 import ipywidgets as ipw
 import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
-from .protocol import ProtocolList
 from .technique_widget import TechniqueParametersWidget
 
 class CyclingCustom(ipw.VBox):
@@ -128,7 +127,7 @@ class CyclingCustom(ipw.VBox):
 
     def _update_protocol_steps_list_widget_options(self, new_index=None):
         old_selected_index = self.w_protocol_steps_list.index
-        self.w_protocol_steps_list.options = [step.name for step in self.protocol_steps_list.sequence]
+        self.w_protocol_steps_list.options = [f"[{idx + 1}] - {step.name}" for idx, step in enumerate(self.protocol_steps_list.sequence)]
         if new_index is not None:
             old_selected_index = new_index
         if (old_selected_index is None) or (old_selected_index < 0):
@@ -179,7 +178,7 @@ class CyclingCustom(ipw.VBox):
             # if not, it means that the user changed the technique. We have to pass an instance of the new one
             logging.debug("  from scratch")
             technique = self.w_selected_step_technique_name.value()
-            technique.name = self.DEFAULT_STEP_NAME(technique)
+            technique.name = self.DEFAULT_STEP_NAME(self.w_selected_step_technique_name.value)
             logging.debug(f"  {technique.name}")
             self.w_selected_step_parameters.__init__(technique, layout=self.BOX_LAYOUT_3)
 

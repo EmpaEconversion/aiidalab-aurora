@@ -11,6 +11,7 @@ class CyclingParameter(GenericModel, Generic[DataT]):
     description: str = ""  # a long description
     units: str = ""  # physical units of this parameter
     value: DataT = None  # the set value
+    default_value: DataT = None  # the default value of this parameter
     required: bool = False  # True if parameter is required
     
     class Config:
@@ -50,30 +51,30 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
             label = "Time:",
             description = "The length of the OCV step",
             units = "s",
-            value = 0.0,
+            default_value = 0.0,
             required = True,
         ),
         "record_every_dt": CyclingParameter[NonNegativeFloat](
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            value = 30.0
+            default_value = 30.0
         ),
         "record_every_dE": CyclingParameter[NonNegativeFloat](
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
-            value = 0.005
+            default_value = 0.005
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "",
-            value = "keep"
+            default_value = "keep"
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "",
-            value = "auto"
+            default_value = "auto"
         ),
     }
 
@@ -87,76 +88,76 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
             label = "Time:",
             description = "Maximum duration of the CV step",
             units = "s",
-            value = 0.0,
+            default_value = 0.0,
             required = True,
         ),
         "voltage": CyclingParameter[float](
             label = "Step voltage:",
             description = "Voltage of the current step",
             units = "V",
-            value = 0.0,
+            default_value = 0.0,
             required = True,
         ),
         "record_every_dt": CyclingParameter[NonNegativeFloat](
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            value = 30.0
+            default_value = 30.0
         ),
         "record_every_dI": CyclingParameter[NonNegativeFloat](
             label = "Record every $dI$:",
             description = "Record a datapoint at prescribed current spacing",
             units = "I",
-            value = 0.001
+            default_value = 0.001
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "Select the current range of the potentiostat",
-            value = "keep"
+            default_value = "keep"
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "Select the voltage range of the potentiostat",
-            value = "auto"
+            default_value = "auto"
         ),
         "n_cycles": CyclingParameter[NonNegativeInt](
             label = "Number of cycles:",
             description = "Cycle through the current technique N times.",
-            value = 0,
+            default_value = 0,
         ),
         "is_delta": CyclingParameter[bool](
-            label = "$\delta V$:",
-            description = "Is the step voltage a $\delta$ from previous step?",
-            value = False
+            label = "Δ$V$:",
+            description = "Is the step voltage a $\Delta$ from previous step?",
+            default_value = False
         ),
         "exit_on_limit": CyclingParameter[bool](
             label = "Exit when limits reached?",
             description = "Stop the whole experiment when limit is reached?",
-            value = False
+            default_value = False
         ),
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
             description = "Define the upper limit of voltage for this step",
             units = "V",
-            value = None
+            default_value = None
         ),
         "limit_voltage_min": CyclingParameter[float](
             label = "Minimum voltage:",
             description = "Define the lower limit of voltage for this step",
             units = "V",
-            value = None
+            default_value = None
         ),
         "limit_current_max": CyclingParameter[Union[float, str]](
             label = "Maximum current:",
             description = "Define the upper limit of current for this step",
-            units = "mA",
-            value = None
+            units = "I",
+            default_value = None
         ),
         "limit_current_min": CyclingParameter[Union[float, str]](
             label = "Minimum current:",
             description = "Define the lower limit of current for this step",
-            units = "mA",
-            value = None
+            units = "I",
+            default_value = None
         )
     }
 
@@ -170,76 +171,76 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
             label = "Time:",
             description = "Maximum duration of the CC step",
             units = "s",
-            value = 0.0,
+            default_value = 0.0,
             required = True,
         ),
         "current": CyclingParameter[Union[float, str]](
             label = "Step current:",
             description = "Current during the current step",
             units = "I",
-            value = 0.0,
+            default_value = 0.0,
             required = True,
         ),
         "record_every_dt": CyclingParameter[NonNegativeFloat](
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            value = 30.0
+            default_value = 30.0
         ),
         "record_every_dE": CyclingParameter[NonNegativeFloat](
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
-            value = 0.001
+            default_value = 0.001
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "Select the current range of the potentiostat",
-            value = "keep"
+            default_value = "keep"
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "Select the voltage range of the potentiostat",
-            value = "auto"
+            default_value = "auto"
         ),
         "n_cycles": CyclingParameter[NonNegativeInt](
             label = "Number of cycles:",
             description = "Cycle through the current technique N times.",
-            value = 0,
+            default_value = 0,
         ),
         "is_delta": CyclingParameter[bool](
-            label = "$\delta I$:",
-            description = "Is the step current a $\delta$ from previous step?",
-            value = False
+            label = "Δ$I$:",
+            description = "Is the step current a $\Delta$ from previous step?",
+            default_value = False
         ),
         "exit_on_limit": CyclingParameter[bool](
             label = "Exit when limits reached?",
             description = "Stop the whole experiment when limit is reached?",
-            value = False
+            default_value = False
         ),
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
             description = "Define the upper limit of voltage for this step",
             units = "V",
-            value = None
+            default_value = None
         ),
         "limit_voltage_min": CyclingParameter[float](
             label = "Minimum voltage:",
             description = "Define the lower limit of voltage for this step",
             units = "V",
-            value = None
+            default_value = None
         ),
         "limit_current_max": CyclingParameter[Union[float, str]](
             label = "Maximum current:",
             description = "Define the upper limit of current for this step",
-            units = "mA",
-            value = None
+            units = "I",
+            default_value = None
         ),
         "limit_current_min": CyclingParameter[Union[float, str]](
             label = "Minimum current:",
             description = "Define the lower limit of current for this step",
-            units = "mA",
-            value = None
+            units = "I",
+            default_value = None
         )
     }
 
@@ -264,13 +265,13 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
         "n_gotos": CyclingParameter[int](
             label = "Repeats",
             description = "Number of times the technique will jump; set to -1 for unlimited",
-            value = -1,
+            default_value = -1,
             required = True,
         ),
         "goto": CyclingParameter[int](
             label = "Go to:",
             description = "Index of the technique to go back to",
-            value = 0,
+            default_value = 0,
             required = True,
         ),
     }
