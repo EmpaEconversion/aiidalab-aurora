@@ -3,15 +3,7 @@
 import ipywidgets as ipw
 
 template = """
-<table>
-<tr>
-  <th style="text-align:center">Aurora</th>
-<tr>
-  <td valign="top"><ul>
-    <li><a href="{appbase}/example.ipynb" target="_blank">Example notebook</a></li>
-  </ul></td>
-</tr>
-</table>
+<h1><a title="Launch Aurora app" href="{appbase}/Aurora-app.ipynb" target="_blank">Aurora app</a></h1>
 """
 
 
