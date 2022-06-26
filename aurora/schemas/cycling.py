@@ -23,6 +23,7 @@ class CyclingParameter(GenericModel, Generic[DataT]):
         # return f'{params[0].__name__.title()}CyclingParameter'
 
 class CyclingTechnique(BaseModel):
+    device: str = "worker"  # the device name
     technique: str  # the technique name for tomato
     short_name: str  # short name for the technique
     name: str  # a custom name
@@ -286,28 +287,28 @@ ElectroChemPayloads = Union[
 ]
 
 class ElectroChemSequence(BaseModel):
-    sequence: Sequence[ElectroChemPayloads]
+    method: Sequence[ElectroChemPayloads]
     
     @property
     def n_steps(self):
-        "Number of steps of the sequence"
-        return len(self.sequence)
+        "Number of steps of the method"
+        return len(self.method)
 
     def add_step(self, elem):
         if not isinstance(elem, ElectroChemPayloads.__args__):
             raise ValueError("Invalid technique")
-        self.sequence.append(elem)
+        self.method.append(elem)
     
     def remove_step(self, index):
-        self.sequence.pop(index)
+        self.method.pop(index)
     
     def move_step_backward(self, index):
         if index > 0:
-            self.sequence[index-1], self.sequence[index] = self.sequence[index], self.sequence[index-1]
+            self.method[index-1], self.method[index] = self.method[index], self.method[index-1]
 
     def move_step_forward(self, index):
         if index < self.n_steps - 1:
-            self.sequence[index], self.sequence[index+1] = self.sequence[index+1], self.sequence[index]
+            self.method[index], self.method[index+1] = self.method[index+1], self.method[index]
         
     class Config:
         validate_assignment = True

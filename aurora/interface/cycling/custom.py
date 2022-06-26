@@ -46,7 +46,7 @@ class CyclingCustom(ipw.VBox):
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
         
         # initialize protocol steps list
-        self._protocol_steps_list = ElectroChemSequence(sequence=[])
+        self._protocol_steps_list = ElectroChemSequence(method=[])
         self.add_protocol_step()
 
         # initialize current step properties widget
@@ -116,18 +116,18 @@ class CyclingCustom(ipw.VBox):
     @property
     def selected_step_technique(self):
         "The step that is currently selected."
-        return self.protocol_steps_list.sequence[self.w_protocol_steps_list.index]
+        return self.protocol_steps_list.method[self.w_protocol_steps_list.index]
     
     @selected_step_technique.setter
     def selected_step_technique(self, technique):
-        self.protocol_steps_list.sequence[self.w_protocol_steps_list.index] = technique
+        self.protocol_steps_list.method[self.w_protocol_steps_list.index] = technique
     
     def _count_technique_occurencies(self, technique):
-        return [type(step) for step in self.protocol_steps_list.sequence].count(technique)
+        return [type(step) for step in self.protocol_steps_list.method].count(technique)
 
     def _update_protocol_steps_list_widget_options(self, new_index=None):
         old_selected_index = self.w_protocol_steps_list.index
-        self.w_protocol_steps_list.options = [f"[{idx + 1}] - {step.name}" for idx, step in enumerate(self.protocol_steps_list.sequence)]
+        self.w_protocol_steps_list.options = [f"[{idx + 1}] - {step.name}" for idx, step in enumerate(self.protocol_steps_list.method)]
         if new_index is not None:
             old_selected_index = new_index
         if (old_selected_index is None) or (old_selected_index < 0):
