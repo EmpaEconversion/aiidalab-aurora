@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import functools
 from pandas import Series, DataFrame, isna
 from . import data_schemas
+
+def remove_empties_from_dict_decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        dic = func(*args, **kwargs)
+        return _remove_empties_from_dict(dic)
+    return wrapper
 
 def _remove_empties_from_dict(a_dict):
     new_dict = {}
