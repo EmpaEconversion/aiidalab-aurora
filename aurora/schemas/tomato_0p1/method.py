@@ -18,6 +18,11 @@ def convert_electrochemsequence_to_method_list(elchemsequence: ElectroChemSequen
     Parameter values that are None will be ignored.
     """
 
+    if not isinstance(elchemsequence, ElectroChemSequence):
+        if isinstance(elchemsequence, dict):
+            elchemsequence = ElectroChemSequence(**elchemsequence)
+        else:
+            raise TypeError()
     sequence = []
     for step in elchemsequence.method:
         parameters = {name: param.value for name, param in step.parameters.items() if param.value is not None}
