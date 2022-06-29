@@ -59,23 +59,27 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            default_value = 30.0
+            default_value = 30.0,
+            required = True,
         ),
         "record_every_dE": CyclingParameter[NonNegativeFloat](
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
-            default_value = 0.005
+            default_value = 0.005,
+            required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "",
-            default_value = "keep"
+            default_value = "keep",
+            required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "",
-            default_value = "auto"
+            default_value = "auto",
+            required = True,
         ),
     }
 
@@ -103,38 +107,45 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            default_value = 30.0
+            default_value = 30.0,
+            required = True,
         ),
         "record_every_dI": CyclingParameter[NonNegativeFloat](
             label = "Record every $dI$:",
             description = "Record a datapoint at prescribed current spacing",
             units = "I",
-            default_value = 0.001
+            default_value = 0.001,
+            required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "Select the current range of the potentiostat",
-            default_value = "keep"
+            default_value = "keep",
+            required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "Select the voltage range of the potentiostat",
-            default_value = "auto"
+            default_value = "auto",
+            required = True,
         ),
         "n_cycles": CyclingParameter[NonNegativeInt](
             label = "Number of cycles:",
             description = "Cycle through the current technique N times.",
             default_value = 0,
+            required = True,
         ),
         "is_delta": CyclingParameter[bool](
             label = "Δ$V$:",
             description = "Is the step voltage a $\Delta$ from previous step?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "exit_on_limit": CyclingParameter[bool](
             label = "Exit when limits reached?",
             description = "Stop the whole experiment when limit is reached?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
@@ -186,38 +197,45 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            default_value = 30.0
+            default_value = 30.0,
+            required = True,
         ),
         "record_every_dE": CyclingParameter[NonNegativeFloat](
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
-            default_value = 0.001
+            default_value = 0.001,
+            required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "Select the current range of the potentiostat",
-            default_value = "keep"
+            default_value = "keep",
+            required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "Select the voltage range of the potentiostat",
-            default_value = "auto"
+            default_value = "auto",
+            required = True,
         ),
         "n_cycles": CyclingParameter[NonNegativeInt](
             label = "Number of cycles:",
             description = "Cycle through the current technique N times.",
             default_value = 0,
+            required = True,
         ),
         "is_delta": CyclingParameter[bool](
             label = "Δ$I$:",
             description = "Is the step current a $\Delta$ from previous step?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "exit_on_limit": CyclingParameter[bool](
             label = "Exit when limits reached?",
             description = "Stop the whole experiment when limit is reached?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
