@@ -23,7 +23,7 @@ class CyclingParameter(GenericModel, Generic[DataT]):
         # return f'{params[0].__name__.title()}CyclingParameter'
 
 class CyclingTechnique(BaseModel):
-    device: Literal["worker", "MPG2"] = "worker"  # the device name
+    device: Literal["worker", "MPG2"]  # the device name
     technique: str  # the technique name for tomato
     short_name: str  # short name for the technique
     name: str  # a custom name
@@ -43,6 +43,7 @@ allowed_E_ranges = Literal[
 ]
 
 class DummyRandom(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["worker"] = "worker"
     technique: Literal["random"] = "random"
     short_name: Literal["DUMMY"] = "DUMMY"
     name = "Dummy-Random"
@@ -63,6 +64,7 @@ class DummyRandom(CyclingTechnique, extra=Extra.forbid):
     }
 
 class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["open_circuit_voltage"] = "open_circuit_voltage"
     short_name: Literal["OCV"] = "OCV"
     name = "OCV"
@@ -104,6 +106,7 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
     }
 
 class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_voltage"] = "constant_voltage"
     short_name: Literal["CV"] = "CV"
     name = "CV"
@@ -194,6 +197,7 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
     }
 
 class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_current"] = "constant_current"
     short_name: Literal["CC"] = "CC"
     name = "CC"
@@ -296,6 +300,7 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
 #    description = "Controlled current technique, allowing linear change of current between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class Loop(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["loop"] = "loop"
     short_name: Literal["LOOP"] = "LOOP"
     name = "LOOP"
