@@ -4,18 +4,20 @@ import logging
 import ipywidgets as ipw
 import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
+from aurora.schemas.convert import remove_empties_from_dict_decorator
 from .technique_widget import TechniqueParametersWidget
 
 class CyclingCustom(ipw.VBox):
 
     BOX_STYLE = {'description_width': '25%'}
+    BOX_STYLE_2 = {'description_width': 'initial'}
     BOX_LAYOUT = {'width': '95%'}
     BOX_LAYOUT_2 = {'width': '95%', 'border': 'solid blue 1px', 'padding': '5px'}
     BOX_LAYOUT_3 = {'width': '95%', 'padding': '5px', 'margin': '10px'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     BUTTON_LAYOUT_2 = {'width': '20%', 'margin': '5px'}
-    MAIN_LAYOUT = {"grid_template_columns": "30% 65%", 'width': '100%', 'margin': '5px'} # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
+    GRID_LAYOUT = {"grid_template_columns": "30% 65%", 'width': '100%', 'margin': '5px'} # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
     DEFAULT_PROTOCOL = aurora.schemas.cycling.OpenCircuitVoltage
     _TECHNIQUES_OPTIONS = {f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})": Technique
                              for Technique in ElectroChemPayloads.__args__}
@@ -63,6 +65,28 @@ class CyclingCustom(ipw.VBox):
             description="Discard", button_style='', tooltip="Discard current parameters", icon='times',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
 
+        # initialize job settings   ## TODO: move these to another accordion tab or to Main
+        self.w_job_header = ipw.HTML("Job configuration:  (NOTE: *not fully implemented*)")
+        ## TODO: UPDATE SUGGESTED LABEL of sample_node, etc...
+        self.w_job_sample_node_label = ipw.Text(
+            description="AiiDA Sample node label:",
+            placeholder="Enter a name for the BatterySample node",
+            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
+        self.w_job_method_node_label = ipw.Text(
+            description="AiiDA Method node label:",
+            placeholder="Enter a name for the CyclingSpecs node",
+            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
+        self.w_job_calc_node_label = ipw.Text(
+            description="AiiDA CalcJob node label:",
+            placeholder="Enter a name for the BatteryCyclerExperiment node",
+            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
+        self.w_job_unlock_when_finished = ipw.Checkbox(
+            value=False, description="Unlock when finished?") # indent=True)
+        self.w_job_verbosity = ipw.Dropdown(
+            description="Verbosity:", value="INFO",
+            options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],)
+            #layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+
         self.w_validate = ipw.Button(
             description="Submit",
             button_style='success', tooltip="Submit the selected test", icon='play',
@@ -85,7 +109,17 @@ class CyclingCustom(ipw.VBox):
                     self.w_selected_step_parameters,
                     ipw.HBox([self.w_selected_step_parameters_save_button, self.w_selected_step_parameters_discard_button]),
                 ], layout=self.BOX_LAYOUT_2)
-            ], layout=self.MAIN_LAYOUT),
+            ], layout=self.GRID_LAYOUT),
+            self.w_job_header,
+            ipw.GridBox([
+                ipw.VBox([
+                    self.w_job_sample_node_label,
+                    self.w_job_method_node_label,
+                    self.w_job_calc_node_label]),
+                ipw.VBox([
+                    self.w_job_unlock_when_finished,
+                    self.w_job_verbosity])
+            ], layout=self.GRID_LAYOUT),
             self.w_validate,
         ]
 
@@ -121,6 +155,17 @@ class CyclingCustom(ipw.VBox):
     @selected_step_technique.setter
     def selected_step_technique(self, technique):
         self.protocol_steps_list.method[self.w_protocol_steps_list.index] = technique
+
+    @property
+    @remove_empties_from_dict_decorator
+    def job_settings(self):
+        return dict(
+            sample_node_label = self.w_job_sample_node_label.value,
+            method_node_label = self.w_job_method_node_label.value,
+            calc_node_label = self.w_job_calc_node_label.value,
+            unlock_when_finished = self.w_job_unlock_when_finished.value,
+            verbosity = self.w_job_verbosity.value,
+        )
     
     def _count_technique_occurencies(self, technique):
         return [type(step) for step in self.protocol_steps_list.method].count(technique)
