@@ -5,8 +5,10 @@ import ipywidgets as ipw
 from IPython.display import display
 from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
 from .cycling import CyclingStandard, CyclingCustom
+from .analyze import PreviewResults
 from ..schemas.data_schemas import BatterySample, BatterySpecs
 from ..schemas.convert import _remove_empties_from_dict
+
 
 class MainPanel(ipw.VBox):
 
@@ -99,11 +101,16 @@ class MainPanel(ipw.VBox):
             self.w_test_sample_label,
             self.w_test_sample,
             self.w_test_method_tab])
+        
+        # Results
+        self.w_results = PreviewResults()
 
         # MAIN ACCORDION
-        self.w_main_accordion = ipw.Accordion(children=[self.w_sample_selection_tab, self.w_test])
+        self.w_main_accordion = ipw.Accordion(children=[
+            self.w_sample_selection_tab, self.w_test, self.w_results])
         self.w_main_accordion.set_title(0, 'Sample selection')
         self.w_main_accordion.set_title(1, 'Cycling Protocol')
+        self.w_main_accordion.set_title(2, 'Visualize Results')
 
         super().__init__()
         self.children = [
