@@ -23,7 +23,7 @@ class CyclingParameter(GenericModel, Generic[DataT]):
         # return f'{params[0].__name__.title()}CyclingParameter'
 
 class CyclingTechnique(BaseModel):
-    device: str = "worker"  # the device name
+    device: Literal["worker", "MPG2"] = "worker"  # the device name
     technique: str  # the technique name for tomato
     short_name: str  # short name for the technique
     name: str  # a custom name
@@ -41,6 +41,26 @@ allowed_I_ranges = Literal[
 allowed_E_ranges = Literal[
     "+-2.5 V", "+-5.0 V", "+-10 V", "auto",
 ]
+
+class DummyRandom(CyclingTechnique, extra=Extra.forbid):
+    technique: Literal["random"] = "random"
+    short_name: Literal["DUMMY"] = "DUMMY"
+    name = "Dummy-Random"
+    description = "Dummy Random worker"
+    parameters: Dict[str, CyclingParameter] = {
+        "time": CyclingParameter[NonNegativeFloat](
+            label = "Time:",
+            units = "s",
+            default_value = 10.,
+            required = True
+        ),
+        "delay": CyclingParameter[NonNegativeFloat](
+            label = "Delay:",
+            units = "s",
+            default_value = 1.0,
+            required = True,
+        )
+    }
 
 class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
     technique: Literal["open_circuit_voltage"] = "open_circuit_voltage"
@@ -296,6 +316,7 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
     }
 
 ElectroChemPayloads = Union[
+    DummyRandom,
     OpenCircuitVoltage,
     ConstantCurrent,
     ConstantVoltage,
