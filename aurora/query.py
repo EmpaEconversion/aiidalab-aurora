@@ -4,6 +4,8 @@ import pandas as pd
 import json
 from .schemas.data_schemas import BatterySpecsJsonTypes, BatterySampleJsonTypes
 
+AVAILABLE_SAMPLES_FILE = 'available_samples_peter.json'
+
 def load_available_specs():
     STD_SPECS = pd.read_csv('sample_specs.csv', dtype=BatterySpecsJsonTypes)
     return STD_SPECS
@@ -11,7 +13,7 @@ def load_available_specs():
 def load_available_samples():
     # AVAIL_SAMPLES = [BatterySample.parse_obj(dic) for dic in json.load(open('available_samples.json', 'r'))]
     # AVAIL_SAMPLES_D = {battery_id: BatterySample.parse_obj(dic) for battery_id, dic in json.load(open('available_samples_id.json', 'r')).items()}
-    with open('available_samples.json', 'r') as f:
+    with open(AVAILABLE_SAMPLES_FILE, 'r') as f:
         data = json.load(f)
     # load json and enforce data types
     AVAIL_SAMPLES_DF = pd.json_normalize(data)
