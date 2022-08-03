@@ -1,13 +1,25 @@
 # -*- coding: utf-8 -*-
 
+import functools
 from pandas import Series, DataFrame, isna
 from . import data_schemas
 
+def remove_empties_from_dict_decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        dic = func(*args, **kwargs)
+        return _remove_empties_from_dict(dic)
+    return wrapper
+
 def _remove_empties_from_dict(a_dict):
+    # this may not work for nested lists
     new_dict = {}
     for k, v in a_dict.items():
         if isinstance(v, dict):
             v = _remove_empties_from_dict(v)
+        elif isinstance(v, list):  # only works for lists of dict
+            new_dict[k] = [_remove_empties_from_dict(vv) for vv in v]
+            continue
         if v is not None and not isna(v) and v != "":
             new_dict[k] = v
     return new_dict

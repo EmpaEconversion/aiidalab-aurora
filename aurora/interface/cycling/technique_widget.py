@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import ipywidgets as ipw
-from aurora.schemas.cycling import ElectroChemPayloads, CyclingParameter
+from aurora.schemas.cycling import ElectroChemPayloads, CyclingParameter, CyclingTechnique
 import typing
 from pydantic.types import NonNegativeInt, NonNegativeFloat
 
 ## NOTE: requirement of parameters is not enforced when assigning
 
+CHECKBOX_STYLE = {'description_width': '5px'}
+CHECKBOX_LAYOUT = {'width': '8%'}
+BOX_STYLE = {'description_width': 'initial'}
+BOX_LAYOUT = {} #'width': '30%', 'margin': '5px'}
+
 def build_parameter_widget(param_obj):
-    CHECKBOX_STYLE = {'description_width': '5px'}
-    CHECKBOX_LAYOUT = {'width': '8%'}
-    BOX_STYLE = {'description_width': 'initial'}
-    BOX_LAYOUT = {} #'width': '30%', 'margin': '5px'}
     
     if not isinstance(param_obj, CyclingParameter):
         raise TypeError(f"param_obj should be a CyclingParameter instance, not {type(param_obj)}")
@@ -86,6 +87,12 @@ class TechniqueParametersWidget(ipw.VBox):
         
         self.w_name = ipw.Text(description="Step label:", placeholder="Enter a custom name", value=technique.name)
             # layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+        device_options = typing.get_args(technique.__annotations__['device'])
+        self.w_device = ipw.Dropdown(
+            description="Device:",
+            options=device_options,
+            value=device_options[0],
+            layout=BOX_LAYOUT, style=BOX_STYLE)
         self.w_tech_label = ipw.HTML(f"<b>Technique:</b> <i>{self.tech_description}</i>")
         self.tech_parameters_names = []
         w_parameters_children = []
@@ -96,7 +103,7 @@ class TechniqueParametersWidget(ipw.VBox):
         
         super().__init__(**kwargs)
         self.children = [
-            self.w_name,
+            ipw.HBox([self.w_name, self.w_device]),
             self.w_tech_label,
             self.w_tech_parameters,
         ]

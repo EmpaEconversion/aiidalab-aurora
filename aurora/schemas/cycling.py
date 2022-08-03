@@ -23,6 +23,7 @@ class CyclingParameter(GenericModel, Generic[DataT]):
         # return f'{params[0].__name__.title()}CyclingParameter'
 
 class CyclingTechnique(BaseModel):
+    device: Literal["worker", "MPG2"]  # the device name
     technique: str  # the technique name for tomato
     short_name: str  # short name for the technique
     name: str  # a custom name
@@ -41,7 +42,29 @@ allowed_E_ranges = Literal[
     "+-2.5 V", "+-5.0 V", "+-10 V", "auto",
 ]
 
+class Dummy(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["worker"] = "worker"
+    technique: Literal["random", "sequential"] = "random"
+    short_name: Literal["DUMMY"] = "DUMMY"
+    name = "Dummy"
+    description = "Dummy worker"
+    parameters: Dict[str, CyclingParameter] = {
+        "time": CyclingParameter[NonNegativeFloat](
+            label = "Time:",
+            units = "s",
+            default_value = 10.,
+            required = True
+        ),
+        "delay": CyclingParameter[NonNegativeFloat](
+            label = "Delay:",
+            units = "s",
+            default_value = 1.0,
+            required = True,
+        )
+    }
+
 class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["open_circuit_voltage"] = "open_circuit_voltage"
     short_name: Literal["OCV"] = "OCV"
     name = "OCV"
@@ -58,27 +81,32 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            default_value = 30.0
+            default_value = 30.0,
+            required = True,
         ),
         "record_every_dE": CyclingParameter[NonNegativeFloat](
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
-            default_value = 0.005
+            default_value = 0.005,
+            required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "",
-            default_value = "1 A" # TODO: "keep" value does not work - setting to 1 A
+            default_value = "1 A"  # TODO: "keep" value does not work - setting to 1 A
+            required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "",
-            default_value = "auto"
+            default_value = "auto",
+            required = True,
         ),
     }
 
 class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_voltage"] = "constant_voltage"
     short_name: Literal["CV"] = "CV"
     name = "CV"
@@ -102,38 +130,45 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            default_value = 30.0
+            default_value = 30.0,
+            required = True,
         ),
         "record_every_dI": CyclingParameter[NonNegativeFloat](
             label = "Record every $dI$:",
             description = "Record a datapoint at prescribed current spacing",
             units = "I",
-            default_value = 0.001
+            default_value = 0.001,
+            required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "Select the current range of the potentiostat",
-            default_value = "keep"
+            default_value = "keep",
+            required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "Select the voltage range of the potentiostat",
-            default_value = "auto"
+            default_value = "auto",
+            required = True,
         ),
         "n_cycles": CyclingParameter[NonNegativeInt](
             label = "Number of cycles:",
             description = "Cycle through the current technique N times.",
             default_value = 0,
+            required = True,
         ),
         "is_delta": CyclingParameter[bool](
             label = "Δ$V$:",
             description = "Is the step voltage a $\Delta$ from previous step?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "exit_on_limit": CyclingParameter[bool](
             label = "Exit when limits reached?",
             description = "Stop the whole experiment when limit is reached?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
@@ -162,6 +197,7 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
     }
 
 class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_current"] = "constant_current"
     short_name: Literal["CC"] = "CC"
     name = "CC"
@@ -185,38 +221,45 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dt$:",
             description = "Record a datapoint at prescribed time spacing",
             units = "s",
-            default_value = 30.0
+            default_value = 30.0,
+            required = True,
         ),
         "record_every_dE": CyclingParameter[NonNegativeFloat](
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
             default_value = 0.005
+            required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "Select the current range of the potentiostat",
-            default_value = "keep"
+            default_value = "keep",
+            required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
             label = "E range",
             description = "Select the voltage range of the potentiostat",
-            default_value = "auto"
+            default_value = "auto",
+            required = True,
         ),
         "n_cycles": CyclingParameter[NonNegativeInt](
             label = "Number of cycles:",
             description = "Cycle through the current technique N times.",
             default_value = 0,
+            required = True,
         ),
         "is_delta": CyclingParameter[bool](
             label = "Δ$I$:",
             description = "Is the step current a $\Delta$ from previous step?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "exit_on_limit": CyclingParameter[bool](
             label = "Exit when limits reached?",
             description = "Stop the whole experiment when limit is reached?",
-            default_value = False
+            default_value = False,
+            required = True,
         ),
         "limit_voltage_max": CyclingParameter[float](
             label = "Maximum voltage:",
@@ -257,6 +300,7 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
 #    description = "Controlled current technique, allowing linear change of current between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 class Loop(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["MPG2"] = "MPG2"
     technique: Literal["loop"] = "loop"
     short_name: Literal["LOOP"] = "LOOP"
     name = "LOOP"
@@ -277,6 +321,7 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
     }
 
 ElectroChemPayloads = Union[
+    DummyRandom,
     OpenCircuitVoltage,
     ConstantCurrent,
     ConstantVoltage,
@@ -286,28 +331,28 @@ ElectroChemPayloads = Union[
 ]
 
 class ElectroChemSequence(BaseModel):
-    sequence: Sequence[ElectroChemPayloads]
+    method: Sequence[ElectroChemPayloads]
     
     @property
     def n_steps(self):
-        "Number of steps of the sequence"
-        return len(self.sequence)
+        "Number of steps of the method"
+        return len(self.method)
 
     def add_step(self, elem):
         if not isinstance(elem, ElectroChemPayloads.__args__):
             raise ValueError("Invalid technique")
-        self.sequence.append(elem)
+        self.method.append(elem)
     
     def remove_step(self, index):
-        self.sequence.pop(index)
+        self.method.pop(index)
     
     def move_step_backward(self, index):
         if index > 0:
-            self.sequence[index-1], self.sequence[index] = self.sequence[index], self.sequence[index-1]
+            self.method[index-1], self.method[index] = self.method[index], self.method[index-1]
 
     def move_step_forward(self, index):
         if index < self.n_steps - 1:
-            self.sequence[index], self.sequence[index+1] = self.sequence[index+1], self.sequence[index]
+            self.method[index], self.method[index+1] = self.method[index+1], self.method[index]
         
     class Config:
         validate_assignment = True
