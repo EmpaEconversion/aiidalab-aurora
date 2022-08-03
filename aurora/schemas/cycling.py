@@ -94,7 +94,7 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
         "I_range": CyclingParameter[allowed_I_ranges](
             label = "I range",
             description = "",
-            default_value = "keep",
+            default_value = "1 A"  # TODO: "keep" value does not work - setting to 1 A
             required = True,
         ),
         "E_range": CyclingParameter[allowed_E_ranges](
@@ -228,7 +228,7 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
             label = "Record every $dE$:",
             description = "Record a datapoint at prescribed voltage spacing",
             units = "V",
-            default_value = 0.001,
+            default_value = 0.005
             required = True,
         ),
         "I_range": CyclingParameter[allowed_I_ranges](
