@@ -42,12 +42,12 @@ allowed_E_ranges = Literal[
     "+-2.5 V", "+-5.0 V", "+-10 V", "auto",
 ]
 
-class DummyRandom(CyclingTechnique, extra=Extra.forbid):
+class Dummy(CyclingTechnique, extra=Extra.forbid):
     device: Literal["worker"] = "worker"
-    technique: Literal["random"] = "random"
+    technique: Literal["random", "sequential"] = "random"
     short_name: Literal["DUMMY"] = "DUMMY"
-    name = "Dummy-Random"
-    description = "Dummy Random worker"
+    name = "Dummy"
+    description = "Dummy worker"
     parameters: Dict[str, CyclingParameter] = {
         "time": CyclingParameter[NonNegativeFloat](
             label = "Time:",
