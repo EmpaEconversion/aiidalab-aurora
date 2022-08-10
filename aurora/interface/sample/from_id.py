@@ -3,7 +3,7 @@
 import ipywidgets as ipw
 from IPython.display import display
 from ...query import update_available_samples, query_available_samples, write_pd_query_from_dict
-from ...schemas.convert import dict_to_formatted_json
+from ...schemas.utils import dict_to_formatted_json
 
 class SampleFromId(ipw.VBox):
     

@@ -6,8 +6,8 @@ from IPython.display import display
 from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
 from .cycling import CyclingStandard, CyclingCustom
 from .analyze import PreviewResults
-from ..schemas.data_schemas import BatterySample, BatterySpecs
-from ..schemas.convert import _remove_empties_from_dict
+from ..schemas.battery import BatterySample, BatterySpecs
+from ..schemas.utils import _remove_empties_from_dict
 
 import aiida
 from aiida import load_profile
