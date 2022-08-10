@@ -2,7 +2,7 @@
 
 import pandas as pd
 import json
-from .schemas.data_schemas import BatterySpecsJsonTypes, BatterySampleJsonTypes
+from .schemas.battery import BatterySpecsJsonTypes, BatterySampleJsonTypes
 
 AVAILABLE_SAMPLES_FILE = 'available_samples_peter.json'
 

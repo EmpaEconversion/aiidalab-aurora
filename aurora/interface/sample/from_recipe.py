@@ -3,7 +3,7 @@
 import ipywidgets as ipw
 # from IPython.display import display
 from ...query import update_available_specs, query_available_specs, update_available_recipies, query_available_recipies
-from ...schemas.convert import dict_to_formatted_json
+from ...schemas.utils import dict_to_formatted_json
 
 class SampleFromRecipe(ipw.VBox):
 
