@@ -70,11 +70,11 @@ class CyclingCustom(ipw.VBox):
         ## TODO: UPDATE SUGGESTED LABEL of sample_node, etc...
         self.w_job_sample_node_label = ipw.Text(
             description="AiiDA Sample node label:",
-            placeholder="Enter a name for the BatterySample node",
+            placeholder="Enter a name for the BatterySampleData node",
             layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
         self.w_job_method_node_label = ipw.Text(
             description="AiiDA Method node label:",
-            placeholder="Enter a name for the CyclingSpecs node",
+            placeholder="Enter a name for the CyclingSpecsData node",
             layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
         self.w_job_calc_node_label = ipw.Text(
             description="AiiDA CalcJob node label:",
