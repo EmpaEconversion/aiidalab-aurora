@@ -5,7 +5,7 @@ from enum import Flag
 from datetime import datetime
 from pydantic import BaseModel, PositiveFloat, NonNegativeFloat, validator, root_validator
 from numpy import datetime64
-from .convert import extract_schema_types
+from .utils import extract_schema_types
 
 class BatteryComposition(BaseModel):  # TypedDict?
     description: str = None

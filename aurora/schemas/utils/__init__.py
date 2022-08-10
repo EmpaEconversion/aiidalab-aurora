@@ -2,14 +2,7 @@
 
 import functools
 from pandas import Series, DataFrame, isna
-from . import data_schemas
-
-def remove_empties_from_dict_decorator(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        dic = func(*args, **kwargs)
-        return _remove_empties_from_dict(dic)
-    return wrapper
+from .. import battery as battery_schemas
 
 def _remove_empties_from_dict(a_dict):
     # this may not work for nested lists
@@ -23,6 +16,13 @@ def _remove_empties_from_dict(a_dict):
         if v is not None and not isna(v) and v != "":
             new_dict[k] = v
     return new_dict
+
+def remove_empties_from_dict_decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        dic = func(*args, **kwargs)
+        return _remove_empties_from_dict(dic)
+    return wrapper
 
 def _make_formatted_dict(my_dict, key_arr, val):
     """
@@ -74,7 +74,7 @@ def extract_schema_types(model, sep="."):
     for name, sdic in model.schema()['properties'].items():
         if '$ref' in sdic:
             # print(f"  {name} is a class {sdic['$ref']}")
-            sub_schema = extract_schema_types(getattr(data_schemas, sdic['$ref'].split('/')[-1])) # call extract_schema for the $ref class
+            sub_schema = extract_schema_types(getattr(battery_schemas, sdic['$ref'].split('/')[-1])) # call extract_schema for the $ref class
             for key, value in sub_schema.items():
                 schema_dic[f'{name}.{key}'] = value
         elif 'type' in sdic:
