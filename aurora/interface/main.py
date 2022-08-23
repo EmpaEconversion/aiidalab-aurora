@@ -11,7 +11,7 @@ from ..schemas.utils import _remove_empties_from_dict
 
 import aiida
 from aiida import load_profile
-load_profile('aurora')
+load_profile('default')
 from aiida.orm import load_node, load_code, load_computer, load_group
 from aiida.engine import submit
 
