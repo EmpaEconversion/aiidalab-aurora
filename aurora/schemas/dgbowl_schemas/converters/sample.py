@@ -27,6 +27,6 @@ def batterysample_to_sample_0(
 
     sample = SampleSchema(
         name = batsample.metadata.name,
-        # capacity =  capacity
+        capacity = batsample.capacity.nominal
     )
     return sample
