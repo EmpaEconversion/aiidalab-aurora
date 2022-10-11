@@ -22,7 +22,7 @@ class SampleFromRecipe(ipw.VBox):
     def __init__(self, validate_callback_f):
 
         # initialize widgets
-        self.w_specs_label = ipw.HTML(value="<h2>Battery Specifications</h2> **NOT IMPLEMENTED**")
+        self.w_specs_label = ipw.HTML(value="<h2>Battery Specifications <span style='color: #ffffff; background-color: #ff0000;'>**NOT IMPLEMENTED**</span></h2>")
         self.w_specs_manufacturer = ipw.Dropdown(
             description="Manufacturer:",
             placeholder="Enter manufacturer",

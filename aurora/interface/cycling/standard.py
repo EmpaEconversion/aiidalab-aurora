@@ -19,7 +19,7 @@ class CyclingStandard(ipw.VBox):
     def __init__(self, validate_callback_f):
 
         # initialize widgets
-        self.w_protocol_label = ipw.HTML(value="<h2>BIG-MAP WP8 Standardized Protocols</h2> **NOT IMPLEMENTED**")
+        self.w_protocol_label = ipw.HTML(value="<h2>BIG-MAP WP8 Standardized Protocols <span style='color: #ffffff; background-color: #ff0000;'>**NOT IMPLEMENTED**</span></h2>")
         self.w_protocol_select = ipw.Select(
             rows=10, value=None,
             description="Select Protocol:",

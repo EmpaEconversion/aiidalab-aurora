@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Cycling protocol customizable by the user.
+TODO: Enable the user to save a customized protocol.
+"""
 
 import logging
 import ipywidgets as ipw
@@ -6,6 +10,7 @@ import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
 from aurora.schemas.utils import remove_empties_from_dict_decorator
 from .technique_widget import TechniqueParametersWidget
+from .tomato_widget import TomatoSettingsWidget
 
 class CyclingCustom(ipw.VBox):
 
@@ -65,27 +70,11 @@ class CyclingCustom(ipw.VBox):
             description="Discard", button_style='', tooltip="Discard current parameters", icon='times',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
 
-        # initialize job settings   ## TODO: move these to another accordion tab or to Main
-        self.w_job_header = ipw.HTML("Job configuration:  (NOTE: *not fully implemented*)")
-        ## TODO: UPDATE SUGGESTED LABEL of sample_node, etc...
-        self.w_job_sample_node_label = ipw.Text(
-            description="AiiDA Sample node label:",
-            placeholder="Enter a name for the BatterySampleData node",
-            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
-        self.w_job_method_node_label = ipw.Text(
-            description="AiiDA Method node label:",
-            placeholder="Enter a name for the CyclingSpecsData node",
-            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
-        self.w_job_calc_node_label = ipw.Text(
-            description="AiiDA CalcJob node label:",
-            placeholder="Enter a name for the BatteryCyclerExperiment node",
-            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
-        self.w_job_unlock_when_finished = ipw.Checkbox(
-            value=False, description="Unlock when finished?") # indent=True)
-        self.w_job_verbosity = ipw.Dropdown(
-            description="Verbosity:", value="INFO",
-            options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],)
-            #layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+        # initialize job settings
+        self.w_tomato_settings = TomatoSettingsWidget(label_defaults={
+            "method": "cycling",
+            "calcjob": "",
+        }) ## TODO: add label defaults
 
         self.w_validate = ipw.Button(
             description="Submit",
@@ -110,16 +99,7 @@ class CyclingCustom(ipw.VBox):
                     ipw.HBox([self.w_selected_step_parameters_save_button, self.w_selected_step_parameters_discard_button]),
                 ], layout=self.BOX_LAYOUT_2)
             ], layout=self.GRID_LAYOUT),
-            self.w_job_header,
-            ipw.GridBox([
-                ipw.VBox([
-                    self.w_job_sample_node_label,
-                    self.w_job_method_node_label,
-                    self.w_job_calc_node_label]),
-                ipw.VBox([
-                    self.w_job_unlock_when_finished,
-                    self.w_job_verbosity])
-            ], layout=self.GRID_LAYOUT),
+            self.w_tomato_settings,
             self.w_validate,
         ]
 
@@ -157,15 +137,8 @@ class CyclingCustom(ipw.VBox):
         self.protocol_steps_list.method[self.w_protocol_steps_list.index] = technique
 
     @property
-    @remove_empties_from_dict_decorator
     def job_settings(self):
-        return dict(
-            sample_node_label = self.w_job_sample_node_label.value,
-            method_node_label = self.w_job_method_node_label.value,
-            calc_node_label = self.w_job_calc_node_label.value,
-            unlock_when_finished = self.w_job_unlock_when_finished.value,
-            verbosity = self.w_job_verbosity.value,
-        )
+        return self.w_tomato_settings.job_settings
     
     def _count_technique_occurencies(self, technique):
         return [type(step) for step in self.protocol_steps_list.method].count(technique)

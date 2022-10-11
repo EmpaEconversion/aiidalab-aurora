@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Sample selected from a list of samples and their IDs.
+TODO: implement creation and labeling of sample nodes. Store them in a group, retrieve a node if it was already created.
 """
 
 import ipywidgets as ipw
@@ -11,7 +12,8 @@ from ...schemas.utils import dict_to_formatted_json
 class SampleFromId(ipw.VBox):
     
     BOX_LAYOUT_1 = {'width': '50%'}
-    BOX_STYLE = {'description_width': '15%'}
+    BOX_STYLE_1 = {'description_width': '15%'}
+    BOX_STYLE_2 = {'description_width': 'initial'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     MAIN_LAYOUT = {'width': '100%', 'padding': '10px', 'border': 'solid blue 2px'}
@@ -23,12 +25,16 @@ class SampleFromId(ipw.VBox):
         self.w_id_list = ipw.Select(
             rows=10,
             description="Battery ID:",
-            style=self.BOX_STYLE, layout=self.BOX_LAYOUT_1)
+            style=self.BOX_STYLE_1, layout=self.BOX_LAYOUT_1)
         self.w_update = ipw.Button(
             description="Update",
             button_style='', tooltip="Update available samples", icon='refresh',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_sample_preview = ipw.Output()
+        self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
+            description="AiiDA Sample node label:",
+            placeholder="Enter a name for the BatterySampleData node",
+            layout=self.BOX_LAYOUT_1, style=self.BOX_STYLE_2)
         self.w_validate = ipw.Button(
             description="Validate",
             button_style='success', tooltip="Validate the selected sample", icon='check',
@@ -42,8 +48,9 @@ class SampleFromId(ipw.VBox):
                 ipw.HBox([self.w_id_list,
                 self.w_update,]),
                 self.w_sample_preview,
-                self.w_validate,
+                self.w_sample_node_label,
             ], layout=self.MAIN_LAYOUT),
+            self.w_validate,
         ]
 
         # initialize options

@@ -2,6 +2,7 @@
 """
 Sample selected by searching its specs.
 NOTE: specs in the filters are currently hard-coded.
+TODO: implement creation and labeling of sample nodes. Store them in a group, retrieve a node if it was already created.
 """
 
 import ipywidgets as ipw
@@ -21,7 +22,8 @@ class SampleFromSpecs(ipw.VBox):
     }
     BOX_LAYOUT_1 = {'width': '40%'}
     BOX_LAYOUT_2 = {'width': '100%', 'height': '100px'}
-    BOX_STYLE = {'description_width': '25%'}
+    BOX_STYLE_1 = {'description_width': '25%'}
+    BOX_STYLE_2 = {'description_width': 'initial'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     OUTPUT_LAYOUT = {'max_height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'}
@@ -41,26 +43,26 @@ class SampleFromSpecs(ipw.VBox):
         self.w_specs_manufacturer = ipw.Select(
             description="Manufacturer:",
             placeholder="Enter manufacturer",
-            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE_1)
         self.w_specs_composition = ipw.Select(
             description="Composition:",
             placeholder="Enter composition",
-            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE_1)
         self.w_specs_capacity = ipw.Select(
             description="Nominal capacity:",
             placeholder="Enter nominal capacity",
-            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE_1)
         self.w_specs_form_factor = ipw.Select(
             description="Form factor:",
             placeholder="Enter form factor",
-            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE)
+            layout=self.BOX_LAYOUT_2, style=self.BOX_STYLE_1)
         # self.w_specs_metadata_creation_date = ipydatetime.DatetimePicker(
         #     description="Creation time:",
-        #     style=BOX_STYLE)
+        #     style=BOX_STYLE_1)
         # self.w_specs_metadata_creation_process = ipw.Text(
         #     description="Creation process",
         #     placeholder="Describe creation process",
-        #     style=BOX_STYLE)
+        #     style=BOX_STYLE_1)
 
         self.w_update = ipw.Button(
             description="Update",
@@ -80,6 +82,10 @@ class SampleFromSpecs(ipw.VBox):
             button_style='primary', tooltip="Synthesize sample with these specs", icon='',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_sample_preview = ipw.Output()
+        self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
+            description="AiiDA Sample node label:",
+            placeholder="Enter a name for the BatterySampleData node",
+            layout=self.BOX_LAYOUT_1, style=self.BOX_STYLE_2)
         self.w_validate = ipw.Button(
             description="Validate",
             button_style='success', tooltip="Validate the selected sample", icon='check',
@@ -102,6 +108,7 @@ class SampleFromSpecs(ipw.VBox):
             ipw.VBox([
                 ipw.HBox([self.w_select_sample_id, ipw.Label(' or '), self.w_cookit], layout={'justify_content': 'space-around'}),
                 self.w_sample_preview,
+                self.w_sample_node_label,
             ], layout=self.SAMPLE_BOX_LAYOUT),
             self.w_validate
         ]
