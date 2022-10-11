@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Standard cycling protocols.
+"""
 
 import ipywidgets as ipw
 from ...query import update_available_protocols, query_available_protocols
@@ -16,7 +19,7 @@ class CyclingStandard(ipw.VBox):
     def __init__(self, validate_callback_f):
 
         # initialize widgets
-        self.w_protocol_label = ipw.HTML(value="<h2>BIG-MAP WP8 Standardized Protocols</h2>")
+        self.w_protocol_label = ipw.HTML(value="<h2>BIG-MAP WP8 Standardized Protocols</h2> **NOT IMPLEMENTED**")
         self.w_protocol_select = ipw.Select(
             rows=10, value=None,
             description="Select Protocol:",
@@ -28,7 +31,7 @@ class CyclingStandard(ipw.VBox):
         self.w_validate = ipw.Button(
             description="Submit",
             button_style='success', tooltip="Submit the selected test", icon='play',
-            disabled=False,
+            disabled=True,  # MOCK INTERFACE: BUTTON DISABLED
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
 
         # initialize widgets

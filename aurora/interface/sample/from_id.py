@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Sample selected from a list of samples and their IDs.
+"""
 
 import ipywidgets as ipw
 from IPython.display import display

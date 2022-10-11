@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Sample selected by searching its specs.
+NOTE: specs in the filters are currently hard-coded.
+"""
 
 import ipywidgets as ipw
 from IPython.display import display

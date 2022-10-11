@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+"""
+Technique widget: the dropdowns corresponding to each parameters are generated dynamically.
+"""
 
 import ipywidgets as ipw
 from aurora.schemas.cycling import ElectroChemPayloads, CyclingParameter, CyclingTechnique
 import typing
 from pydantic.types import NonNegativeInt, NonNegativeFloat
 
-## NOTE: requirement of parameters is not enforced when assigning
+## NOTE: requirements of parameters is not enforced when assigning
 
 CHECKBOX_STYLE = {'description_width': '5px'}
 CHECKBOX_LAYOUT = {'width': '8%'}

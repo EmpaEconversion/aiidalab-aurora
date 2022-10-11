@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Sample obtained from a synthesis recipe.
+NOTE: This is a mock interface. NOT IMPLEMENTED YET.
+"""
 
 import ipywidgets as ipw
 # from IPython.display import display
@@ -18,7 +22,7 @@ class SampleFromRecipe(ipw.VBox):
     def __init__(self, validate_callback_f):
 
         # initialize widgets
-        self.w_specs_label = ipw.HTML(value="<h2>Battery Specifications</h2>")
+        self.w_specs_label = ipw.HTML(value="<h2>Battery Specifications</h2> **NOT IMPLEMENTED**")
         self.w_specs_manufacturer = ipw.Dropdown(
             description="Manufacturer:",
             placeholder="Enter manufacturer",
