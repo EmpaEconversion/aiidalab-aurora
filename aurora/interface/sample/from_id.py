@@ -89,7 +89,7 @@ class SampleFromId(ipw.VBox):
         table = query_available_samples().sort_values('battery_id')
         def row_label(row):
             # return f"<{row['battery_id']:8}>   \"{row['metadata.name']}\""
-            return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['composition.description']}"
+            return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['metadata.name']} ({row['composition.description']})"
         return [("", None)] + [(row_label(row), row['battery_id']) for index, row in table.iterrows()]
 
     def display_sample_preview(self):
