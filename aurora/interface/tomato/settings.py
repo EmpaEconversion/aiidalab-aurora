@@ -6,6 +6,7 @@ Widget to setup tomato's settings
 import logging
 from aurora.interface.cycling.technique_widget import BOX_STYLE
 import ipywidgets as ipw
+from aurora.schemas.dgbowl_schemas import Tomato_0p2
 from aurora.schemas.utils import remove_empties_from_dict_decorator
 
 class TomatoSettings(ipw.VBox):
@@ -24,8 +25,8 @@ class TomatoSettings(ipw.VBox):
         # initialize job settings
         self.w_job_header = ipw.HTML("<h2>Tomato Job configuration:</h2>")
 
-        self.w_job_unlock_when_finished = ipw.Checkbox(
-            value=False, description="Unlock when finished?") # indent=True)
+        self.w_job_unlock_when_done = ipw.Checkbox(
+            value=False, description="Unlock when done?") # indent=True)
         self.w_job_verbosity = ipw.Dropdown(
             description="Verbosity:", value="INFO",
             options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],)
@@ -63,7 +64,7 @@ class TomatoSettings(ipw.VBox):
         self.children = [
             self.w_job_header,
             ipw.VBox([
-                self.w_job_unlock_when_finished,
+                self.w_job_unlock_when_done,
                 self.w_job_verbosity
             ], layout=self.BOX_LAYOUT_2),
             self.w_job_monitor_header,
@@ -98,12 +99,20 @@ class TomatoSettings(ipw.VBox):
 
     @property
     @remove_empties_from_dict_decorator
-    def selected_tomato_settings(self):
+    def selected_tomato_settings_dict(self):
         return dict(
-            calc_node_label = self.w_job_calcjob_node_label.value,
-            unlock_when_finished = self.w_job_unlock_when_finished.value,
+            unlock_when_done = self.w_job_unlock_when_done.value,
             verbosity = self.w_job_verbosity.value,
         )
+    
+    @property
+    def selected_tomato_settings(self):
+        "The selected battery sample returned as a `aurora.schemas.dgbowl_schemas.Tomato_0p2` object."
+        return Tomato_0p2.parse_obj(self.selected_tomato_settings_dict)
+    
+    @property
+    def calcjob_node_label(self):
+        return self.w_job_calcjob_node_label.value,
     
     def _build_job_monitor_parameters(self, dummy=None):
         if self.w_job_monitored.value:

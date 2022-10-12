@@ -100,6 +100,11 @@ class MainPanel(ipw.VBox):
     def selected_monitor_job_settings(self):
         "The Tomato Monitor Settings selected. Used by a TomatoMonitorCalcjob."
         return self._selected_monitor_job_settings
+    
+    @property
+    def calcjob_node_label(self):
+        "The label assigned the submitted BatteryCyclerExperiment CalcJob."
+        return self._calcjob_node_label
 
     #######################################################################################
     # SAMPLE SELECTION
@@ -161,6 +166,7 @@ class MainPanel(ipw.VBox):
     def return_selected_settings(self, settings_widget_obj):
         self._selected_tomato_settings = settings_widget_obj.selected_tomato_settings
         self._selected_monitor_job_settings = settings_widget_obj.selected_monitor_job_settings
+        self._calcjob_node_label = settings_widget_obj.calcjob_node_label
         self.post_settings_selection()
 
     def post_settings_selection(self):
@@ -279,6 +285,10 @@ class MainPanel(ipw.VBox):
 
         # Submit
         self.w_job_preview = ipw.Output()  # TODO: write preview of the job inputs
+        self.w_code = ipw.Dropdown(
+            description="Select code:",
+            options=["ketchup@localhost"],  # TODO: get codes
+            value="ketchup@localhost")
         self.w_submit_button = ipw.Button(
             description="SUBMIT",
             button_style="success", tooltip="Submit the experiment", icon="play",
@@ -287,6 +297,7 @@ class MainPanel(ipw.VBox):
 
         self.w_submit_tab = ipw.VBox([
             self.w_job_preview,
+            self.w_code,
             self.w_submit_button
         ])
 
