@@ -7,49 +7,7 @@ from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
 from .cycling import CyclingStandard, CyclingCustom
 from .tomato import TomatoSettings
 from .analyze import PreviewResults
-
-import aiida
-from aiida import load_profile
-load_profile()
-from aiida.orm import load_node, load_code, load_computer, load_group
-from aiida.engine import submit
-
-BatterySampleData = aiida.plugins.DataFactory('aurora.batterysample')
-CyclingSpecsData = aiida.plugins.DataFactory('aurora.cyclingspecs')
-TomatoSettingsData = aiida.plugins.DataFactory('aurora.tomatosettings')
-BatteryCyclerExperiment = aiida.plugins.CalculationFactory('aurora.cycler')
-
-TomatoMonitorData = aiida.plugins.DataFactory('calcmonitor.monitor.tomatobiologic')
-TomatoMonitorCalcjob = aiida.plugins.CalculationFactory('calcmonitor.calcjob_monitor')
-
-def submit_experiment(sample, method, job_settings):
-    
-    sample_node = BatterySampleData(sample.dict())
-    if job_settings.get('sample_node_label'):
-        sample_node.label = job_settings.get('sample_node_label')
-    sample_node.store()
-
-    method_node = CyclingSpecsData(method.dict())
-    if job_settings.get('method_node_label'):
-        method_node.label = job_settings.get('method_node_label')
-    method_node.store()
-        
-    code = load_code('ketchup@localhost')
-    
-    builder = BatteryCyclerExperiment.get_builder()
-    builder.battery_sample = sample_node
-    builder.code = code
-    builder.technique = method_node
-    # builder.metadata.dry_run = True
-    ## TODO: set these 2 parameters
-    # unlock_when_finished
-    # verbosity
-    
-    process = submit(builder)
-    process.label = job_settings.get('calc_node_label', '')
-    print(f"Job <{process.pk}> submitted to AiiDA...")
-
-    return process
+from aurora.engine import submit_experiment
 
 
 class MainPanel(ipw.VBox):
@@ -237,6 +195,7 @@ class MainPanel(ipw.VBox):
         self._selected_cycling_protocol = None
         self._selected_tomato_settings = None
         self._selected_monitor_job_settings = None
+        self._calcjob_node_label = None
 
     def reset(self, dummy=None):
         "Reset the interface."
