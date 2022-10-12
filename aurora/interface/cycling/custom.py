@@ -10,7 +10,6 @@ import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
 from aurora.schemas.utils import remove_empties_from_dict_decorator
 from .technique_widget import TechniqueParametersWidget
-from .tomato_widget import TomatoSettingsWidget
 
 class CyclingCustom(ipw.VBox):
 
@@ -70,15 +69,13 @@ class CyclingCustom(ipw.VBox):
             description="Discard", button_style='', tooltip="Discard current parameters", icon='times',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
 
-        # initialize job settings
-        self.w_tomato_settings = TomatoSettingsWidget(label_defaults={
-            "method": "cycling",
-            "calcjob": "",
-        }) ## TODO: add label defaults
-
+        self.w_method_node_label = ipw.Text(
+            description="AiiDA Method node label:",
+            placeholder="Enter a name for the CyclingSpecsData node",
+            layout=self.BOX_LAYOUT, style=self.BOX_STYLE_2)
         self.w_validate = ipw.Button(
-            description="Submit",
-            button_style='success', tooltip="Submit the selected test", icon='play',
+            description="Validate",
+            button_style='success', tooltip="Validate the selected test", icon='check',
             disabled=False,
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
 
@@ -99,7 +96,7 @@ class CyclingCustom(ipw.VBox):
                     ipw.HBox([self.w_selected_step_parameters_save_button, self.w_selected_step_parameters_discard_button]),
                 ], layout=self.BOX_LAYOUT_2)
             ], layout=self.GRID_LAYOUT),
-            self.w_tomato_settings,
+            self.w_method_node_label,
             self.w_validate,
         ]
 
@@ -135,10 +132,6 @@ class CyclingCustom(ipw.VBox):
     @selected_step_technique.setter
     def selected_step_technique(self, technique):
         self.protocol_steps_list.method[self.w_protocol_steps_list.index] = technique
-
-    @property
-    def job_settings(self):
-        return self.w_tomato_settings.job_settings
     
     def _count_technique_occurencies(self, technique):
         return [type(step) for step in self.protocol_steps_list.method].count(technique)

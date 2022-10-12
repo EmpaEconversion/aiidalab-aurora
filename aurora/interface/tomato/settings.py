@@ -8,28 +8,22 @@ from aurora.interface.cycling.technique_widget import BOX_STYLE
 import ipywidgets as ipw
 from aurora.schemas.utils import remove_empties_from_dict_decorator
 
-class TomatoSettingsWidget(ipw.VBox):
+class TomatoSettings(ipw.VBox):
 
     BOX_STYLE = {'description_width': 'initial'}
     BOX_LAYOUT = {'width': '95%'}
-    GRID_LAYOUT = {"grid_template_columns": "30% 65%", 'width': '100%', 'margin': '5px'} # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
+    BUTTON_STYLE = {'description_width': '30%'}
+    BUTTON_LAYOUT = {'margin': '5px'}
+    BOX_LAYOUT_2 = {'width': '60%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
 
-    def __init__(self, label_defaults={}):
+    def __init__(self, validate_callback_f):
+
+        if not callable(validate_callback_f):
+            raise TypeError("validate_callback_f should be a callable function")
 
         # initialize job settings
-        self.w_job_header = ipw.HTML("Tomato Job configuration:")
+        self.w_job_header = ipw.HTML("<h2>Tomato Job configuration:</h2>")
 
-        ## TODO: UPDATE SUGGESTED LABEL of sample_node, etc...
-        self.w_job_method_node_label = ipw.Text(
-            description="AiiDA Method node label:",
-            placeholder="Enter a name for the CyclingSpecsData node",
-            value=label_defaults.get("method", ""),
-            layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
-        self.w_job_calc_node_label = ipw.Text(
-            description="AiiDA CalcJob node label:",
-            placeholder="Enter a name for the BatteryCyclerExperiment node",
-            value=label_defaults.get("calcjob", ""),
-            layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
         self.w_job_unlock_when_finished = ipw.Checkbox(
             value=False, description="Unlock when finished?") # indent=True)
         self.w_job_verbosity = ipw.Dropdown(
@@ -37,6 +31,7 @@ class TomatoSettingsWidget(ipw.VBox):
             options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],)
             #layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
 
+        self.w_job_monitor_header = ipw.HTML("<h2>Job Monitor configuration:</h2>")
         self.w_job_monitored = ipw.Checkbox(
             value=False, description="Monitored job?") # indent=True)
 
@@ -54,29 +49,43 @@ class TomatoSettingsWidget(ipw.VBox):
             value=2, style=self.BOX_STYLE)
         self.w_job_monitor_parameters = ipw.VBox()
 
+        self.w_job_calcjob_node_label = ipw.Text(
+            description="AiiDA CalcJob node label:",
+            placeholder="Enter a name for the BatteryCyclerExperiment node",
+            layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+        self.w_validate = ipw.Button(
+            description="Validate",
+            button_style='success', tooltip="Validate the settings", icon='check',
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
+
         # initialize widgets
         super().__init__()
         self.children = [
             self.w_job_header,
-            ipw.GridBox([
-                ipw.VBox([
-                    self.w_job_method_node_label,
-                    self.w_job_calc_node_label]),
-                ipw.VBox([
-                    self.w_job_unlock_when_finished,
-                    self.w_job_verbosity])
-            ], layout=self.GRID_LAYOUT),
-            self.w_job_monitored,
-            self.w_job_monitor_parameters,
-            # self.w_validate,
+            ipw.VBox([
+                self.w_job_unlock_when_finished,
+                self.w_job_verbosity
+            ], layout=self.BOX_LAYOUT_2),
+            self.w_job_monitor_header,
+            ipw.VBox([
+                self.w_job_monitored,
+                self.w_job_monitor_parameters
+            ], layout=self.BOX_LAYOUT_2),
+            self.w_job_calcjob_node_label,
+            self.w_validate,
         ]
         self._build_job_monitor_parameters()
 
         # setup automations
+        ### job monitored checkbox
         self.w_job_monitored.observe(self._build_job_monitor_parameters, names="value")
 
+        ### validate protocol
+        self.w_validate.on_click(lambda arg: self.callback_call(validate_callback_f))
+
     @property
-    def monitor_job_settings(self):
+    @remove_empties_from_dict_decorator
+    def selected_monitor_job_settings(self):
         if self.w_job_monitored.value:
             return dict(
                 refresh_rate = self.w_job_monitor_refresh_rate.value,
@@ -89,13 +98,11 @@ class TomatoSettingsWidget(ipw.VBox):
 
     @property
     @remove_empties_from_dict_decorator
-    def job_settings(self):
+    def selected_tomato_settings(self):
         return dict(
-            method_node_label = self.w_job_method_node_label.value,
-            calc_node_label = self.w_job_calc_node_label.value,
+            calc_node_label = self.w_job_calcjob_node_label.value,
             unlock_when_finished = self.w_job_unlock_when_finished.value,
             verbosity = self.w_job_verbosity.value,
-            monitor_job_settings = self.monitor_job_settings,
         )
     
     def _build_job_monitor_parameters(self, dummy=None):
@@ -108,3 +115,10 @@ class TomatoSettingsWidget(ipw.VBox):
             ]
         else:
             self.w_job_monitor_parameters.children = []
+
+    def set_default_calcjob_node_label(self, sample_label, method_label):
+        self.w_job_calcjob_node_label.value = f"{sample_label}-{method_label}"
+
+    def callback_call(self, callback_function):
+        "Call a callback function and this class instance to it."
+        return callback_function(self)

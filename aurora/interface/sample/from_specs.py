@@ -66,11 +66,11 @@ class SampleFromSpecs(ipw.VBox):
 
         self.w_update = ipw.Button(
             description="Update",
-            button_style='', tooltip="Update available samples", icon='refresh',
+            button_style='', tooltip="Update available samples", icon="refresh",
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_reset = ipw.Button(
             description="Reset",
-            button_style='danger', tooltip="Clear fields", icon='times',
+            button_style='danger', tooltip="Clear fields", icon="times",
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_query_result = ipw.Output(layout=self.OUTPUT_LAYOUT)
 
@@ -79,7 +79,7 @@ class SampleFromSpecs(ipw.VBox):
             layout=self.BOX_LAYOUT_1, style={'description_width': 'initial'})
         self.w_cookit = ipw.Button(
             description="Load/Synthesize new", #['primary', 'success', 'info', 'warning', 'danger', '']
-            button_style='primary', tooltip="Synthesize sample with these specs", icon='',
+            button_style="primary", tooltip="Synthesize sample with these specs", icon="",
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_sample_preview = ipw.Output()
         self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
