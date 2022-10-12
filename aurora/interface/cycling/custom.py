@@ -8,7 +8,6 @@ import logging
 import ipywidgets as ipw
 import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
-from aurora.schemas.utils import remove_empties_from_dict_decorator
 from .technique_widget import TechniqueParametersWidget
 
 class CyclingCustom(ipw.VBox):

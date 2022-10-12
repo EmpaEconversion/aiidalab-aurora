@@ -7,8 +7,6 @@ from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
 from .cycling import CyclingStandard, CyclingCustom
 from .tomato import TomatoSettings
 from .analyze import PreviewResults
-from ..schemas.battery import BatterySample, BatterySpecs
-from ..schemas.utils import _remove_empties_from_dict
 
 import aiida
 from aiida import load_profile
@@ -108,13 +106,13 @@ class MainPanel(ipw.VBox):
     #######################################################################################
     def return_selected_sample(self, sample_widget_obj):
         "Store the selected sample in `self.selected_battery_sample` and call post action."
-        self._selected_battery_sample = BatterySample.parse_obj(_remove_empties_from_dict(sample_widget_obj.selected_sample_dict))
+        self._selected_battery_sample = sample_widget_obj.selected_sample
         self.post_sample_selection()
 
     def return_selected_specs_recipe(self, sample_widget_obj):
         "Store the selected specs & recipe in `self.selected_battery_specs` & `self.selected_recipe` and call post action (TODO)."
-        self._selected_battery_specs = BatterySpecs.parse_obj(_remove_empties_from_dict(sample_widget_obj.selected_specs_dict))
-        self._selected_recipe = sample_widget_obj.selected_recipe_dict
+        self._selected_battery_specs = sample_widget_obj.selected_specs
+        self._selected_recipe = sample_widget_obj.selected_recipe_dict  # this is a dict, for the moment - we need a schema
         # TODO: call post action
 
     def switch_to_recipe(self, specs_widget_obj):
