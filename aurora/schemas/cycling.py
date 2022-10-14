@@ -336,7 +336,7 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
         "goto": CyclingParameter[int](
             label = "Go to:",
             description = "Index of the technique to go back to",
-            default_value = 0,
+            default_value = 1,
             required = True,
         ),
     }
