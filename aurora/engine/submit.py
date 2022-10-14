@@ -16,7 +16,7 @@ BatteryCyclerExperiment = aiida.plugins.CalculationFactory('aurora.cycler')
 TomatoMonitorData = aiida.plugins.DataFactory('calcmonitor.monitor.tomatobiologic')
 TomatoMonitorCalcjob = aiida.plugins.CalculationFactory('calcmonitor.calcjob_monitor')
 
-# MONITOR_CODE = load_code("monitor@localhost-verdi")
+MONITOR_CODE = load_code("monitor@localhost-verdi")
 GROUP_SAMPLES = load_group("BatterySamples")
 GROUP_METHODS = load_group("CyclingSpecs")
 GROUP_CALCJOBS = load_group("CalcJobs")
