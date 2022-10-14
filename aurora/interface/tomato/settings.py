@@ -100,10 +100,16 @@ class TomatoSettings(ipw.VBox):
     @property
     @remove_empties_from_dict_decorator
     def selected_tomato_settings_dict(self):
-        return dict(
-            unlock_when_done = self.w_job_unlock_when_done.value,
-            verbosity = self.w_job_verbosity.value,
-        )
+        d = {
+            'unlock_when_done': self.w_job_unlock_when_done.value,
+            'verbosity': self.w_job_verbosity.value
+        }
+        if self.w_job_monitored.value:
+            d['snapshot'] = {
+                'frequency': self.w_job_monitor_refresh_rate.value,
+                'prefix': 'snapshot'
+            }
+        return d
     
     @property
     def selected_tomato_settings(self):
