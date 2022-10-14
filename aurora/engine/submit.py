@@ -5,6 +5,7 @@ from aiida import load_profile
 load_profile()
 from aiida.orm import load_node, load_code, load_computer, load_group
 from aiida.engine import submit
+from aiida.common.exceptions import NotExistent
 
 BatterySampleData = aiida.plugins.DataFactory('aurora.batterysample')
 CyclingSpecsData = aiida.plugins.DataFactory('aurora.cyclingspecs')
@@ -21,9 +22,13 @@ def _find_job_remote_folder(job):
     remote_folder = False
     for t in range(MAX_TIME):
         # perform query job.outputs.remote_folder
-        # remote_folder = ...
-        if remote_folder:
-            break
+        try:
+            remote_folder = job.get_outgoing().get_node_by_label('remote_folder')
+        except NotExistent:
+            pass
+        else:
+            print("Remote folder found. Setting up monitor job...")
+            return remote_folder
     else:  # the MAX_TIME was reached
         raise RuntimeError(f"Remote folder of job {job.pk} not found. Is the daemon running?")
 
@@ -64,7 +69,6 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
     print(f"Job <{job.pk}> submitted to AiiDA...")
 
     if monitor_job_settings:
-        raise NotImplementedError()
 
         monitor_protocol = TomatoMonitorData(dict={
             'sources': {
@@ -88,6 +92,7 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
         monitor_builder.code = load_code(MONITOR_CODE)
         monitor_builder.metadata.options.parser_name = "calcmonitor.cycler"
         monitor_builder.monitor_protocols = {'monitor1': monitor_protocol}
+
         monitor_builder.monitor_folder = _find_job_remote_folder(job)
 
         mjob = submit(monitor_builder)
