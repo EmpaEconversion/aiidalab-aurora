@@ -9,7 +9,7 @@ from .tomato import TomatoSettings
 from .analyze import PreviewResults
 from aurora.engine import submit_experiment
 
-CODE_NAME = "tomato-0.2rc2"
+CODE_NAME = "ketchup-0.2rc2"
 
 class MainPanel(ipw.VBox):
 
@@ -19,8 +19,8 @@ class MainPanel(ipw.VBox):
     _METHOD_LABELS = ['Standardized', 'Customized']
     w_header = ipw.HTML(value="<h2>Aurora</h2>")
     _SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
-    _SUBMISSION_INPUT_LAYOUT = {'width': '90%', 'border': 'solid blue 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px'}
-    _SUBMISSION_OUTPUT_LAYOUT = {'width': '90%', 'border': 'solid red 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px'}
+    _SUBMISSION_INPUT_LAYOUT = {'width': '90%', 'border': 'solid blue 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px', 'overflow': 'scroll'}
+    _SUBMISSION_OUTPUT_LAYOUT = {'width': '90%', 'border': 'solid red 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px', 'overflow': 'scroll'}
     _BOX_LAYOUT = {'width': '100%'}
     _BOX_STYLE = {'description_width': '25%'}
     _BUTTON_STYLE = {'description_width': '30%'}
@@ -171,7 +171,7 @@ class MainPanel(ipw.VBox):
             method=self.selected_cycling_protocol,
             tomato_settings=self.selected_tomato_settings,
             monitor_job_settings=self.selected_monitor_job_settings,
-            code_name=self.w_code,
+            code_name=self.w_code.value,
             sample_node_label="",
             method_node_label="",
             calcjob_node_label=""

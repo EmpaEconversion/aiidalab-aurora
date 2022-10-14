@@ -16,7 +16,11 @@ BatteryCyclerExperiment = aiida.plugins.CalculationFactory('aurora.cycler')
 TomatoMonitorData = aiida.plugins.DataFactory('calcmonitor.monitor.tomatobiologic')
 TomatoMonitorCalcjob = aiida.plugins.CalculationFactory('calcmonitor.calcjob_monitor')
 
-MONITOR_CODE = "monitor@localhost-verdi"
+# MONITOR_CODE = load_code("monitor@localhost-verdi")
+GROUP_SAMPLES = load_group("BatterySamples")
+GROUP_METHODS = load_group("CyclingSpecs")
+GROUP_CALCJOBS = load_group("CalcJobs")
+GROUP_MONITORS = load_group("MonitorJobs")
 
 def _find_job_remote_folder(job):
     MAX_TIME = 60
@@ -48,11 +52,13 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
     if sample_node_label:
         sample_node.label = sample_node_label
     sample_node.store()
+    GROUP_SAMPLES.add_nodes(sample_node)
 
     method_node = CyclingSpecsData(method.dict())
     if method_node_label:
         method_node.label = method_node_label
     method_node.store()
+    GROUP_METHODS.add_nodes(method_node)
     
     tomato_settings_node = TomatoSettingsData(tomato_settings.dict())
     tomato_settings_node.label = ""  # TODO? write default name generator - e.g. "tomato-True-monitor_600"
@@ -69,6 +75,7 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
     job = submit(builder)
     job.label = calcjob_node_label
     print(f"Job <{job.pk}> submitted to AiiDA...")
+    GROUP_CALCJOBS.add_nodes(job)
 
     if monitor_job_settings:
 
@@ -91,7 +98,7 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
         monitor_protocol.label = "" # TODO? write default name generator - e.g "monitor-rate_600-cycles_2-thr_0.80"
 
         monitor_builder = TomatoMonitorCalcjob.get_builder()
-        monitor_builder.code = load_code(MONITOR_CODE)
+        monitor_builder.code = MONITOR_CODE
         monitor_builder.metadata.options.parser_name = "calcmonitor.cycler"
         monitor_builder.monitor_protocols = {'monitor1': monitor_protocol}
 
@@ -101,5 +108,6 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
         if job.label:
             mjob.label = f"{job.label}-monitor"
         print(f"Monitor Job <{mjob.pk}> submitted to AiiDA...")
+        GROUP_MONITORS.add_nodes(mjob)
 
     return job
