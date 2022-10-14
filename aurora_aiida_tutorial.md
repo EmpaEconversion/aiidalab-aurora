@@ -135,6 +135,15 @@
   verdi daemon restart --reset
   ```
 
+  NOTE: in some computers python still uses the `aiida-core` installed in the root directory, so you will get an error about the transport (`shell_type`). To fix this, log into the Docker container and install `aiida-core` by hand:
+  ```
+  docker exec -it CONTAINERID /bin/bash
+  # the user will be root
+  cd /home/aiida/src/aiida-core
+  pip install .
+  ```
+  Then restart the daemon from an AiiDAlab Terminal.
+
 - If everything went well
   ```
   verdi plugin list aiida.schedulers
@@ -178,6 +187,14 @@
   verdi computer test localhost-verdi
   ```
   (NOTE: the first test will return one error about `echo`. This is normal).
+
+- Create the necessary AiiDA groups:
+  ```
+  verdi create group BatterySamples
+  verdi create group CyclingSpecs
+  verdi create group CalcJobs
+  verdi create group MonitorJobs
+  ```
 
 ## 4. Aurora app installation
 
