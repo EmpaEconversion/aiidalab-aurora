@@ -9,6 +9,7 @@ from .tomato import TomatoSettings
 from .analyze import PreviewResults
 from aurora.engine import submit_experiment
 
+CODE_NAME = "tomato-0.2rc2"
 
 class MainPanel(ipw.VBox):
 
@@ -18,6 +19,7 @@ class MainPanel(ipw.VBox):
     _METHOD_LABELS = ['Standardized', 'Customized']
     w_header = ipw.HTML(value="<h2>Aurora</h2>")
     _SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
+    _SUBMISSION_INPUT_LAYOUT = {'width': '90%', 'border': 'solid blue 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px'}
     _SUBMISSION_OUTPUT_LAYOUT = {'width': '90%', 'border': 'solid red 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px'}
     _BOX_LAYOUT = {'width': '100%'}
     _BOX_STYLE = {'description_width': '25%'}
@@ -137,45 +139,42 @@ class MainPanel(ipw.VBox):
     #######################################################################################
     # SUBMIT JOB
     #######################################################################################
-    def display_job_input_preview(self, status, err_msg=""):
-        "Display the selected job inputs, whether the job can be submitted (status) and the reason (err_msg)."
-        # TODO: add preview of job inputs!
-        self.w_job_preview.clear_output()
-        with self.w_job_preview:
-            if status:
-                print(f"✅ {err_msg}")
-            else:
-                print(f"❌ {err_msg}")
 
-    def presubmission_checks(self, dummy=None):
-        "Verify that all the input is there. If so, enable submission button."
+    def presubmission_checks_preview(self, dummy=None):
+        "Verify that all the input is there and display preview. If so, enable submission button."
         if self.w_main_accordion.selected_index == 3:
-            try:
-                if self.selected_battery_sample is None:
-                    raise ValueError("A Battery sample was not selected!")
-                if self.selected_cycling_protocol is None:
-                    raise ValueError("A Cycling protocol was not selected!")
-                if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
-                    raise ValueError("Tomato settings were not selected!")
+            self.w_job_preview.clear_output()
+            with self.w_job_preview:
+                try:
+                    if self.selected_battery_sample is None:
+                        raise ValueError("A Battery sample was not selected!")
+                    if self.selected_cycling_protocol is None:
+                        raise ValueError("A Cycling protocol was not selected!")
+                    if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
+                        raise ValueError("Tomato settings were not selected!")
 
-                print(f"Battery Sample:\n  {self.selected_battery_sample}")
-                print(f"Cycling Protocol:\n  {self.selected_cycling_protocol}")
-                print(f"Tomato Settings:\n  {self.selected_tomato_settings}")
-                print(f"Monitor Job Settings:\n  {self.selected_monitor_job_settings}")
-            except ValueError as err:
-                self.w_submit_button.disabled = True
-                self.display_job_input_preview(False, err)
-            else:
-                self.w_submit_button.disabled = False
-                self.display_job_input_preview(True, "All good!")
+                    print(f"Battery Sample:\n  {self.selected_battery_sample}")
+                    print(f"Cycling Protocol:\n  {self.selected_cycling_protocol}")
+                    print(f"Tomato Settings:\n  {self.selected_tomato_settings}")
+                    print(f"Monitor Job Settings:\n  {self.selected_monitor_job_settings}")
+                except ValueError as err:
+                    self.w_submit_button.disabled = True
+                    print(f"❌ {err}")
+                else:
+                    self.w_submit_button.disabled = False
+                    print(f"✅ All good!")
     
     @w_submission_output.capture(clear_output=True, wait=True)
-    def submit_job(self):
+    def submit_job(self, dummy=None):
         self.process = submit_experiment(
             sample=self.selected_battery_sample,
             method=self.selected_cycling_protocol,
             tomato_settings=self.selected_tomato_settings,
-            monitor_settings=self.selected_monitor_job_settings,
+            monitor_job_settings=self.selected_monitor_job_settings,
+            code_name=self.w_code,
+            sample_node_label="",
+            method_node_label="",
+            calcjob_node_label=""
         )
         print(f"Job <{self.process.pk}> submitted to AiiDA...")
 
@@ -247,11 +246,11 @@ class MainPanel(ipw.VBox):
         self.w_settings_tab = TomatoSettings(validate_callback_f=self.return_selected_settings)
 
         # Submit
-        self.w_job_preview = ipw.Output()  # TODO: write preview of the job inputs
+        self.w_job_preview = ipw.Output(layout=self._SUBMISSION_INPUT_LAYOUT)  # TODO: write better preview of the job inputs
         self.w_code = ipw.Dropdown(
             description="Select code:",
-            options=["ketchup@localhost"],  # TODO: get codes
-            value="ketchup@localhost")
+            options=[CODE_NAME],  # TODO: get codes
+            value=CODE_NAME)
         self.w_submit_button = ipw.Button(
             description="SUBMIT",
             button_style="success", tooltip="Submit the experiment", icon="play",
@@ -297,7 +296,7 @@ class MainPanel(ipw.VBox):
         ## reset selected sample/specs/recipe when the user selects another sample input tab
         self.w_sample_selection_tab.observe(self.reset_sample_selection, names='selected_index')
         ## trigger presubmission checks when we are in the "Submit Job" accordion tab
-        self.w_main_accordion.observe(self.presubmission_checks, names='selected_index')
+        self.w_main_accordion.observe(self.presubmission_checks_preview, names='selected_index')
 
         self.w_submit_button.on_click(self.submit_job)
         self.w_reset_button.on_click(self.reset)
