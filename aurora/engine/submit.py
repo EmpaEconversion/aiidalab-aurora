@@ -6,6 +6,7 @@ load_profile()
 from aiida.orm import load_node, load_code, load_computer, load_group
 from aiida.engine import submit
 from aiida.common.exceptions import NotExistent
+from time import sleep
 
 BatterySampleData = aiida.plugins.DataFactory('aurora.batterysample')
 CyclingSpecsData = aiida.plugins.DataFactory('aurora.cyclingspecs')
@@ -29,6 +30,7 @@ def _find_job_remote_folder(job):
         else:
             print("Remote folder found. Setting up monitor job...")
             return remote_folder
+        sleep(2)
     else:  # the MAX_TIME was reached
         raise RuntimeError(f"Remote folder of job {job.pk} not found. Is the daemon running?")
 
