@@ -18,10 +18,13 @@ class MainPanel(ipw.VBox):
     _METHOD_LABELS = ['Standardized', 'Customized']
     w_header = ipw.HTML(value="<h2>Aurora</h2>")
     _SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
+    _SUBMISSION_OUTPUT_LAYOUT = {'width': '90%', 'border': 'solid red 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px'}
     _BOX_LAYOUT = {'width': '100%'}
     _BOX_STYLE = {'description_width': '25%'}
     _BUTTON_STYLE = {'description_width': '30%'}
     _BUTTON_LAYOUT = {'margin': '5px'}
+    
+    w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
     #######################################################################################
     # FAKE TRAITLES
@@ -166,6 +169,7 @@ class MainPanel(ipw.VBox):
                 self.w_submit_button.disabled = False
                 self.display_job_input_preview(True, "All good!")
     
+    @w_submission_output.capture(clear_output=True, wait=True)
     def submit_job(self):
         self.process = submit_experiment(
             sample=self.selected_battery_sample,
@@ -257,7 +261,8 @@ class MainPanel(ipw.VBox):
         self.w_submit_tab = ipw.VBox([
             self.w_job_preview,
             self.w_code,
-            self.w_submit_button
+            self.w_submit_button,
+            self.w_submission_output
         ])
 
         # Results
