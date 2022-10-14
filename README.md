@@ -15,9 +15,9 @@ Otherwise, you can also install it directly from the repository:
 aiidalab install aurora@https://github.com/lorisercole/aurora
 ```
 
-## Usage
+You can check the [Installation manual](aurora_aiida_tutorial.md).
 
-Here may go a few sreenshots / animated gifs illustrating how to use the app.
+## Usage
 
 ## License
 
