@@ -42,17 +42,38 @@ allowed_E_ranges = Literal[
     "+-2.5 V", "+-5.0 V", "+-10 V", "auto",
 ]
 
-class Dummy(CyclingTechnique, extra=Extra.forbid):
+class DummySequential(CyclingTechnique, extra=Extra.forbid):
     device: Literal["worker"] = "worker"
-    technique: Literal["random", "sequential"] = "random"
-    short_name: Literal["DUMMY"] = "DUMMY"
-    name = "Dummy"
-    description = "Dummy worker"
+    technique: Literal["sequential"] = "sequential"
+    short_name: Literal["DUMMY_SEQUENTIAL"] = "DUMMY_SEQUENTIAL"
+    name = "Dummy Sequential"
+    description = "Dummy worker - sequential numbers"
     parameters: Dict[str, CyclingParameter] = {
         "time": CyclingParameter[NonNegativeFloat](
             label = "Time:",
             units = "s",
-            default_value = 10.,
+            default_value = 100.,
+            required = True
+        ),
+        "delay": CyclingParameter[NonNegativeFloat](
+            label = "Delay:",
+            units = "s",
+            default_value = 1.0,
+            required = True,
+        )
+    }
+
+class DummyRandom(CyclingTechnique, extra=Extra.forbid):
+    device: Literal["worker"] = "worker"
+    technique: Literal["random"] = "random"
+    short_name: Literal["DUMMY_RANDOM"] = "DUMMY_RANDOM"
+    name = "Dummy Random"
+    description = "Dummy worker - random numbers"
+    parameters: Dict[str, CyclingParameter] = {
+        "time": CyclingParameter[NonNegativeFloat](
+            label = "Time:",
+            units = "s",
+            default_value = 100.,
             required = True
         ),
         "delay": CyclingParameter[NonNegativeFloat](
@@ -321,7 +342,8 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
     }
 
 ElectroChemPayloads = Union[
-    Dummy,
+    DummySequential,
+    DummyRandom,
     OpenCircuitVoltage,
     ConstantCurrent,
     ConstantVoltage,
