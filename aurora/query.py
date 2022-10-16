@@ -7,7 +7,7 @@ from .schemas.battery import BatterySpecsJsonTypes, BatterySampleJsonTypes
 AVAILABLE_SAMPLES_FILE = 'available_samples.json'
 
 def load_available_specs():
-    STD_SPECS = pd.read_csv('sample_specs.csv', dtype=BatterySpecsJsonTypes)
+    STD_SPECS = pd.read_csv('example_specs.csv', dtype=BatterySpecsJsonTypes)
     return STD_SPECS
 
 def load_available_samples():
