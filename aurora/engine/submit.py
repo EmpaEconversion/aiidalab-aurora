@@ -76,6 +76,7 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
     job.label = calcjob_node_label
     print(f"Job <{job.pk}> submitted to AiiDA...")
     GROUP_CALCJOBS.add_nodes(job)
+    job.set_extra('monitored', False)
 
     if monitor_job_settings:
 
@@ -109,5 +110,7 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
             mjob.label = f"{job.label}-monitor"
         print(f"Monitor Job <{mjob.pk}> submitted to AiiDA...")
         GROUP_MONITORS.add_nodes(mjob)
+
+        job.set_extra('monitored', True)
 
     return job
