@@ -6,14 +6,13 @@ from IPython.display import display
 from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
 from .cycling import CyclingStandard, CyclingCustom
 from .tomato import TomatoSettings
-from .analyze import PreviewResults
 from aurora.engine import submit_experiment
 
 CODE_NAME = "ketchup-0.2rc2"
 
 class MainPanel(ipw.VBox):
 
-    _ACCORDION_STEPS = ['Sample selection', 'Cycling Protocol', 'Job Settings', 'Submit Job', 'Visualize Results']
+    _ACCORDION_STEPS = ['Sample selection', 'Cycling Protocol', 'Job Settings', 'Submit Job']
     _SAMPLE_INPUT_LABELS = ['Select from ID', 'Select from Specs', 'Make from Recipe']
     _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
     _METHOD_LABELS = ['Standardized', 'Customized']
@@ -164,8 +163,9 @@ class MainPanel(ipw.VBox):
                     self.w_submit_button.disabled = False
                     print(f"✅ All good!")
     
-    @w_submission_output.capture(clear_output=True, wait=True)
+    @w_submission_output.capture()
     def submit_job(self, dummy=None):
+        self.w_submit_button.disabed = True
         self.process = submit_experiment(
             sample=self.selected_battery_sample,
             method=self.selected_cycling_protocol,
@@ -176,9 +176,7 @@ class MainPanel(ipw.VBox):
             method_node_label="",
             calcjob_node_label=""
         )
-        print(f"Job <{self.process.pk}> submitted to AiiDA...")
-
-        self.w_main_accordion.selected_index = 4
+        self.w_main_accordion.selected_index = None
 
     #######################################################################################
     # RESET
@@ -204,6 +202,7 @@ class MainPanel(ipw.VBox):
         "Reset the interface."
         # TODO: properly reinitialize each widget
         self.reset_all_inputs()
+        self.w_submission_output.clear_output()
         self.w_main_accordion.selected_index = 0
 
     #######################################################################################
@@ -260,12 +259,8 @@ class MainPanel(ipw.VBox):
         self.w_submit_tab = ipw.VBox([
             self.w_job_preview,
             self.w_code,
-            self.w_submit_button,
-            self.w_submission_output
+            self.w_submit_button
         ])
-
-        # Results
-        self.w_results_tab = PreviewResults()
 
         # Reset
         self.w_reset_button = ipw.Button(
@@ -280,7 +275,6 @@ class MainPanel(ipw.VBox):
             self.w_test_tab,
             self.w_settings_tab,
             self.w_submit_tab,
-            self.w_results_tab
         ])
         for i, title in enumerate(self._ACCORDION_STEPS):
             self.w_main_accordion.set_title(i, title)
@@ -290,6 +284,7 @@ class MainPanel(ipw.VBox):
             self.w_header,
             self.w_main_accordion,
             self.w_reset_button,
+            self.w_submission_output
         ]
 
         # setup automations

@@ -3,7 +3,8 @@
 import ipywidgets as ipw
 
 template = """
-<h1><a title="Launch Aurora app" href="{appbase}/Aurora-app.ipynb" target="_blank">Aurora app</a></h1>
+<h1>&clubs; <a title="Launch Aurora app" href="{appbase}/Aurora-app.ipynb" target="_blank">Aurora app</a></h1>
+<h2>&clubs; <a title="Visualize Results" href="{appbase}/Results-visualizer.ipynb" target="_blank">Results visualizer</a></h2>
 """
 
 

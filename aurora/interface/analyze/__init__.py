@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .visualizer import PreviewResults
+from .visualizer import CyclingResultsWidget
