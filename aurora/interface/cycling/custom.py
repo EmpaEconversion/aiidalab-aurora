@@ -3,12 +3,15 @@
 Cycling protocol customizable by the user.
 TODO: Enable the user to save a customized protocol.
 """
-
+import os
+import json
 import logging
 import ipywidgets as ipw
 import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
 from .technique_widget import TechniqueParametersWidget
+
+from ipyfilechooser import FileChooser
 
 class CyclingCustom(ipw.VBox):
 
@@ -20,6 +23,8 @@ class CyclingCustom(ipw.VBox):
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     BUTTON_LAYOUT_2 = {'width': '20%', 'margin': '5px'}
+    #BUTTON_LAYOUT_3 = {'width': '43.5%', 'margin': '5px'}
+    BUTTON_LAYOUT_3 = {'width': '10%', 'margin': '5px'}
     GRID_LAYOUT = {"grid_template_columns": "30% 65%", 'width': '100%', 'margin': '5px'} # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
     DEFAULT_PROTOCOL = aurora.schemas.cycling.OpenCircuitVoltage
     _TECHNIQUES_OPTIONS = {f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})": Technique
@@ -38,7 +43,7 @@ class CyclingCustom(ipw.VBox):
             description="",
             layout=self.BOX_LAYOUT)
         self.w_button_add = ipw.Button(
-            description="", button_style='info', tooltip="Add step", icon='plus',
+            description="", button_style='success', tooltip="Add step", icon='plus',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
         self.w_button_remove = ipw.Button(
             description="", button_style='danger', tooltip="Remove step", icon='minus',
@@ -50,6 +55,20 @@ class CyclingCustom(ipw.VBox):
             description="", button_style='', tooltip="Move step down", icon='arrow-down',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
         
+        self.w_button_load = ipw.Button(
+            description="Load", button_style='', tooltip="Load protocol", icon='',
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_3)
+        self.w_button_save = ipw.Button(
+            description="Save", button_style='', tooltip="Save protocol", icon='',
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_3)
+        home_directory = os.path.expanduser( '~' )
+        self.w_filepath_explorer = FileChooser(
+            home_directory, layout={'width': '70%', 'margin': '5px'},
+            )
+        self.w_filepath_explorer.default_path = home_directory
+        self.w_filepath_explorer.default_filename = 'saved_protocol.json'
+        self.w_filepath_explorer.reset()
+
         # initialize protocol steps list
         self._protocol_steps_list = ElectroChemSequence(method=[])
         self.add_protocol_step()
@@ -82,11 +101,14 @@ class CyclingCustom(ipw.VBox):
         super().__init__()
         self.children = [
             self.w_header,
+            ipw.HBox([self.w_filepath_explorer, self.w_button_load, self.w_button_save]),
             self.w_protocol_label,
             ipw.GridBox([
                 ipw.VBox([
                     self.w_protocol_steps_list,
                     ipw.HBox([self.w_button_add, self.w_button_remove, self.w_button_up, self.w_button_down]),
+                    #ipw.HBox([self.w_button_load, self.w_button_save]),
+                    #ipw.HBox([self.w_filepath_explorer]),
                 ]),
                 ipw.VBox([
                     self.w_selected_step_technique_name,
@@ -106,7 +128,11 @@ class CyclingCustom(ipw.VBox):
         self.w_button_remove.on_click(self.remove_protocol_step)
         self.w_button_up.on_click(self.move_protocol_step_up)
         self.w_button_down.on_click(self.move_protocol_step_down)
-        
+
+        self.w_button_load.on_click(self.procedure_load_protocol)
+        self.w_button_save.on_click(self.procedure_save_protocol)
+
+
         ## current step's properties:
         ### if technique type changes, we need to initialize a new technique from scratch the widget observer may detect a change
         ### even when a new step is selected therefore we check whether the new technique is the same as the one stored in
@@ -212,3 +238,31 @@ class CyclingCustom(ipw.VBox):
     def callback_call(self, callback_function):
         "Call a callback function and this class instance to it."
         return callback_function(self)
+
+    def procedure_load_protocol(self, dummy=None):
+        """Loads the protocol from a file."""
+        filepath = self.w_filepath_explorer.selected
+        if filepath is None:
+            return
+
+        with open(filepath, 'r') as fileobj:
+            json_data = json.load(fileobj)
+
+        self._protocol_steps_list = ElectroChemSequence(**json_data)
+        self._update_protocol_steps_list_widget_options()
+#        return None
+
+    def procedure_save_protocol(self, dummy=None):
+        """Saves the protocol from a file."""
+        #filepath = '/home/aiida/saved_protocol.json'
+        filepath = self.w_filepath_explorer.selected
+        if filepath is None:
+            return
+
+        try:
+            json_data = json.dumps(self.protocol_steps_list.dict(), indent=2)
+        except Exception as err:
+            json_data = str(err)
+
+        with open(filepath, 'w') as fileobj:
+            fileobj.write(str(json_data))
