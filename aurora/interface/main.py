@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import json
 import pandas as pd
 import ipywidgets as ipw
 from IPython.display import display
@@ -152,10 +152,16 @@ class MainPanel(ipw.VBox):
                     if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
                         raise ValueError("Tomato settings were not selected!")
 
-                    print(f"Battery Sample:\n  {self.selected_battery_sample}")
-                    print(f"Cycling Protocol:\n  {self.selected_cycling_protocol}")
-                    print(f"Tomato Settings:\n  {self.selected_tomato_settings}")
-                    print(f"Monitor Job Settings:\n  {self.selected_monitor_job_settings}")
+                    output_battery_sample = f'{self.selected_battery_sample}'
+                    output_cycling_protocol = json.dumps(self.selected_cycling_protocol.dict(), indent=2)
+                    output_tomato_settings = f'{self.selected_tomato_settings}'
+                    output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+                    
+                    print(f"Battery Sample:\n"+output_battery_sample+'\n')
+                    print(f"Cycling Protocol:\n"+output_cycling_protocol+'\n')
+                    print(f"Tomato Settings:\n"+output_tomato_settings+'\n')
+                    print(f"Monitor Job Settings:\n"+output_monitor_job_settings+'\n')
+
                 except ValueError as err:
                     self.w_submit_button.disabled = True
                     print(f"❌ {err}")
