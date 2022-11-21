@@ -16,7 +16,7 @@ BatteryCyclerExperiment = aiida.plugins.CalculationFactory('aurora.cycler')
 TomatoMonitorData = aiida.plugins.DataFactory('calcmonitor.monitor.tomatobiologic')
 TomatoMonitorCalcjob = aiida.plugins.CalculationFactory('calcmonitor.calcjob_monitor')
 
-MONITOR_CODE = load_code("monitor@localhost-verdi")
+#MONITOR_CODE = load_code("monitor@localhost-verdi")
 GROUP_SAMPLES = load_group("BatterySamples")
 GROUP_METHODS = load_group("CyclingSpecs")
 GROUP_CALCJOBS = load_group("CalcJobs")
@@ -41,7 +41,7 @@ def _find_job_remote_folder(job):
     return remote_folder
 
 def submit_experiment(sample, method, tomato_settings, monitor_job_settings, code_name,
-    sample_node_label="", method_node_label="", calcjob_node_label=""):
+    sample_node_label="", method_node_label="", calcjob_node_label="", monitor_code=None):
     """
     sample : `aurora.schemas.battery.BatterySample`
     method : `aurora.schemas.cycling.ElectroChemSequence`
@@ -98,8 +98,11 @@ def submit_experiment(sample, method, tomato_settings, monitor_job_settings, cod
         monitor_protocol.store()
         monitor_protocol.label = "" # TODO? write default name generator - e.g "monitor-rate_600-cycles_2-thr_0.80"
 
+        if monitor_code is None:
+            monitor_code = load_code("monitor@localhost-verdi")
+
         monitor_builder = TomatoMonitorCalcjob.get_builder()
-        monitor_builder.code = MONITOR_CODE
+        monitor_builder.code = monitor_code
         monitor_builder.metadata.options.parser_name = "calcmonitor.cycler"
         monitor_builder.monitor_protocols = {'monitor1': monitor_protocol}
 
