@@ -23,7 +23,8 @@ def build_parameter_widget(param_obj):
     w_check = ipw.Checkbox(
         value=param_obj.required or (param_obj.value is not None),
         disabled=param_obj.required,
-        description='', style=CHECKBOX_STYLE, layout=CHECKBOX_LAYOUT)
+        description='', style=CHECKBOX_STYLE, layout=CHECKBOX_LAYOUT
+    )
     
     # read the value of parameter. If None, take use the default value
     param_value = param_obj.value if param_obj.value is not None else param_obj.default_value

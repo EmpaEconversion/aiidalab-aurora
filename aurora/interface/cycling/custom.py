@@ -3,12 +3,15 @@
 Cycling protocol customizable by the user.
 TODO: Enable the user to save a customized protocol.
 """
-
+import os
+import json
 import logging
 import ipywidgets as ipw
 import aurora.schemas.cycling
 from aurora.schemas.cycling import ElectroChemPayloads, ElectroChemSequence
 from .technique_widget import TechniqueParametersWidget
+
+from ipyfilechooser import FileChooser
 
 class CyclingCustom(ipw.VBox):
 
@@ -20,12 +23,19 @@ class CyclingCustom(ipw.VBox):
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     BUTTON_LAYOUT_2 = {'width': '20%', 'margin': '5px'}
+    #BUTTON_LAYOUT_3 = {'width': '43.5%', 'margin': '5px'}
+    BUTTON_LAYOUT_3 = {'width': '10%', 'margin': '5px'}
     GRID_LAYOUT = {"grid_template_columns": "30% 65%", 'width': '100%', 'margin': '5px'} # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
     DEFAULT_PROTOCOL = aurora.schemas.cycling.OpenCircuitVoltage
     _TECHNIQUES_OPTIONS = {f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})": Technique
                              for Technique in ElectroChemPayloads.__args__}
 
-    def __init__(self, validate_callback_f):
+    def __init__(self, experiment_model, validate_callback_f):
+
+        if experiment_model is None:
+            raise ValueError('An experiment model must be provided.')
+        self.experiment_model = experiment_model
+        self.experiment_model.suscribe_observer(self)
 
         if not callable(validate_callback_f):
             raise TypeError("validate_callback_f should be a callable function")
@@ -37,8 +47,11 @@ class CyclingCustom(ipw.VBox):
             rows=10, value=None,
             description="",
             layout=self.BOX_LAYOUT)
+
+        self._update_protocol_steps_list_widget_options()
+
         self.w_button_add = ipw.Button(
-            description="", button_style='info', tooltip="Add step", icon='plus',
+            description="", button_style='success', tooltip="Add step", icon='plus',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
         self.w_button_remove = ipw.Button(
             description="", button_style='danger', tooltip="Remove step", icon='minus',
@@ -50,9 +63,23 @@ class CyclingCustom(ipw.VBox):
             description="", button_style='', tooltip="Move step down", icon='arrow-down',
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_2)
         
+        self.w_button_load = ipw.Button(
+            description="Load", button_style='', tooltip="Load protocol", icon='',
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_3)
+        self.w_button_save = ipw.Button(
+            description="Save", button_style='', tooltip="Save protocol", icon='',
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT_3)
+        home_directory = os.path.expanduser( '~' )
+        self.w_filepath_explorer = FileChooser(
+            home_directory, layout={'width': '70%', 'margin': '5px'},
+            )
+        self.w_filepath_explorer.default_path = home_directory
+        self.w_filepath_explorer.default_filename = 'saved_protocol.json'
+        self.w_filepath_explorer.reset()
+
         # initialize protocol steps list
-        self._protocol_steps_list = ElectroChemSequence(method=[])
-        self.add_protocol_step()
+        # self._protocol_steps_list = ElectroChemSequence(method=[])
+        # self.add_protocol_step()
 
         # initialize current step properties widget
         self.w_selected_step_technique_name = ipw.Dropdown(
@@ -82,11 +109,14 @@ class CyclingCustom(ipw.VBox):
         super().__init__()
         self.children = [
             self.w_header,
+            ipw.HBox([self.w_filepath_explorer, self.w_button_load, self.w_button_save]),
             self.w_protocol_label,
             ipw.GridBox([
                 ipw.VBox([
                     self.w_protocol_steps_list,
                     ipw.HBox([self.w_button_add, self.w_button_remove, self.w_button_up, self.w_button_down]),
+                    #ipw.HBox([self.w_button_load, self.w_button_save]),
+                    #ipw.HBox([self.w_filepath_explorer]),
                 ]),
                 ipw.VBox([
                     self.w_selected_step_technique_name,
@@ -102,11 +132,21 @@ class CyclingCustom(ipw.VBox):
         # setup automations
         ## steps list
         self.w_protocol_steps_list.observe(self._build_current_step_properties_widget, names='index')
-        self.w_button_add.on_click(self.add_protocol_step)
-        self.w_button_remove.on_click(self.remove_protocol_step)
-        self.w_button_up.on_click(self.move_protocol_step_up)
-        self.w_button_down.on_click(self.move_protocol_step_down)
         
+        #self.w_button_add.on_click(self.add_protocol_step)
+        #self.w_button_remove.on_click(self.remove_protocol_step)
+        #self.w_button_up.on_click(self.move_protocol_step_up)
+        #self.w_button_down.on_click(self.move_protocol_step_down)
+
+        self.w_button_add.on_click(self.w_button_add_click)
+        self.w_button_remove.on_click(self.w_button_remove_click)
+        self.w_button_up.on_click(self.w_button_up_click)
+        self.w_button_down.on_click(self.w_button_down_click)
+
+        self.w_button_load.on_click(self.button_load_protocol_click)
+        self.w_button_save.on_click(self.button_save_protocol_click)
+
+
         ## current step's properties:
         ### if technique type changes, we need to initialize a new technique from scratch the widget observer may detect a change
         ### even when a new step is selected therefore we check whether the new technique is the same as the one stored in
@@ -118,32 +158,46 @@ class CyclingCustom(ipw.VBox):
         ### validate protocol
         self.w_validate.on_click(lambda arg: self.callback_call(validate_callback_f))
 
+    def update(self):
+        """Receive updates from the model"""
+        self._update_protocol_steps_list_widget_options()
+        self._build_current_step_properties_widget()
+        # Automatically done by _build_current_step_properties_widget
+        #self._build_technique_parameters_widgets()
+
     @property
     def protocol_steps_list(self):
         "The list of steps composing the cycling protocol. Each step must be one of the allowed ElectroChemPayloads."
-        return self._protocol_steps_list
+        return self.experiment_model.selected_protocol
+        #return self._protocol_steps_list
 
     @property
     def selected_step_technique(self):
         "The step that is currently selected."
-        return self.protocol_steps_list.method[self.w_protocol_steps_list.index]
+        return self.experiment_model.selected_protocol.method[self.w_protocol_steps_list.index]
+        #return self.protocol_steps_list.method[self.w_protocol_steps_list.index]
     
     @selected_step_technique.setter
     def selected_step_technique(self, technique):
-        self.protocol_steps_list.method[self.w_protocol_steps_list.index] = technique
+        self.experiment_model.selected_protocol.method[self.w_protocol_steps_list.index] = technique
+        #self.protocol_steps_list.method[self.w_protocol_steps_list.index] = technique
     
     def _count_technique_occurencies(self, technique):
-        return [type(step) for step in self.protocol_steps_list.method].count(technique)
+        return [type(step) for step in self.experiment_model.selected_protocol.method].count(technique)
+        #return [type(step) for step in self.protocol_steps_list.method].count(technique)
 
     def _update_protocol_steps_list_widget_options(self, new_index=None):
         old_selected_index = self.w_protocol_steps_list.index
-        self.w_protocol_steps_list.options = [f"[{idx + 1}] - {step.name}" for idx, step in enumerate(self.protocol_steps_list.method)]
+        self.w_protocol_steps_list.options = [f"[{idx + 1}] - {step.name}" for idx, step in enumerate(self.experiment_model.selected_protocol.method)]
+        #self.w_protocol_steps_list.options = [f"[{idx + 1}] - {step.name}" for idx, step in enumerate(self.protocol_steps_list.method)]
         if new_index is not None:
             old_selected_index = new_index
         if (old_selected_index is None) or (old_selected_index < 0):
             self.w_protocol_steps_list.index = 0
-        elif old_selected_index >= self.protocol_steps_list.n_steps:
-            self.w_protocol_steps_list.index = self.protocol_steps_list.n_steps - 1
+        elif old_selected_index >= self.experiment_model.selected_protocol.n_steps:
+            self.w_protocol_steps_list.index = self.experiment_model.selected_protocol.n_steps - 1
+        #elif old_selected_index >= self.protocol_steps_list.n_steps:
+        #    self.w_protocol_steps_list.index = self.protocol_steps_list.n_steps - 1
         else:
             self.w_protocol_steps_list.index = old_selected_index
 
@@ -153,19 +207,24 @@ class CyclingCustom(ipw.VBox):
     def add_protocol_step(self, dummy=None):
         name = self.DEFAULT_STEP_NAME(self.DEFAULT_PROTOCOL)
         logging.debug(f"Adding protocol step {name}")
-        self.protocol_steps_list.add_step(self.DEFAULT_PROTOCOL(name=name))
-        self._update_protocol_steps_list_widget_options(new_index=self.protocol_steps_list.n_steps-1)
+        self.experiment_model.selected_protocol.add_step(self.DEFAULT_PROTOCOL(name=name))
+        self._update_protocol_steps_list_widget_options(new_index=self.experiment_model.selected_protocol.n_steps-1)
+        #self.protocol_steps_list.add_step(self.DEFAULT_PROTOCOL(name=name))
+        #self._update_protocol_steps_list_widget_options(new_index=self.protocol_steps_list.n_steps-1)
     
     def remove_protocol_step(self, dummy=None):
-        self.protocol_steps_list.remove_step(self.w_protocol_steps_list.index)
+        self.experiment_model.selected_protocol.remove_step(self.w_protocol_steps_list.index)
+        #self.protocol_steps_list.remove_step(self.w_protocol_steps_list.index)
         self._update_protocol_steps_list_widget_options()
     
     def move_protocol_step_up(self, dummy=None):
-        self.protocol_steps_list.move_step_backward(self.w_protocol_steps_list.index)
+        self.experiment_model.selected_protocol.move_step_backward(self.w_protocol_steps_list.index)
+        #self.protocol_steps_list.move_step_backward(self.w_protocol_steps_list.index)
         self._update_protocol_steps_list_widget_options(new_index=self.w_protocol_steps_list.index - 1)
 
     def move_protocol_step_down(self, dummy=None):
-        moved = self.protocol_steps_list.move_step_forward(self.w_protocol_steps_list.index)
+        moved = self.experiment_model.selected_protocol.move_step_forward(self.w_protocol_steps_list.index)
+        #moved = self.protocol_steps_list.move_step_forward(self.w_protocol_steps_list.index)
         self._update_protocol_steps_list_widget_options(new_index=self.w_protocol_steps_list.index + 1)
 
     ## SELECTED STEP METHODS
@@ -212,3 +271,49 @@ class CyclingCustom(ipw.VBox):
     def callback_call(self, callback_function):
         "Call a callback function and this class instance to it."
         return callback_function(self)
+
+
+    ################################################################################
+    # NEW DESIGN
+    ################################################################################
+    # TODO: figure out what the b param is
+
+    def w_button_add_click(self, b):
+        """Click event for w_button_add"""
+        self.experiment_model.add_protocol_step()
+        number_of_steps = self.experiment_model.selected_protocol.n_steps
+        self._update_protocol_steps_list_widget_options(new_index = number_of_steps - 1)
+
+    def w_button_remove_click(self, b):
+        """Click event for w_button_remove"""
+        self.experiment_model.remove_protocol_step(self.w_protocol_steps_list.index)
+    
+    def w_button_up_click(self, b):
+        """Click event for w_button_up"""
+        # TODO I need to add a guard on the index?
+        current_index = self.w_protocol_steps_list.index
+        self.experiment_model.move_protocol_step_up(current_index)
+        self._update_protocol_steps_list_widget_options(new_index = current_index - 1)
+
+    def w_button_down_click(self, b):
+        """Click event for w_button_down"""
+        # TODO I need to add a guard on the index?
+        current_index = self.w_protocol_steps_list.index
+        self.experiment_model.move_protocol_step_down(current_index)
+        self._update_protocol_steps_list_widget_options(new_index = current_index + 1)
+
+    def button_load_protocol_click(self, dummy=None):
+        """Loads the protocol from a file."""
+        #filepath = '/home/aiida/saved_protocol.json'
+        filepath = self.w_filepath_explorer.selected
+        if filepath is None:
+            return
+        self.experiment_model.load_protocol(filepath)
+
+    def button_save_protocol_click(self, dummy=None):
+        """Saves the protocol from a file."""
+        filepath = self.w_filepath_explorer.selected
+        if filepath is None:
+            return
+        self.experiment_model.save_protocol(filepath)
+

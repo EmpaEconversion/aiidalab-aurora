@@ -20,7 +20,9 @@ class SampleFromRecipe(ipw.VBox):
     OUTPUT_LAYOUT = {'width': '100%', 'margin': '5px', 'padding': '5px', 'border': 'solid 2px'}  #'max_height': '500px'
     MAIN_LAYOUT = {'width': '100%', 'padding': '10px', 'border': 'solid blue 2px'}
 
-    def __init__(self, validate_callback_f):
+    def __init__(self, experiment_model, validate_callback_f):
+
+        self.experiment_model = experiment_model
 
         # initialize widgets
         self.w_specs_label = ipw.HTML(value="<h2>Battery Specifications <span style='color: #ffffff; background-color: #ff0000;'>**NOT IMPLEMENTED**</span></h2>")
@@ -136,10 +138,10 @@ class SampleFromRecipe(ipw.VBox):
             'metadata.creation_process': self.w_sample_metadata_creation_process.value,
         })
 
-    @staticmethod
-    def _build_recipies_options():
+    #@staticmethod
+    def _build_recipies_options(self):
         """Returns a (name, description) list."""
-        dic = query_available_recipies()
+        dic = self.experiment_model.query_available_recipies()
         return [("", None)] + [(name, descr) for name, descr in dic.items()]
 
     def display_recipe_preview(self):
@@ -156,12 +158,12 @@ class SampleFromRecipe(ipw.VBox):
         self.display_recipe_preview()
 
     def on_update_button_clicked(self, _=None):
-        update_available_specs()
-        update_available_recipies()
-        self.w_specs_manufacturer.options = query_available_specs('manufacturer')
-        self.w_specs_composition.options = query_available_specs('composition.description')
-        self.w_specs_capacity.options = query_available_specs('capacity.nominal')
-        self.w_specs_form_factor.options = query_available_specs('form_factor')
+        self.experiment_model.update_available_specs()
+        self.experiment_model.update_available_recipies()
+        self.w_specs_manufacturer.options = self.experiment_model.query_available_specs('manufacturer')
+        self.w_specs_composition.options = self.experiment_model.query_available_specs('composition.description')
+        self.w_specs_capacity.options = self.experiment_model.query_available_specs('capacity.nominal')
+        self.w_specs_form_factor.options = self.experiment_model.query_available_specs('form_factor')
         self.w_recipe_select.options = self._build_recipies_options()
 
     def on_reset_button_clicked(self, _=None):

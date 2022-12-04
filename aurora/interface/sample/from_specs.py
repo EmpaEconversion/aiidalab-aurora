@@ -7,7 +7,7 @@ TODO: implement creation and labeling of sample nodes. Store them in a group, re
 
 import ipywidgets as ipw
 from IPython.display import display
-from aurora.query import update_available_samples, query_available_samples, update_available_specs, query_available_specs, write_pd_query_from_dict
+#from aurora.query import update_available_samples, query_available_samples, update_available_specs, query_available_specs, write_pd_query_from_dict
 from aurora.schemas.battery import BatterySample
 from aurora.schemas.utils import dict_to_formatted_json, remove_empties_from_dict_decorator
 
@@ -32,12 +32,14 @@ class SampleFromSpecs(ipw.VBox):
     QUERY_PRINT_COLUMNS = ['manufacturer', 'composition.description', 'capacity.nominal', 'capacity.actual', 'capacity.units', 'form_factor', 'metadata.name',
                        'metadata.creation_datetime'] #, 'metadata.creation_process']
     
-    def __init__(self, validate_callback_f, recipe_callback_f):
+    def __init__(self, experiment_model, validate_callback_f, recipe_callback_f):
 
         if not callable(validate_callback_f):
             raise TypeError("validate_callback_f should be a callable function")
         if not callable(recipe_callback_f):
             raise TypeError("recipe_callback_f should be a callable function")
+
+        self.experiment_model = experiment_model
 
         # initialize widgets
         self.w_specs_header = ipw.HTML(value="<h2>Battery Specifications</h2>")
@@ -116,7 +118,7 @@ class SampleFromSpecs(ipw.VBox):
 
         # initialize options
         self.on_reset_button_clicked()
-        update_available_specs()
+        self.experiment_model.update_available_specs()
         self._update_options()
         self.display_query_result()
 
@@ -137,7 +139,7 @@ class SampleFromSpecs(ipw.VBox):
     @remove_empties_from_dict_decorator
     def selected_sample_dict(self):
         return dict_to_formatted_json(
-            query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})).iloc[0])
+            self.experiment_model.query_available_samples(self.experiment_model.write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})).iloc[0])
 
     @property
     def selected_sample(self):
@@ -165,7 +167,7 @@ class SampleFromSpecs(ipw.VBox):
         The current `spec_field` is removed from the query, as we want to count how many samples correspond to each
         available value of the `spec_field`.
         """
-        spec_field_options_list = query_available_specs(spec_field)
+        spec_field_options_list = self.experiment_model.query_available_specs(spec_field)
 
         # setup sample query filter from current specs and remove current field from query
         sample_query_filter_dict = self.current_specs.copy()
@@ -177,7 +179,7 @@ class SampleFromSpecs(ipw.VBox):
             print(f"       {spec_field_options_list}")
             print(" QUERY: ", sample_query_filter_dict)
 
-        qres = query_available_samples(write_pd_query_from_dict(sample_query_filter_dict),
+        qres = self.experiment_model.query_available_samples(self.experiment_model.write_pd_query_from_dict(sample_query_filter_dict),
                                        project=[spec_field, 'battery_id']).sort_values('battery_id')
 
         # count values
@@ -190,7 +192,7 @@ class SampleFromSpecs(ipw.VBox):
 
     def _build_sample_id_options(self):
         """Returns a (option_string, battery_id) list."""
-        table = query_available_samples(write_pd_query_from_dict(self.current_specs)).sort_values('battery_id')
+        table = self.experiment_model.query_available_samples(self.experiment_model.write_pd_query_from_dict(self.current_specs)).sort_values('battery_id')
         return [("", None)] + [(f"<{row['battery_id']:5}>   \"{row['metadata.name']}\"", row['battery_id']) for index, row in table.iterrows()]
 
     def _update_options(self):
@@ -222,7 +224,7 @@ class SampleFromSpecs(ipw.VBox):
         self.w_query_result.clear_output()
         with self.w_query_result:
             # print(f'Query:\n  {self.current_specs}')
-            query_res = query_available_samples(write_pd_query_from_dict(self.current_specs)).set_index('battery_id')[self.QUERY_PRINT_COLUMNS]
+            query_res = self.experiment_model.query_available_samples(self.experiment_model.write_pd_query_from_dict(self.current_specs)).set_index('battery_id')[self.QUERY_PRINT_COLUMNS]
             # query_res['metadata.creation_datetime'] = query_res['metadata.creation_datetime'].dt.strftime("%d-%m-%Y %H:%m")
             # display(query_res.style.format(formatter={'metadata.creation_datetime': lambda t: t.strftime("%d-%m-%Y")}))
             display(query_res)
@@ -231,8 +233,8 @@ class SampleFromSpecs(ipw.VBox):
         self.w_sample_preview.clear_output()
         if self.w_select_sample_id.value is not None:
             with self.w_sample_preview:
-                # display(query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})))
-                print(query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})).iloc[0])
+                # display(self.experiment_model.query_available_samples(self.experiment_model.write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})))
+                print(self.experiment_model.query_available_samples(self.experiment_model.write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})).iloc[0])
 
     def update_validate_button_state(self):
         self.w_validate.disabled = (self.w_select_sample_id.value is None)
@@ -248,8 +250,8 @@ class SampleFromSpecs(ipw.VBox):
         self.display_query_result()
 
     def on_update_button_clicked(self, _=None):
-        update_available_specs()
-        update_available_samples()
+        self.experiment_model.update_available_specs()
+        self.experiment_model.update_available_samples()
         self.update_options()
         self.display_query_result()
         # notice: if the old value is not available anymore, an error might be raised!

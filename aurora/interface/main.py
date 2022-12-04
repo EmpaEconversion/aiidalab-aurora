@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import json
 import pandas as pd
 import ipywidgets as ipw
 from IPython.display import display
@@ -7,6 +7,12 @@ from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
 from .cycling import CyclingStandard, CyclingCustom
 from .tomato import TomatoSettings
 from aurora.engine import submit_experiment
+
+from aurora.schemas.battery import BatterySample
+from aurora.schemas.utils import dict_to_formatted_json
+
+from aurora.models import BatteryExperimentModel
+from aurora import __version__
 
 CODE_NAME = "ketchup-0.2rc2"
 
@@ -16,7 +22,7 @@ class MainPanel(ipw.VBox):
     _SAMPLE_INPUT_LABELS = ['Select from ID', 'Select from Specs', 'Make from Recipe']
     _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
     _METHOD_LABELS = ['Standardized', 'Customized']
-    w_header = ipw.HTML(value="<h2>Aurora</h2>")
+    w_header = ipw.HTML(value=f"<h2>Aurora</h2>\n Version {__version__}")
     _SAMPLE_BOX_LAYOUT = {'width': '90%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
     _SUBMISSION_INPUT_LAYOUT = {'width': '90%', 'border': 'solid blue 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px', 'overflow': 'scroll'}
     _SUBMISSION_OUTPUT_LAYOUT = {'width': '90%', 'border': 'solid red 1px', 'margin': '5px', 'padding': '5px', 'max_height': '500px', 'overflow': 'scroll'}
@@ -51,7 +57,8 @@ class MainPanel(ipw.VBox):
     @property
     def selected_cycling_protocol(self):
         "The Cycling Specs selected. Used by a BatteryCyclerExperiment."
-        return self._selected_cycling_protocol
+        return self.experiment_model.selected_protocol
+        #return self._selected_cycling_protocol
 
     @property
     def selected_tomato_settings(self):
@@ -112,6 +119,7 @@ class MainPanel(ipw.VBox):
     # METHOD SELECTION
     #######################################################################################
     def return_selected_protocol(self, cycling_widget_obj):
+        self.experiment_model.selected_protocol = cycling_widget_obj.protocol_steps_list
         self._selected_cycling_protocol = cycling_widget_obj.protocol_steps_list
         self.post_protocol_selection()
 
@@ -152,10 +160,16 @@ class MainPanel(ipw.VBox):
                     if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
                         raise ValueError("Tomato settings were not selected!")
 
-                    print(f"Battery Sample:\n  {self.selected_battery_sample}")
-                    print(f"Cycling Protocol:\n  {self.selected_cycling_protocol}")
-                    print(f"Tomato Settings:\n  {self.selected_tomato_settings}")
-                    print(f"Monitor Job Settings:\n  {self.selected_monitor_job_settings}")
+                    output_battery_sample = f'{self.selected_battery_sample}'
+                    output_cycling_protocol = json.dumps(self.selected_cycling_protocol.dict(), indent=2)
+                    output_tomato_settings = f'{self.selected_tomato_settings}'
+                    output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+                    
+                    print(f"Battery Sample:\n"+output_battery_sample+'\n')
+                    print(f"Cycling Protocol:\n"+output_cycling_protocol+'\n')
+                    print(f"Tomato Settings:\n"+output_tomato_settings+'\n')
+                    print(f"Monitor Job Settings:\n"+output_monitor_job_settings+'\n')
+
                 except ValueError as err:
                     self.w_submit_button.disabled = True
                     print(f"❌ {err}")
@@ -166,16 +180,22 @@ class MainPanel(ipw.VBox):
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
         self.w_submit_button.disabed = True
-        self.process = submit_experiment(
-            sample=self.selected_battery_sample,
-            method=self.selected_cycling_protocol,
-            tomato_settings=self.selected_tomato_settings,
-            monitor_job_settings=self.selected_monitor_job_settings,
-            code_name=self.w_code.value,
-            sample_node_label="",
-            method_node_label="",
-            calcjob_node_label=""
-        )
+        for index, battery_sample in self.experiment_model.selected_samples.iterrows():
+            json_stuff = dict_to_formatted_json(battery_sample)
+            json_stuff['capacity'].pop('actual', None)
+            current_battery = BatterySample.parse_obj(json_stuff)
+
+            self.process = submit_experiment(
+                sample=current_battery,
+                method=self.selected_cycling_protocol,
+                tomato_settings=self.selected_tomato_settings,
+                monitor_job_settings=self.selected_monitor_job_settings,
+                code_name=self.w_code.value,
+                sample_node_label="",
+                method_node_label="",
+                calcjob_node_label=""
+            )
+
         self.w_main_accordion.selected_index = None
 
     #######################################################################################
@@ -190,6 +210,7 @@ class MainPanel(ipw.VBox):
 
     def reset_all_inputs(self, dummy=None):
         "Reset all the selected inputs."
+        self.experiment_model.reset_inputs()
         self._selected_battery_sample = None
         self._selected_battery_specs = None
         self._selected_recipe = None
@@ -208,19 +229,29 @@ class MainPanel(ipw.VBox):
     #######################################################################################
     # MAIN
     #######################################################################################
-    def __init__(self):
+    def __init__(self, experiment_model=None):
+
+        if experiment_model is None:
+            experiment_model = BatteryExperimentModel()
+            #raise ValueError('An experiment model must be provided.')
+        self.experiment_model = experiment_model
         
         # initialize variables
         self.reset_all_inputs()
 
         # Sample selection
-        self.w_sample_from_id = SampleFromId(validate_callback_f=self.return_selected_sample)
-        self.w_sample_from_specs = SampleFromSpecs(validate_callback_f=self.return_selected_sample, recipe_callback_f=self.switch_to_recipe)
-        self.w_sample_from_recipe = SampleFromRecipe(validate_callback_f=self.return_selected_specs_recipe)
+        self.w_sample_from_id = SampleFromId(experiment_model=experiment_model, validate_callback_f=self.return_selected_sample)
+        self.w_sample_from_specs = SampleFromSpecs(experiment_model=experiment_model, validate_callback_f=self.return_selected_sample, recipe_callback_f=self.switch_to_recipe)
+        self.w_sample_from_recipe = SampleFromRecipe(experiment_model=experiment_model, validate_callback_f=self.return_selected_specs_recipe)
 
         self.w_sample_selection_tab = ipw.Tab(
-            children=[self.w_sample_from_id, self.w_sample_from_specs, self.w_sample_from_recipe],
-            selected_index=0)
+            children=[
+                self.w_sample_from_id,
+                self.w_sample_from_specs,
+                self.w_sample_from_recipe,
+            ],
+            selected_index=0
+            )
         for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
             self.w_sample_selection_tab.set_title(i, title)
 
@@ -228,7 +259,7 @@ class MainPanel(ipw.VBox):
         self.w_test_sample_label = ipw.HTML("Selected sample:")
         self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
         self.w_test_standard = CyclingStandard(lambda x: x)
-        self.w_test_custom = CyclingCustom(validate_callback_f=self.return_selected_protocol)
+        self.w_test_custom = CyclingCustom(experiment_model=experiment_model, validate_callback_f=self.return_selected_protocol)
         self.w_test_method_tab = ipw.Tab(
             children=[self.w_test_standard, self.w_test_custom],
             selected_index=1)
@@ -259,7 +290,7 @@ class MainPanel(ipw.VBox):
         self.w_submit_tab = ipw.VBox([
             self.w_job_preview,
             self.w_code,
-            self.w_submit_button
+            self.w_submit_button,
         ])
 
         # Reset
