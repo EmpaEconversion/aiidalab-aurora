@@ -4,6 +4,8 @@ import ipywidgets as ipw
 from aurora.engine.results import query_jobs, cycling_analysis
 import aiida_aurora.utils
 import pandas as pd
+from aurora import __version__
+
 
 class CyclingResultsWidget(ipw.VBox):
     BOX_STYLE = {'description_width': 'initial'}
@@ -14,6 +16,17 @@ class CyclingResultsWidget(ipw.VBox):
     PLOT_TYPES = [('', ''), ('Voltage & current vs time', 'voltagecurrent_time'), ('Voltage vs time', 'voltage_time'), ('Current vs time', 'current_time'), ('Capacity vs cycle', 'capacity_cycle')]
 
     def __init__(self):
+
+        # ------------------------------------------------------------ #
+        # HEADER BOX
+        # ------------------------------------------------------------ #
+        self.w_header_box = ipw.VBox([
+                ipw.HTML(value=f"<h1>Aurora - Visualize Results</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+                ],
+                layout={'width': '100%', 'border': 'solid black 4px', 'padding': '10px'}
+        )
+        # ------------------------------------------------------------ #
 
         # initialize widgets
         self.w_joblist_header = ipw.HTML(value="<h2>Job list</h2>")
@@ -45,6 +58,7 @@ class CyclingResultsWidget(ipw.VBox):
 
         super().__init__()
         self.children = [
+            self.w_header_box,
             self.w_joblist_header,
             ipw.HBox([self.w_job_days, self.w_update]),
             self.w_joblist,

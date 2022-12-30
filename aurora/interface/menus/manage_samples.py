@@ -23,8 +23,17 @@ class ManageSamplesMenu(ipw.VBox):
         self.available_samples_model = AvailableSamplesModel()
         self.experiment_model = BatteryExperimentModel()
 
-        self.w_header = ipw.HTML(value=f"<h1>Aurora - Manage Samples</h1>")
-        self.w_version = ipw.HTML(value=f"Aurora app version {__version__}")
+        # ------------------------------------------------------------ #
+        # HEADER BOX
+        # ------------------------------------------------------------ #
+        self.w_header_box = ipw.VBox([
+                ipw.HTML(value=f"<h1>Aurora - Manage Samples</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+                ],
+                layout={'width': '100%', 'border': 'solid black 4px', 'padding': '10px'}
+        )
+        # ------------------------------------------------------------ #
+
         self.w_sample_filter = SampleFilterWidget(self.available_samples_model)
 
         home_directory = os.path.expanduser('~')
@@ -78,12 +87,7 @@ class ManageSamplesMenu(ipw.VBox):
 
         super().__init__()
         self.children = [
-            ipw.VBox([
-                self.w_header,
-                self.w_version,
-                ],
-                layout={'width': '100%', 'border': 'solid black 4px', 'padding': '10px'}
-            ),
+            self.w_header_box,
             ipw.VBox([
                 ipw.HTML(value="<h3>Available Samples</h3>"),
                 self.w_sample_filter,

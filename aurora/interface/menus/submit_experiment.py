@@ -241,7 +241,18 @@ class MainPanel(ipw.VBox):
             #raise ValueError('An experiment model must be provided.')
         self.experiment_model = experiment_model
         self.available_samples_model = AvailableSamplesModel()
-        
+
+        # ------------------------------------------------------------ #
+        # HEADER BOX
+        # ------------------------------------------------------------ #
+        self.w_header_box = ipw.VBox([
+                ipw.HTML(value=f"<h1>Aurora - Submit Experiment</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+                ],
+                layout={'width': '100%', 'border': 'solid black 4px', 'padding': '10px'}
+        )
+        # ------------------------------------------------------------ #
+
         # initialize variables
         self.reset_all_inputs()
 
@@ -318,7 +329,7 @@ class MainPanel(ipw.VBox):
 
         super().__init__()
         self.children = [
-            self.w_header,
+            self.w_header_box,
             self.w_main_accordion,
             self.w_reset_button,
             self.w_submission_output
