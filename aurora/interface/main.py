@@ -11,14 +11,19 @@ from aurora.engine import submit_experiment
 from aurora.schemas.battery import BatterySample
 from aurora.schemas.utils import dict_to_formatted_json
 
-from aurora.models import BatteryExperimentModel
+from aurora.models import BatteryExperimentModel, AvailableSamplesModel
 from aurora import __version__
 
 CODE_NAME = "ketchup-0.2rc2"
 
 class MainPanel(ipw.VBox):
 
-    _ACCORDION_STEPS = ['Sample selection', 'Cycling Protocol', 'Job Settings', 'Submit Job']
+    _ACCORDION_STEPS = [
+        'Sample selection',
+        'Cycling Protocol',
+        'Job Settings',
+        'Submit Job',
+    ]
     _SAMPLE_INPUT_LABELS = ['Select from ID', 'Select from Specs', 'Make from Recipe']
     _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
     _METHOD_LABELS = ['Standardized', 'Customized']
@@ -30,7 +35,7 @@ class MainPanel(ipw.VBox):
     _BOX_STYLE = {'description_width': '25%'}
     _BUTTON_STYLE = {'description_width': '30%'}
     _BUTTON_LAYOUT = {'margin': '5px'}
-    
+
     w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
     #######################################################################################
@@ -235,6 +240,7 @@ class MainPanel(ipw.VBox):
             experiment_model = BatteryExperimentModel()
             #raise ValueError('An experiment model must be provided.')
         self.experiment_model = experiment_model
+        self.available_samples_model = AvailableSamplesModel()
         
         # initialize variables
         self.reset_all_inputs()
