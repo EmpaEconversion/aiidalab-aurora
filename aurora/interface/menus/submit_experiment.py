@@ -3,9 +3,9 @@ import json
 import pandas as pd
 import ipywidgets as ipw
 from IPython.display import display
-from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
-from .cycling import CyclingStandard, CyclingCustom
-from .tomato import TomatoSettings
+from aurora.interface.sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
+from aurora.interface.cycling import CyclingStandard, CyclingCustom
+from aurora.interface.tomato import TomatoSettings
 from aurora.engine import submit_experiment
 
 from aurora.schemas.battery import BatterySample
