@@ -1,36 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import ipywidgets as ipw
-from aurora.engine.results import query_jobs, cycling_analysis
-import aiida_aurora.utils
 import pandas as pd
+import ipywidgets as ipw
+import aiida_aurora.utils
+import matplotlib.pyplot as plt
 
-class CyclingResultsWidget(ipw.VBox):
-    BOX_STYLE = {'description_width': 'initial'}
+from aurora.engine.results import query_jobs, cycling_analysis
+from aurora import __version__
+
+
+class ResultsPlotterComponent(ipw.VBox):
+    """Description pending"""
+
     BOX_LAYOUT_1 = {'width': '40%'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
-    OUTPUT_LAYOUT = {'max_height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 1px', 'margin': '5px', 'padding': '5px'}
     PLOT_TYPES = [('', ''), ('Voltage & current vs time', 'voltagecurrent_time'), ('Voltage vs time', 'voltage_time'), ('Current vs time', 'current_time'), ('Capacity vs cycle', 'capacity_cycle')]
 
     def __init__(self):
+        """Description pending"""
+        self.CURRENT_JOBID = None
 
         # initialize widgets
-        self.w_joblist_header = ipw.HTML(value="<h2>Job list</h2>")
-        self.w_job_days = ipw.BoundedIntText(
-            description="Last n. of days:", min=0, max=1e6, step=1,
-            value=0, style=self.BOX_STYLE)
-        self.w_update = ipw.Button(
-            description="Update",
-            button_style='', tooltip="Update list", icon='refresh',
-            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
-        self.w_joblist = ipw.Output(layout=self.OUTPUT_LAYOUT)
-
-        self.w_select_sample_id = ipw.Dropdown(
-            description="Select Battery ID:", value=None,
-            layout=self.BOX_LAYOUT_1, style={'description_width': 'initial'})
-        
-        self.w_results_header = ipw.HTML(value="<h2>Results</h2>")
+        self.w_results_header = ipw.HTML(value="<h2>Plot Results</h2>")
+        self.w_choose_batteryid = ipw.Text(
+            description='Battery ID:',
+            placeholder='ID number`',
+            layout={'width': '20%'},
+        )
         self.w_plot_type = ipw.Dropdown(
             description="Select plot type:", value=None,
             options=self.PLOT_TYPES,
@@ -41,72 +38,26 @@ class CyclingResultsWidget(ipw.VBox):
             disabled=True,
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
         self.w_log_output = ipw.Output()
-        self.w_plot_output = ipw.Output()
+        self.w_plot_output = ipw.Output(layout={'height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'})
 
         super().__init__()
         self.children = [
-            self.w_joblist_header,
-            ipw.HBox([self.w_job_days, self.w_update]),
-            self.w_joblist,
-            self.w_select_sample_id,
             self.w_results_header,
-            ipw.HBox([self.w_plot_type, self.w_plot_draw]),
+            ipw.HBox([self.w_choose_batteryid, self.w_plot_type, self.w_plot_draw]),
             self.w_log_output,
             self.w_plot_output
         ]
-        
-        # initialize options
-        self.update_job_list()
-#         self._create_figure(title='')
-        
+                
         # setup automations
-        self.w_update.on_click(self.update_job_list)
-        self.w_select_sample_id.observe(self._load_data)
         self.w_plot_draw.on_click(self.draw_plot)
+        self.draw_blank_plot()
 
-    def _build_job_list(self):
-        query = query_jobs(self.w_job_days.value)
-        self.job_list = pd.DataFrame(query)
-        self.job_list['ctime'] = self.job_list['ctime'].dt.strftime('%Y-%m-%d %H:%m:%S')
-        self.job_list.rename(columns={
-            'id': 'ID',
-            'label': 'Label',
-            'ctime': 'creation time',
-            'attributes.process_label': 'job type',
-            'attributes.state': 'state',
-            'attributes.status': 'reason',
-            'extras.monitored': 'monitored'
-        }, inplace=True)
-        self.job_list['monitored'] = self.job_list['monitored'].astype(bool)
-
-    @staticmethod
-    def _build_sample_id_options(table):
-        """Returns a (option_string, ID) list."""
-        return [("", None)] + [(f"<{row['ID']:5} >   {row['Label']}", row['ID']) for index, row in table.iterrows()]
-
-    def _update_sample_id_options(self):
-        """Update the specs' options."""
-#         self._unset_specs_observers()
-        self.w_select_sample_id.options = self._build_sample_id_options(self.job_list)
-#         self._set_specs_observers()
-
-    def update_job_list(self, dummy=None):
-        self._build_job_list()
-        self.w_joblist.clear_output()
-        with self.w_joblist:
-            display(self.job_list.style.hide_index())
-        self._update_sample_id_options()
-
-    @property
-    def selected_job_id(self):
-        return self.w_select_sample_id.value
-    
     @property
     def selected_plot_type(self):
         return self.w_plot_type.value
 
     def _cycling_analysis(self):
-        return cycling_analysis(self.selected_job_id)
+        return cycling_analysis(self.output_explorer.selected_job_id)
     
     def _load_data(self, dummy=None):
         "Load data, store it, and print some output info."
@@ -143,3 +94,14 @@ class CyclingResultsWidget(ipw.VBox):
                     aiida_aurora.utils.plot.plot_I(self.data)
                 elif self.selected_plot_type == 'capacity_cycle':
                     aiida_aurora.utils.plot.plot_Qd(self.data)
+
+    def draw_blank_plot(self):
+        """Draws the default blank plot"""
+        self.w_plot_output.clear_output()
+        with self.w_plot_output:
+            #plt.close() # unnecessary with the clear_output?
+            fig, axx = plt.subplots(1, figsize=(9, 4))
+            plt.subplots_adjust(left=0.1, right=0.95, bottom=0.15, top=0.9)
+            fig.suptitle('title1')
+            plt.show()
+            #return fig, axx

@@ -1,3 +1,4 @@
 # -*- coding: utf-8 -*-
 
-from .visualizer import CyclingResultsWidget
+from .output_explorer import OutputExplorerComponent
+from .results_plotter import ResultsPlotterComponent

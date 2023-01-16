@@ -3,22 +3,27 @@ import json
 import pandas as pd
 import ipywidgets as ipw
 from IPython.display import display
-from .sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
-from .cycling import CyclingStandard, CyclingCustom
-from .tomato import TomatoSettings
+from aurora.interface.sample import SampleFromId, SampleFromSpecs, SampleFromRecipe
+from aurora.interface.cycling import CyclingStandard, CyclingCustom
+from aurora.interface.tomato import TomatoSettings
 from aurora.engine import submit_experiment
 
 from aurora.schemas.battery import BatterySample
 from aurora.schemas.utils import dict_to_formatted_json
 
-from aurora.models import BatteryExperimentModel
+from aurora.models import BatteryExperimentModel, AvailableSamplesModel
 from aurora import __version__
 
 CODE_NAME = "ketchup-0.2rc2"
 
 class MainPanel(ipw.VBox):
 
-    _ACCORDION_STEPS = ['Sample selection', 'Cycling Protocol', 'Job Settings', 'Submit Job']
+    _ACCORDION_STEPS = [
+        'Sample selection',
+        'Cycling Protocol',
+        'Job Settings',
+        'Submit Job',
+    ]
     _SAMPLE_INPUT_LABELS = ['Select from ID', 'Select from Specs', 'Make from Recipe']
     _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
     _METHOD_LABELS = ['Standardized', 'Customized']
@@ -30,7 +35,7 @@ class MainPanel(ipw.VBox):
     _BOX_STYLE = {'description_width': '25%'}
     _BUTTON_STYLE = {'description_width': '30%'}
     _BUTTON_LAYOUT = {'margin': '5px'}
-    
+
     w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
     #######################################################################################
@@ -235,7 +240,19 @@ class MainPanel(ipw.VBox):
             experiment_model = BatteryExperimentModel()
             #raise ValueError('An experiment model must be provided.')
         self.experiment_model = experiment_model
-        
+        self.available_samples_model = AvailableSamplesModel()
+
+        # ------------------------------------------------------------ #
+        # HEADER BOX
+        # ------------------------------------------------------------ #
+        self.w_header_box = ipw.VBox([
+                ipw.HTML(value=f"<h1>Aurora - Submit Experiment</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+                ],
+                layout={'width': '100%', 'border': 'solid black 4px', 'padding': '10px'}
+        )
+        # ------------------------------------------------------------ #
+
         # initialize variables
         self.reset_all_inputs()
 
@@ -312,7 +329,7 @@ class MainPanel(ipw.VBox):
 
         super().__init__()
         self.children = [
-            self.w_header,
+            self.w_header_box,
             self.w_main_accordion,
             self.w_reset_button,
             self.w_submission_output
