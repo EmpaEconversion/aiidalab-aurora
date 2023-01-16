@@ -49,19 +49,25 @@ class SampleFilterWidget(ipw.VBox):
         # BUTTONS
         #----------------------------------------#
 
-        self.w_button_update = ipw.Button(
-            description="Update",
-            button_style='success', tooltip="Update available samples", icon="refresh",
+        self.w_button_reset_d = ipw.Button(
+            description="Reset changes",
+            button_style='primary', tooltip="Reset unsaved changes", icon="refresh",
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT
         )
-        self.w_button_reset = ipw.Button(
+        self.w_button_reset_f = ipw.Button(
             description="Reset filters",
-            button_style='primary', tooltip="Clear fields", icon="times",
+            button_style='primary', tooltip="Clear filtering fields", icon="times",
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT
         )
         self.w_button_delete = ipw.Button(
-            description="delete sample",
-            button_style='danger', tooltip="Clear fields", icon="fa-trash",
+            description="Delete sample",
+            button_style='danger', tooltip="Delete sample", icon="fa-trash",
+            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT, disabled=True,
+        )
+
+        self.w_button_save = ipw.Button(
+            description="Save changes",
+            button_style='success', tooltip="Save changes", icon="fa-trash",
             style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT, disabled=True,
         )
 
@@ -86,7 +92,7 @@ class SampleFilterWidget(ipw.VBox):
                 layout=ipw.Layout(grid_template_columns="repeat(2, 45%)")
             ),
             ipw.HBox(
-                [self.w_button_update, self.w_button_reset, self.w_button_delete],
+                [self.w_button_reset_f, self.w_button_reset_d, self.w_button_delete, self.w_button_save],
                 layout={'justify_content': 'center', 'margin': '5px'}
             ),
             #self.w_query_result0,
@@ -100,9 +106,10 @@ class SampleFilterWidget(ipw.VBox):
         self.display_query_result()
 
         # setup automations
-        self.w_button_update.on_click(self.on_update_button_clicked)
-        self.w_button_reset.on_click(self.on_reset_button_clicked)
+        self.w_button_reset_d.on_click(self.on_click_button_reset_d)
+        self.w_button_reset_f.on_click(self.on_reset_button_clicked)
         self.w_button_delete.on_click(self.on_delete_button_clicked)
+        self.w_button_save.on_click(self.on_click_save_changes)
         self._set_specs_observers()
         self._filtered_samples_id = None
 
@@ -238,12 +245,17 @@ class SampleFilterWidget(ipw.VBox):
         self.display_query_result()
 
     def on_delete_button_clicked(self, _=None):
+        deletion_idval = self.w_query_result.value
+        self.available_samples_model.remove_sample_with_id(deletion_idval)
         self.w_query_result.value = None
         self.w_extra_info.clear_output()
         with self.w_extra_info:
-            print('Feature not implemented yet! (coordination between deletion and the import required)')
+            print(f'Battery id = {deletion_idval} deleted!')
+        self.update_options()
+        self.display_query_result()
 
-    def on_update_button_clicked(self, _=None):
+    def on_click_button_reset_d(self, _=None):
+        self.available_samples_model.load_samples_file()
         self.update_options()
         self.display_query_result()
         # notice: if the old value is not available anymore, an error might be raised!
@@ -286,6 +298,8 @@ class SampleFilterWidget(ipw.VBox):
             return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['metadata.name']} ({row['composition.description']})"
         self.w_query_result.options = [("", None)] + [(row_label(row), row['battery_id']) for index, row in table.iterrows()]
 
+        # Check if saveable
+        self.w_button_save.disabled = not self.available_samples_model.has_unsaved_changes()
         #raise ValueError(f'Let us start: {type(query_res)}\n\n{query_res}\n\n')
         #self.w_query_result.options = []
 
@@ -300,3 +314,7 @@ class SampleFilterWidget(ipw.VBox):
             query_res = self.available_samples_model.query_available_samples(query_inp)
             display(query_res)
             self.w_button_delete.disabled = False
+
+    def on_click_save_changes(self, widget=None):
+        self.available_samples_model.save_samples_file()
+        self.w_button_save.disabled = not self.available_samples_model.has_unsaved_changes()

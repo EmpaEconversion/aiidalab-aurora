@@ -16,9 +16,9 @@ class AvailableSamplesModel():
     
     def __init__(self):
         self.observer_manager = ObserverManager()
+        self.recorded_samples = self._load_samples_file()
         self.available_samples = self._load_samples_file()
         self.available_samples_cache = self._update_pandas_cache(self.available_samples)
-        self._has_unsaved_changes = False
 
     def suscribe_observer(self, observer):
         self.observer_manager.add_observer(observer)
@@ -37,9 +37,9 @@ class AvailableSamplesModel():
 
     def load_samples_file(self, source_file=AVAILABLE_SAMPLES_FILE):
         """Loads the content of the available samples file"""
+        self.recorded_samples = self._load_samples_file()
         self.available_samples = self._load_samples_file()
         self.available_samples_cache = self._update_pandas_cache(self.available_samples)
-        self._has_unsaved_changes = False
         self.observer_manager.update_all()
 
     def save_samples_file(self, source_file=AVAILABLE_SAMPLES_FILE):
@@ -48,7 +48,7 @@ class AvailableSamplesModel():
         with open(source_file, 'w') as fileobj:
             json.dump(output_list, fileobj, default=str)
             #json.dump(output_list, fileobj, indent=2, default=str)
-        self._has_unsaved_changes = False
+        self.recorded_samples = self._load_samples_file()
         self.observer_manager.update_all()
 
     def get_samples(self):
@@ -61,6 +61,20 @@ class AvailableSamplesModel():
         for sample in self.available_samples:
             highest_id = max(highest_id,sample.battery_id)
         return highest_id
+
+    def remove_sample_with_id(self, sample_id):
+        """Remove a sample from the list based on id."""
+        index_of_sample_to_remove = None
+
+        for idx, sample in enumerate(self.available_samples):
+            if sample_id == sample.battery_id:
+                index_of_sample_to_remove = idx
+                break
+    
+        if index_of_sample_to_remove is not None:
+            del self.available_samples[index_of_sample_to_remove]
+            self.available_samples_cache = self._update_pandas_cache(self.available_samples)
+            self.observer_manager.update_all()
 
     def parseadd_robot_output(self, filepath, basedict):
         """Adds to the list the output from the robot."""
@@ -83,13 +97,13 @@ class AvailableSamplesModel():
             self.available_samples.append(new_sample)
 
         self.available_samples_cache = self._update_pandas_cache(self.available_samples)
-        self._has_unsaved_changes = True
         self.observer_manager.update_all()
 
     def parse_sample_datadict(self, basedict, datadict):
         """Parses stuff."""
 
         # These units are all wanky...
+        # Both cathode and anode should be around 30 miligrams
         weight_ag = float(datadict['Anode Weight'])
         weight_cg = float(datadict['Cathode Weight (mg)']) / (1000 * 1000)
         rate_amahg = float(datadict['Anode Practical Capacity (mAh/g)'])
@@ -118,8 +132,7 @@ class AvailableSamplesModel():
 
 
     def has_unsaved_changes(self):
-        return self._has_unsaved_changes
-
+        return not self.recorded_samples == self.available_samples
 
     def _update_pandas_cache(self, source_data):
         source_json = [sample.dict() for sample in self.available_samples]

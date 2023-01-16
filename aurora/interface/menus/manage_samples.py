@@ -43,11 +43,7 @@ class ManageSamplesMenu(ipw.VBox):
         )
         self.w_button_import = ipw.Button(
             description="Import Samples", button_style='primary', tooltip="Import samples",
-            layout={'height':'80px', 'margin': '5px'}, disabled=True, icon="fa-upload",
-        )
-        self.w_button_save = ipw.Button(
-            description="Save Changes", button_style='success', tooltip="Save Changes",
-            layout={'height':'30px', 'margin': '5px'}, disabled=True, icon="fa-floppy-o",
+            layout={'height':'85px', 'margin': '5px'}, disabled=True, icon="fa-upload",
         )
 
         self.w_textin_basename = ipw.Text(
@@ -92,23 +88,38 @@ class ManageSamplesMenu(ipw.VBox):
                 ipw.HTML(value="<h3>Available Samples</h3>"),
                 self.w_sample_filter,
                 ipw.HTML(value="<h3>Import samples from robot output</h3>"),
-                ipw.HBox([
-                    ipw.VBox([
-                        ipw.HBox([self.w_textin_basename, self.w_textin_manufacturer]),
-                        self.w_textin_description,
-                        ipw.HBox([self.w_textin_process, self.w_textin_ctime]),
-                        self.w_filepath_explorer,
-                    ], layout={'width': '75%'}
-                    ),
-                    ipw.VBox([
-                        self.w_button_import,
-                        self.w_button_save,
-                    ], layout={'width': '25%'}),
-                ]),
-                ],
-                layout={'width': '100%', 'padding': '10px'}
-            ),
-        ]
+                ipw.VBox([
+                    self.w_filepath_explorer,
+                    ipw.HBox([
+                        ipw.VBox([
+                            ipw.HBox([self.w_textin_basename, self.w_textin_manufacturer]),
+                            self.w_textin_description,
+                            ipw.HBox([self.w_textin_process, self.w_textin_ctime]),
+                        ], layout={'width': '75%'}
+                        ),
+                        ipw.VBox([
+                            self.w_button_import,
+                        ], layout={'width': '25%'}),
+                    ]),
+
+                ], layout={'width': '100%', 'padding': '10px'})
+            ])]
+#                ipw.HBox([
+#                    ipw.VBox([
+#                        ipw.HBox([self.w_textin_basename, self.w_textin_manufacturer]),
+#                        self.w_textin_description,
+#                        ipw.HBox([self.w_textin_process, self.w_textin_ctime]),
+#                        self.w_filepath_explorer,
+#                    ], layout={'width': '75%'}
+#                    ),
+#                    ipw.VBox([
+#                        self.w_button_import,
+#                    ], layout={'width': '25%'}),
+#                ]),
+#                ],
+#                layout={'width': '100%', 'padding': '10px'}
+#            ),
+#        ]
 
 #        def minifunc(change):
 #            raise ValueError(f'Well look at this! {change}')
@@ -116,7 +127,6 @@ class ManageSamplesMenu(ipw.VBox):
 #        self.w_sample_filter.observe(minifunc, 'filtered_samples_id')
 
         self.w_button_import.on_click(self.on_click_import_samples)
-        self.w_button_save.on_click(self.on_click_save_changes)
         
         self.w_filepath_explorer.register_callback(self.on_filepath_select) # this is a click
 
@@ -142,10 +152,6 @@ class ManageSamplesMenu(ipw.VBox):
         import_is_disabled = import_is_disabled or self.w_textin_manufacturer.value is ''
         import_is_disabled = import_is_disabled or self.w_textin_process.value is ''
         self.w_button_import.disabled = import_is_disabled
-        self.check_if_saveable()
-
-    def check_if_saveable(self, change_dict=None):
-        self.w_button_save.disabled = not self.available_samples_model.has_unsaved_changes()
 
     def on_click_import_samples(self, widget=None):
         """Wrapper for parseadd_robot_output"""
@@ -162,9 +168,4 @@ class ManageSamplesMenu(ipw.VBox):
         self.available_samples_model.parseadd_robot_output(filepath, basedict)
         self.experiment_model.update_available_samples()
         self.w_sample_filter.update_options()
-        self.check_if_saveable()
 
-    def on_click_save_changes(self, widget=None):
-        self.available_samples_model.save_samples_file()
-        self.w_filepath_explorer.reset()
-        self.on_filepath_select()
