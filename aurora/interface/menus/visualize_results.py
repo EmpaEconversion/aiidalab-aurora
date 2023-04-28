@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
-
-import pandas as pd
-import ipywidgets as ipw
 import aiida_aurora.utils
+import ipywidgets as ipw
+import pandas as pd
 
-from aurora.engine.results import query_jobs, cycling_analysis
-from aurora.interface.analyze import OutputExplorerComponent, ResultsPlotterComponent
 from aurora import __version__
+from aurora.engine.results import cycling_analysis, query_jobs
+from aurora.interface.analyze import (OutputExplorerComponent,
+                                      ResultsPlotterComponent)
 
 
 class CyclingResultsWidget(ipw.VBox):
@@ -17,11 +16,14 @@ class CyclingResultsWidget(ipw.VBox):
 
         # HEADER BOX
         self.w_header_box = ipw.VBox([
-                ipw.HTML(value=f"<h1>Aurora - Visualize Results</h1>"),
-                ipw.HTML(value=f"Aurora app version {__version__}"),
-                ],
-                layout={'width': '100%', 'border': 'solid black 4px', 'padding': '10px'}
-        )
+            ipw.HTML(value=f"<h1>Aurora - Visualize Results</h1>"),
+            ipw.HTML(value=f"Aurora app version {__version__}"),
+        ],
+                                     layout={
+                                         'width': '100%',
+                                         'border': 'solid black 4px',
+                                         'padding': '10px'
+                                     })
 
         # SUB-COMPONENTS
         self.w_output_explorer = OutputExplorerComponent()

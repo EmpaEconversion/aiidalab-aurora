@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
-from aurora.schemas.battery import BatterySample
 from pydantic import BaseModel
 
+from aurora.schemas.battery import BatterySample
 
-def batterysample_to_sample_0(
-    batsample: BatterySample,
-    SampleSchema: BaseModel):
+
+def batterysample_to_sample_0(batsample: BatterySample,
+                              SampleSchema: BaseModel):
     """
     Convert a BatterySample into a Sample.
 
@@ -21,12 +19,10 @@ def batterysample_to_sample_0(
         else:
             raise TypeError()
     # if batsample.capacity.units == "mAh":
-        # capacity = float(batsample.capacity.nominal) * 0.001
+    # capacity = float(batsample.capacity.nominal) * 0.001
     # elif batsample.capacity.units == "Ah":
-        # capacity = float(batsample.capacity.nominal)
+    # capacity = float(batsample.capacity.nominal)
 
-    sample = SampleSchema(
-        name = batsample.metadata.name,
-        capacity = batsample.capacity.nominal
-    )
+    sample = SampleSchema(name=batsample.metadata.name,
+                          capacity=batsample.capacity.nominal)
     return sample

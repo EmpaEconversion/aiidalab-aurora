@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
-import pandas as pd
-import ipywidgets as ipw
 import aiida_aurora.utils
+import ipywidgets as ipw
 import matplotlib.pyplot as plt
+import pandas as pd
 
-from aurora.engine.results import query_jobs, cycling_analysis
 from aurora import __version__
+from aurora.engine.results import cycling_analysis, query_jobs
 
 
 class ResultsPlotterComponent(ipw.VBox):
@@ -15,7 +13,11 @@ class ResultsPlotterComponent(ipw.VBox):
     BOX_LAYOUT_1 = {'width': '40%'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
-    PLOT_TYPES = [('', ''), ('Voltage & current vs time', 'voltagecurrent_time'), ('Voltage vs time', 'voltage_time'), ('Current vs time', 'current_time'), ('Capacity vs cycle', 'capacity_cycle')]
+    PLOT_TYPES = [('', ''),
+                  ('Voltage & current vs time', 'voltagecurrent_time'),
+                  ('Voltage vs time', 'voltage_time'),
+                  ('Current vs time', 'current_time'),
+                  ('Capacity vs cycle', 'capacity_cycle')]
 
     def __init__(self):
         """Description pending"""
@@ -28,26 +30,37 @@ class ResultsPlotterComponent(ipw.VBox):
             placeholder='ID number`',
             layout={'width': '20%'},
         )
-        self.w_plot_type = ipw.Dropdown(
-            description="Select plot type:", value=None,
-            options=self.PLOT_TYPES,
-            layout=self.BOX_LAYOUT_1, style={'description_width': 'initial'})
-        self.w_plot_draw = ipw.Button(
-            description="Draw plot",
-            button_style='info', tooltip="Draw plot", icon='line-chart',
-            disabled=True,
-            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
+        self.w_plot_type = ipw.Dropdown(description="Select plot type:",
+                                        value=None,
+                                        options=self.PLOT_TYPES,
+                                        layout=self.BOX_LAYOUT_1,
+                                        style={'description_width': 'initial'})
+        self.w_plot_draw = ipw.Button(description="Draw plot",
+                                      button_style='info',
+                                      tooltip="Draw plot",
+                                      icon='line-chart',
+                                      disabled=True,
+                                      style=self.BUTTON_STYLE,
+                                      layout=self.BUTTON_LAYOUT)
         self.w_log_output = ipw.Output()
-        self.w_plot_output = ipw.Output(layout={'height': '500px', 'width': '90%', 'overflow': 'scroll', 'border': 'solid 2px', 'margin': '5px', 'padding': '5px'})
+        self.w_plot_output = ipw.Output(
+            layout={
+                'height': '500px',
+                'width': '90%',
+                'overflow': 'scroll',
+                'border': 'solid 2px',
+                'margin': '5px',
+                'padding': '5px'
+            })
 
         super().__init__()
         self.children = [
             self.w_results_header,
-            ipw.HBox([self.w_choose_batteryid, self.w_plot_type, self.w_plot_draw]),
-            self.w_log_output,
-            self.w_plot_output
+            ipw.HBox(
+                [self.w_choose_batteryid, self.w_plot_type, self.w_plot_draw]),
+            self.w_log_output, self.w_plot_output
         ]
-                
+
         # setup automations
         self.w_plot_draw.on_click(self.draw_plot)
         self.draw_blank_plot()
@@ -58,7 +71,7 @@ class ResultsPlotterComponent(ipw.VBox):
 
     def _cycling_analysis(self):
         return cycling_analysis(self.output_explorer.selected_job_id)
-    
+
     def _load_data(self, dummy=None):
         "Load data, store it, and print some output info."
         self.w_log_output.clear_output()
@@ -74,7 +87,7 @@ class ResultsPlotterComponent(ipw.VBox):
         self.w_plot_type.value = None
         self.w_plot_output.clear_output()
 
-    def draw_plot(self, dummy=None):       
+    def draw_plot(self, dummy=None):
         title = None
         if self.selected_job_id and self.selected_plot_type:
             self.w_plot_output.clear_output()

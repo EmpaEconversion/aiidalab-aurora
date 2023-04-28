@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
 import logging
+
 
 class ObserverManager():
     """Class provides an object for subject to manage their observers."""
-    
+
     def __init__(self):
         self.list_of_observers = []
         self.list_of_observations = []
@@ -23,4 +23,3 @@ class ObserverManager():
     def update_all(self):
         for observer in self.list_of_observers:
             observer.update_observer()
-
