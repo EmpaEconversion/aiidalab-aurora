@@ -7,15 +7,14 @@ import typing
 import ipywidgets as ipw
 from pydantic.types import NonNegativeFloat, NonNegativeInt
 
-from aurora.schemas.cycling import (CyclingParameter, CyclingTechnique,
-                                    ElectroChemPayloads)
+from aurora.schemas.cycling import CyclingParameter, ElectroChemPayloads
 
-## NOTE: requirements of parameters is not enforced when assigning
+# NOTE: requirements of parameters is not enforced when assigning
 
 CHECKBOX_STYLE = {'description_width': '5px'}
 CHECKBOX_LAYOUT = {'width': '8%'}
 BOX_STYLE = {'description_width': 'initial'}
-BOX_LAYOUT = {}  #'width': '30%', 'margin': '5px'}
+BOX_LAYOUT = {}  # 'width': '30%', 'margin': '5px'}
 
 
 def build_parameter_widget(param_obj):
@@ -25,12 +24,13 @@ def build_parameter_widget(param_obj):
             f"param_obj should be a CyclingParameter instance, not {type(param_obj)}"
         )
 
-    w_check = ipw.Checkbox(value=param_obj.required
-                           or (param_obj.value is not None),
-                           disabled=param_obj.required,
-                           description='',
-                           style=CHECKBOX_STYLE,
-                           layout=CHECKBOX_LAYOUT)
+    w_check = ipw.Checkbox(
+        value=param_obj.required or (param_obj.value is not None),
+        disabled=param_obj.required,
+        description='',
+        style=CHECKBOX_STYLE,
+        layout=CHECKBOX_LAYOUT,
+    )
 
     # read the value of parameter. If None, take use the default value
     param_value = param_obj.value if param_obj.value is not None else param_obj.default_value
@@ -66,7 +66,7 @@ def build_parameter_widget(param_obj):
         w_param = ipw.BoundedFloatText(
             description=param_obj.label,
             min=value_min,
-            max=value_max,  #step=param_dic.get('step'),
+            max=value_max,  # step=param_dic.get('step'),
             value=param_value,
             style=BOX_STYLE)
     elif issubclass(value_type, int):
@@ -77,7 +77,7 @@ def build_parameter_widget(param_obj):
         w_param = ipw.BoundedIntText(
             description=param_obj.label,
             min=value_min,
-            max=value_max,  #step=param_dic.get('step'),
+            max=value_max,  # step=param_dic.get('step'),
             value=param_value,
             style=BOX_STYLE)
     elif issubclass(value_type, str):
@@ -93,9 +93,9 @@ def build_parameter_widget(param_obj):
 
     enable_w_param()
     w_check.observe(enable_w_param, names='value')
-    w_units = ipw.HTMLMath(param_obj.units +
-                           f"&nbsp&nbsp&nbsp (<i>{param_obj.description}</i>)"
-                           if param_obj.description else "")
+    w_units = ipw.HTMLMath(
+        f"{param_obj.units}&nbsp&nbsp&nbsp (<i>{param_obj.description}</i>)"
+        if param_obj.description else "")
 
     return ipw.HBox([w_check, w_param, w_units])
 

@@ -1,5 +1,6 @@
 import json
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 fn = "commercial-4.02.cycling.json"
@@ -40,8 +41,6 @@ for ii, ie in enumerate(idx[1:]):
     else:
         Qd.append(abs(q))
         Qi.append(cn[ie] + 1)
-
-import matplotlib.pyplot as plt
 
 # plot Ewe vs time in h
 fig, ax = plt.subplots()

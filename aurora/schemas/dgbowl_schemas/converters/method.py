@@ -12,7 +12,6 @@ def electrochemsequence_to_method_list_0(elchemsequence: ElectroChemSequence,
     Compatible with the following dgbowl-schemas payload versions:
         [0.1, 0.2]
     """
-    _COMPATIBLE_PAYLOAD_VERSIONS = ["0.1", "0.2"]
 
     if not isinstance(elchemsequence, ElectroChemSequence):
         if isinstance(elchemsequence, dict):

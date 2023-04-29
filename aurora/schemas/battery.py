@@ -1,10 +1,8 @@
 from datetime import datetime
 from enum import Flag
-from typing import Literal, Optional, TypedDict, Union
+from typing import Literal, Optional
 
-from numpy import datetime64
-from pydantic import (BaseModel, NonNegativeFloat, PositiveFloat,
-                      root_validator, validator)
+from pydantic import BaseModel, NonNegativeFloat, PositiveFloat, root_validator
 
 from .utils import extract_schema_types
 
@@ -37,8 +35,7 @@ class BatteryComposition(BaseModel):  # TypedDict?
         # TODO: what to do if 'description' is not in the C|E|A format?
         """
         if values['description']:
-            if any(
-                [values[key] for key in ('cathode', 'anode', 'electrolyte')]):
+            if any(values[key] for key in ('cathode', 'anode', 'electrolyte')):
                 raise ValueError(
                     "You cannot specify a 'description' and any component at the same time."
                 )
@@ -52,7 +49,7 @@ class BatteryComposition(BaseModel):  # TypedDict?
                     None, None, None)
                 # raise ValueError(
                 # "Composition 'description' does not have 3 components (i.e. {cathode}|{electrolyte}|{anode}).")
-        elif any([values[key] for key in ('cathode', 'anode', 'electrolyte')]):
+        elif any(values[key] for key in ('cathode', 'anode', 'electrolyte')):
             for key in ('cathode', 'anode', 'electrolyte'):
                 values[key] = values[key].strip()
             values[

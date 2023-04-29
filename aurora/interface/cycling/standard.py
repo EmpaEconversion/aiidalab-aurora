@@ -19,7 +19,7 @@ class CyclingStandard(ipw.VBox):
         'margin': '5px',
         'padding': '5px',
         'border': 'solid 2px'
-    }  #'max_height': '500px'
+    }  # 'max_height': '500px'
     MAIN_LAYOUT = {
         'width': '100%',
         'padding': '10px',
@@ -29,10 +29,14 @@ class CyclingStandard(ipw.VBox):
     def __init__(self, validate_callback_f):
 
         # initialize widgets
-        self.w_protocol_label = ipw.HTML(
-            value=
-            "<h2>BIG-MAP WP8 Standardized Protocols <span style='color: #ffffff; background-color: #ff0000;'>**NOT IMPLEMENTED**</span></h2>"
-        )
+        self.w_protocol_label = ipw.HTML(value="""
+            <h2>
+                BIG-MAP WP8 Standardized Protocols &nbsp;
+                <span style='color: #ffffff; background-color: #ff0000;'>
+                    **NOT IMPLEMENTED**
+                </span>
+            </h2>
+        """)
         self.w_protocol_select = ipw.Select(rows=10,
                                             value=None,
                                             description="Select Protocol:",
@@ -61,7 +65,7 @@ class CyclingStandard(ipw.VBox):
                         self.w_protocol_preview,
                         # self.w_sample_metadata_name,
                         # self.w_sample_metadata_creation_process,
-                    ]),  #, layout=ipw.Layout(grid_template_columns='25% 75%')),
+                    ]),  # , layout=ipw.Layout(grid_template_columns='25% 75%')),
                     # ipw.HBox([self.w_update, self.w_reset], layout={'justify_content': 'center', 'margin': '5px'}),
                     self.w_protocol_parameters,
                 ],
@@ -112,7 +116,7 @@ class CyclingStandard(ipw.VBox):
             if self.w_protocol_select.value:
                 print(f"Protocol:  {self.w_protocol_select.value}")
                 print(
-                    f"Procedure:", "\n  ".join(self._available_protocols[
+                    "Procedure:", "\n  ".join(self._available_protocols[
                         self.w_protocol_select.value]['Procedure']))
                 print(
                     f"Cutoff conditions: {self._available_protocols[self.w_protocol_select.value]['Cutoff conditions']}"
@@ -126,13 +130,13 @@ class CyclingStandard(ipw.VBox):
         self.display_protocol_preview()
 
     def on_update_button_clicked(self, _=None):
-        #         update_available_specs()
+        # update_available_specs()
         update_available_protocols()
         self._available_protocols = query_available_protocols()
-        #         self.w_specs_manufacturer.options = query_available_specs('manufacturer')
-        #         self.w_specs_composition.options = query_available_specs('composition.description')
-        #         self.w_specs_capacity.options = query_available_specs('capacity.nominal')
-        #         self.w_specs_form_factor.options = query_available_specs('form_factor')
+        # self.w_specs_manufacturer.options = query_available_specs('manufacturer')
+        # self.w_specs_composition.options = query_available_specs('composition.description')
+        # self.w_specs_capacity.options = query_available_specs('capacity.nominal')
+        # self.w_specs_form_factor.options = query_available_specs('form_factor')
         self.w_protocol_select.options = self._build_protocols_options()
 
 

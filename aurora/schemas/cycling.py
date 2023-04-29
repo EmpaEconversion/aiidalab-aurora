@@ -18,10 +18,8 @@ expect it to behave like a dict...
 
 from typing import Dict, Generic, Literal, Sequence, TypeVar, Union
 
-from pydantic import (BaseModel, Extra, Field, NonNegativeFloat,
-                      NonNegativeInt, validator)
+from pydantic import BaseModel, Extra, NonNegativeFloat, NonNegativeInt
 from pydantic.generics import GenericModel
-from typing_extensions import TypedDict
 
 DataT = TypeVar('DataT')
 
@@ -85,7 +83,7 @@ class DummySequential(CyclingTechnique, extra=Extra.forbid):
         def __getitem__(self, item):
             return getattr(self, item)
 
-    #parameters: Dict[str, CyclingParameter] = {
+    # parameters: Dict[str, CyclingParameter] = {
     parameters: InternalParameters = InternalParameters(
         **{
             "time":
@@ -120,7 +118,7 @@ class DummyRandom(CyclingTechnique, extra=Extra.forbid):
         def __getitem__(self, item):
             return getattr(self, item)
 
-    #parameters: Dict[str, CyclingParameter] = {
+    # parameters: Dict[str, CyclingParameter] = {
     parameters: InternalParameters = InternalParameters(
         **{
             "time":
@@ -158,7 +156,7 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
         def __getitem__(self, item):
             return getattr(self, item)
 
-    #parameters: Dict[str, CyclingParameter] = {
+    # parameters: Dict[str, CyclingParameter] = {
     parameters: InternalParameters = InternalParameters(
         **{
             "time":
@@ -189,8 +187,8 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
             CyclingParameter[allowed_I_ranges](
                 label="I range",
                 description="",
-                default_value=
-                "1 A",  # TODO: "keep" value does not work - setting to 1 A
+                # TODO: "keep" value does not work - setting to 1 A
+                default_value="1 A",
                 required=True,
             ),
             "E_range":
@@ -233,7 +231,7 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
         def __getitem__(self, item):
             return getattr(self, item)
 
-    #parameters: Dict[str, CyclingParameter] = {
+    # parameters: Dict[str, CyclingParameter] = {
     parameters: InternalParameters = InternalParameters(
         **{
             "time":
@@ -292,8 +290,9 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
             "is_delta":
             CyclingParameter[bool](
                 label="Δ$V$:",
-                description=
-                r"Is the step voltage a $\Delta$ from previous step?",
+                description=r"""
+                    Is the step voltage a $\Delta$ from previous step?
+                """,
                 default_value=False,
                 required=True,
             ),
@@ -361,7 +360,7 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
         def __getitem__(self, item):
             return getattr(self, item)
 
-    #parameters: Dict[str, CyclingParameter] = {
+    # parameters: Dict[str, CyclingParameter] = {
     parameters: InternalParameters = InternalParameters(
         **{
             "time":
@@ -420,8 +419,9 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
             "is_delta":
             CyclingParameter[bool](
                 label="Δ$I$:",
-                description=
-                r"Is the step current a $\Delta$ from previous step?",
+                description=r"""
+                    Is the step current a $\Delta$ from previous step?
+                """,
                 default_value=False,
                 required=True,
             ),
@@ -460,14 +460,14 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-#class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
+# class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
 #    technique: Literal["sweep_voltage"] = "sweep_voltage"
 #    short_name: Literal["LSV"] = "LSV"
 #    name = "LSV"
 #    description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 ################################################################################
-#class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
+# class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
 #    technique: Literal["sweep_current"] = "sweep_current"
 #    short_name: Literal["LSC"] = "LSC"
 #    name = ""
@@ -493,14 +493,15 @@ class Loop(CyclingTechnique, extra=Extra.forbid):
         def __getitem__(self, item):
             return getattr(self, item)
 
-    #parameters: Dict[str, CyclingParameter] = {
+    # parameters: Dict[str, CyclingParameter] = {
     parameters: InternalParameters = InternalParameters(
         **{
             "n_gotos":
             CyclingParameter[int](
                 label="Repeats",
-                description=
-                "Number of times the technique will jump; set to -1 for unlimited",
+                description="""
+                    Number of times the technique will jump; set to -1 for unlimited
+                """,
                 default_value=-1,
                 required=True,
             ),
@@ -541,17 +542,15 @@ class ElectroChemSequence(BaseModel):
     def remove_step(self, index):
         self.method.pop(index)
 
-    def move_step_backward(self, index):
-        if index > 0:
-            self.method[
-                index -
-                1], self.method[index] = self.method[index], self.method[index
-                                                                         - 1]
+    def move_step_backward(self, i):
+        if i > 0:
+            j = i - 1
+            self.method[j], self.method[i] = self.method[i], self.method[j]
 
-    def move_step_forward(self, index):
-        if index < self.n_steps - 1:
-            self.method[index], self.method[index + 1] = self.method[
-                index + 1], self.method[index]
+    def move_step_forward(self, i):
+        if i < self.n_steps - 1:
+            j = i + 1
+            self.method[i], self.method[j] = self.method[j], self.method[i]
 
     class Config:
         validate_assignment = True

@@ -1,17 +1,11 @@
-import json
 import os
 
 import ipywidgets as ipw
-import pandas as pd
 from ipyfilechooser import FileChooser
-from IPython.display import display
 
 from aurora import __version__
-from aurora.engine import submit_experiment
 from aurora.interface.sample.sample_filter import SampleFilterWidget
 from aurora.models import AvailableSamplesModel, BatteryExperimentModel
-from aurora.schemas.battery import BatterySample
-from aurora.schemas.utils import dict_to_formatted_json
 
 
 class ManageSamplesMenu(ipw.VBox):
@@ -24,15 +18,17 @@ class ManageSamplesMenu(ipw.VBox):
         # ------------------------------------------------------------ #
         # HEADER BOX
         # ------------------------------------------------------------ #
-        self.w_header_box = ipw.VBox([
-            ipw.HTML(value=f"<h1>Aurora - Manage Samples</h1>"),
-            ipw.HTML(value=f"Aurora app version {__version__}"),
-        ],
-                                     layout={
-                                         'width': '100%',
-                                         'border': 'solid black 4px',
-                                         'padding': '10px'
-                                     })
+        self.w_header_box = ipw.VBox(
+            [
+                ipw.HTML(value="<h1>Aurora - Manage Samples</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+            ],
+            layout={
+                'width': '100%',
+                'border': 'solid black 4px',
+                'padding': '10px'
+            },
+        )
         # ------------------------------------------------------------ #
 
         self.w_sample_filter = SampleFilterWidget(self.available_samples_model)
@@ -98,29 +94,37 @@ class ManageSamplesMenu(ipw.VBox):
                 ipw.HTML(value="<h3>Available Samples</h3>"),
                 self.w_sample_filter,
                 ipw.HTML(value="<h3>Import samples from robot output</h3>"),
-                ipw.VBox([
-                    self.w_filepath_explorer,
-                    ipw.HBox([
-                        ipw.VBox([
-                            ipw.HBox([
-                                self.w_textin_basename,
-                                self.w_textin_manufacturer
-                            ]),
-                            self.w_textin_description,
-                            ipw.HBox(
-                                [self.w_textin_process, self.w_textin_ctime]),
-                        ],
-                                 layout={'width': '75%'}),
-                        ipw.VBox([
-                            self.w_button_import,
-                        ],
-                                 layout={'width': '25%'}),
-                    ]),
-                ],
-                         layout={
-                             'width': '100%',
-                             'padding': '10px'
-                         })
+                ipw.VBox(
+                    [
+                        self.w_filepath_explorer,
+                        ipw.HBox([
+                            ipw.VBox(
+                                [
+                                    ipw.HBox([
+                                        self.w_textin_basename,
+                                        self.w_textin_manufacturer,
+                                    ]),
+                                    self.w_textin_description,
+                                    ipw.HBox([
+                                        self.w_textin_process,
+                                        self.w_textin_ctime,
+                                    ]),
+                                ],
+                                layout={'width': '75%'},
+                            ),
+                            ipw.VBox(
+                                [
+                                    self.w_button_import,
+                                ],
+                                layout={'width': '25%'},
+                            ),
+                        ]),
+                    ],
+                    layout={
+                        'width': '100%',
+                        'padding': '10px'
+                    },
+                )
             ])
         ]
         #                ipw.HBox([
@@ -160,7 +164,7 @@ class ManageSamplesMenu(ipw.VBox):
         self.w_textin_description.disabled = self.w_filepath_explorer.selected is None
         self.w_textin_manufacturer.disabled = self.w_filepath_explorer.selected is None
         self.w_textin_process.disabled = self.w_filepath_explorer.selected is None
-        #self.w_textin_ctime.disabled = False
+        # self.w_textin_ctime.disabled = False
         self.check_if_importable()
 
     def check_if_importable(self, widget=None):

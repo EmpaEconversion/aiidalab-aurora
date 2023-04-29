@@ -2,11 +2,8 @@
 Widget to setup tomato's settings
 """
 
-import logging
-
 import ipywidgets as ipw
 
-from aurora.interface.cycling.technique_widget import BOX_STYLE
 from aurora.schemas.dgbowl_schemas import Tomato_0p2
 from aurora.schemas.utils import remove_empties_from_dict_decorator
 
@@ -41,7 +38,7 @@ class TomatoSettings(ipw.VBox):
             value="INFO",
             options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         )
-        #layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+        # layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
 
         self.w_job_monitor_header = ipw.HTML(
             "<h2>Job Monitor configuration:</h2>")
@@ -102,11 +99,11 @@ class TomatoSettings(ipw.VBox):
         self._build_job_monitor_parameters()
 
         # setup automations
-        ### job monitored checkbox
+        # job monitored checkbox
         self.w_job_monitored.observe(self._build_job_monitor_parameters,
                                      names="value")
 
-        ### validate protocol
+        # validate protocol
         self.w_validate.on_click(
             lambda arg: self.callback_call(validate_callback_f))
 

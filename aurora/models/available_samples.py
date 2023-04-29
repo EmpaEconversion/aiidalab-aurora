@@ -1,12 +1,8 @@
 import json
-import logging
-from typing import Dict, Generic, Literal, Sequence, TypeVar, Union
 
 import pandas as pd
-from pydantic import BaseModel
 
-from aurora.schemas.battery import (BatterySample, BatterySampleJsonTypes,
-                                    BatterySpecsJsonTypes)
+from aurora.schemas.battery import BatterySample, BatterySampleJsonTypes
 
 from .pattern_observer import ObserverManager
 
@@ -51,7 +47,7 @@ class AvailableSamplesModel():
         output_list = [sample.dict() for sample in self.available_samples]
         with open(source_file, 'w') as fileobj:
             json.dump(output_list, fileobj, default=str)
-            #json.dump(output_list, fileobj, indent=2, default=str)
+            # json.dump(output_list, fileobj, indent=2, default=str)
         self.recorded_samples = self._load_samples_file()
         self.observer_manager.update_all()
 
@@ -90,8 +86,6 @@ class AvailableSamplesModel():
             reader = csv.DictReader(fileobj, delimiter=';')
             for datadict in reader:
                 datadicts.append(datadict)
-
-        unadata = datadicts[0]
 
         battery_idx = self._get_highest_batteryid()
 

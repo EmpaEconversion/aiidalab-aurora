@@ -1,11 +1,9 @@
 import json
 import logging
-from typing import Dict, Generic, Literal, Sequence, TypeVar, Union
 
 import pandas as pd
-from pydantic import BaseModel
 
-from aurora.schemas.battery import (BatterySample, BatterySampleJsonTypes,
+from aurora.schemas.battery import (BatterySampleJsonTypes,
                                     BatterySpecsJsonTypes)
 from aurora.schemas.cycling import ElectroChemSequence, OpenCircuitVoltage
 
@@ -73,9 +71,9 @@ class BatteryExperimentModel():
         self.selected_protocol = ElectroChemSequence(method=[])
         self.add_protocol_step()  # initialize sequence with first default step
 
-    #----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------#
     # METHODS RELATED TO OBSERVABLES
-    #----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------#
     def suscribe_observer(self, observer):
         if observer not in self.list_of_observers:
             self.list_of_observers.append(observer)
@@ -90,9 +88,9 @@ class BatteryExperimentModel():
         for observer in self.list_of_observers:
             observer.update()
 
-    #----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------#
     # METHODS RELATED TO SAMPLES
-    #----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------#
     def reset_inputs(self):
         """Resets all inputs."""
         # Not implemented yet...
@@ -246,13 +244,13 @@ class BatteryExperimentModel():
         if query:
             return query
 
-    #----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS
-    #----------------------------------------------------------------------#
+    # ----------------------------------------------------------------------#
     def _count_technique_occurencies(self, technique):
         return [type(step)
                 for step in self.selected_protocol.method].count(technique)
-        #return [type(step) for step in self.protocol_steps_list.method].count(technique)
+        # return [type(step) for step in self.protocol_steps_list.method].count(technique)
 
     def DEFAULT_STEP_NAME(self, technique):
         return f"{technique.schema()['properties']['short_name']['default']}_{self._count_technique_occurencies(technique) + 1}"
@@ -275,7 +273,7 @@ class BatteryExperimentModel():
         self.update_observers()
 
     def move_protocol_step_down(self, protocol_index):
-        moved = self.selected_protocol.move_step_forward(protocol_index)
+        self.selected_protocol.move_step_forward(protocol_index)
         self.update_observers()
 
     def load_protocol(self, filepath):

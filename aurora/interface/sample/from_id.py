@@ -2,12 +2,10 @@
 Sample selected from a list of samples and their IDs.
 TODO: implement creation and labeling of sample nodes. Store them in a group, retrieve a node if it was already created.
 """
-import json
-
 import ipywidgets as ipw
 from IPython.display import display
 
-#from aurora.query import update_available_samples, query_available_samples, write_pd_query_from_dict
+# from aurora.query import update_available_samples, query_available_samples, write_pd_query_from_dict
 from aurora.schemas.battery import BatterySample
 from aurora.schemas.utils import (dict_to_formatted_json,
                                   remove_empties_from_dict_decorator)
@@ -81,17 +79,20 @@ class SampleFromId(ipw.VBox):
         super().__init__()
         self.children = [
             self.w_header_label,
-            ipw.VBox([
-                self.w_visualize_info,
-                ipw.HBox([
-                    self.w_id_list,
-                    ipw.VBox([self.w_update, self.w_select, self.w_unselect]),
-                    self.w_selected_list
-                ]),
-                self.w_sample_preview,
-                self.w_sample_node_label,
-            ],
-                     layout=self.MAIN_LAYOUT),
+            ipw.VBox(
+                [
+                    self.w_visualize_info,
+                    ipw.HBox([
+                        self.w_id_list,
+                        ipw.VBox([
+                            self.w_update, self.w_select, self.w_unselect
+                        ]), self.w_selected_list
+                    ]),
+                    self.w_sample_preview,
+                    self.w_sample_node_label,
+                ],
+                layout=self.MAIN_LAYOUT,
+            ),
             self.w_validate,
         ]
 
@@ -176,7 +177,7 @@ class SampleFromId(ipw.VBox):
     # This should go to control
     ############################################################
 
-    #@staticmethod
+    # @staticmethod
     def _build_sample_id_options(self):
         """Returns a (option_string, battery_id) list."""
         # table = query_available_samples(project=['battery_id', 'metadata.name']).sort_values('battery_id')

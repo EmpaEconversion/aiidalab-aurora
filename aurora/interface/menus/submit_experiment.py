@@ -86,7 +86,7 @@ class MainPanel(ipw.VBox):
     def selected_cycling_protocol(self):
         "The Cycling Specs selected. Used by a BatteryCyclerExperiment."
         return self.experiment_model.selected_protocol
-        #return self._selected_cycling_protocol
+        # return self._selected_cycling_protocol
 
     @property
     def selected_tomato_settings(self):
@@ -198,20 +198,19 @@ class MainPanel(ipw.VBox):
                     output_tomato_settings = f'{self.selected_tomato_settings}'
                     output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
 
-                    print(f"Battery Sample:\n" + output_battery_sample + '\n')
-                    print(f"Cycling Protocol:\n" + output_cycling_protocol +
-                          '\n')
-                    print(f"Tomato Settings:\n" + output_tomato_settings +
-                          '\n')
-                    print(f"Monitor Job Settings:\n" +
-                          output_monitor_job_settings + '\n')
+                    print(f"Battery Sample:\n{output_battery_sample}\n")
+                    print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
+                    print(f"Tomato Settings:\n{output_tomato_settings}\n")
+                    print(
+                        f"Monitor Job Settings:{output_monitor_job_settings}\n"
+                    )
 
                 except ValueError as err:
                     self.w_submit_button.disabled = True
                     print(f"❌ {err}")
                 else:
                     self.w_submit_button.disabled = False
-                    print(f"✅ All good!")
+                    print("✅ All good!")
 
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
@@ -269,22 +268,24 @@ class MainPanel(ipw.VBox):
 
         if experiment_model is None:
             experiment_model = BatteryExperimentModel()
-            #raise ValueError('An experiment model must be provided.')
+            # raise ValueError('An experiment model must be provided.')
         self.experiment_model = experiment_model
         self.available_samples_model = AvailableSamplesModel()
 
         # ------------------------------------------------------------ #
         # HEADER BOX
         # ------------------------------------------------------------ #
-        self.w_header_box = ipw.VBox([
-            ipw.HTML(value=f"<h1>Aurora - Submit Experiment</h1>"),
-            ipw.HTML(value=f"Aurora app version {__version__}"),
-        ],
-                                     layout={
-                                         'width': '100%',
-                                         'border': 'solid black 4px',
-                                         'padding': '10px'
-                                     })
+        self.w_header_box = ipw.VBox(
+            [
+                ipw.HTML(value="<h1>Aurora - Submit Experiment</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+            ],
+            layout={
+                'width': '100%',
+                'border': 'solid black 4px',
+                'padding': '10px'
+            },
+        )
         # ------------------------------------------------------------ #
 
         # initialize variables
@@ -302,12 +303,14 @@ class MainPanel(ipw.VBox):
             experiment_model=experiment_model,
             validate_callback_f=self.return_selected_specs_recipe)
 
-        self.w_sample_selection_tab = ipw.Tab(children=[
-            self.w_sample_from_id,
-            self.w_sample_from_specs,
-            self.w_sample_from_recipe,
-        ],
-                                              selected_index=0)
+        self.w_sample_selection_tab = ipw.Tab(
+            children=[
+                self.w_sample_from_id,
+                self.w_sample_from_specs,
+                self.w_sample_from_recipe,
+            ],
+            selected_index=0,
+        )
         for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
             self.w_sample_selection_tab.set_title(i, title)
 
@@ -382,10 +385,10 @@ class MainPanel(ipw.VBox):
         ]
 
         # setup automations
-        ## reset selected sample/specs/recipe when the user selects another sample input tab
+        # reset selected sample/specs/recipe when the user selects another sample input tab
         self.w_sample_selection_tab.observe(self.reset_sample_selection,
                                             names='selected_index')
-        ## trigger presubmission checks when we are in the "Submit Job" accordion tab
+        # trigger presubmission checks when we are in the "Submit Job" accordion tab
         self.w_main_accordion.observe(self.presubmission_checks_preview,
                                       names='selected_index')
 

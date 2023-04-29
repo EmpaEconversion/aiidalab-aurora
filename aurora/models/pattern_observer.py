@@ -1,6 +1,3 @@
-import logging
-
-
 class ObserverManager():
     """Class provides an object for subject to manage their observers."""
 
@@ -10,10 +7,10 @@ class ObserverManager():
 
     def add_observer(self, observer):
         if observer not in self.list_of_observers:
-            #try:
+            # try:
             observer.update_observer()
-            #except AttributeError: # if it doesn't have the attribute
-            #except TypeError: #if it has an attribute that is not a callable method
+            # except AttributeError: # if it doesn't have the attribute
+            # except TypeError: #if it has an attribute that is not a callable method
             self.list_of_observers.append(observer)
 
     def del_observer(self, observer):

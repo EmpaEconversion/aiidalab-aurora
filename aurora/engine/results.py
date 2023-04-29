@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 
 import aiida
 import aiida_aurora.utils
@@ -6,6 +6,7 @@ from aiida import load_profile
 from aiida.orm import Group, QueryBuilder, load_node
 
 load_profile()
+
 BatteryCyclerExperiment = aiida.plugins.CalculationFactory('aurora.cycler')
 
 
@@ -21,13 +22,13 @@ def query_jobs(last_days=0, group='CalcJobs'):
               ])
     if last_days:
         qb.add_filter(
-            'jobs', {
+            'jobs',
+            {
                 'ctime': {
-                    '>=':
-                    datetime.datetime.now() -
-                    datetime.timedelta(days=last_days)
-                }
-            })
+                    '>=': datetime.now() - timedelta(days=last_days)
+                },
+            },
+        )
     qb.order_by({'jobs': {'ctime': 'desc'}})
     return [q['jobs'] for q in qb.dict()]
 

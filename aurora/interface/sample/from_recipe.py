@@ -6,8 +6,6 @@ NOTE: This is a mock interface. NOT IMPLEMENTED YET.
 import ipywidgets as ipw
 
 # from IPython.display import display
-from aurora.query import (query_available_recipies, query_available_specs,
-                          update_available_recipies, update_available_specs)
 from aurora.schemas.battery import BatterySpecs
 from aurora.schemas.utils import dict_to_formatted_json
 
@@ -24,7 +22,7 @@ class SampleFromRecipe(ipw.VBox):
         'margin': '5px',
         'padding': '5px',
         'border': 'solid 2px'
-    }  #'max_height': '500px'
+    }  # 'max_height': '500px'
     MAIN_LAYOUT = {
         'width': '100%',
         'padding': '10px',
@@ -36,10 +34,14 @@ class SampleFromRecipe(ipw.VBox):
         self.experiment_model = experiment_model
 
         # initialize widgets
-        self.w_specs_label = ipw.HTML(
-            value=
-            "<h2>Battery Specifications <span style='color: #ffffff; background-color: #ff0000;'>**NOT IMPLEMENTED**</span></h2>"
-        )
+        self.w_specs_label = ipw.HTML(value="""
+            <h2>
+                Battery Specifications &nbsp;
+                <span style='color: #ffffff; background-color: #ff0000;'>
+                    **NOT IMPLEMENTED**
+                </span>
+            </h2>
+        """)
         self.w_specs_manufacturer = ipw.Dropdown(
             description="Manufacturer:",
             placeholder="Enter manufacturer",
@@ -109,32 +111,40 @@ class SampleFromRecipe(ipw.VBox):
         # initialize widgets
         super().__init__()
         self.children = [
-            ipw.VBox([
-                self.w_specs_label,
-                ipw.GridBox(
-                    [
-                        self.w_specs_manufacturer,
-                        self.w_specs_composition,
-                        self.w_specs_capacity,
-                        self.w_specs_form_factor,
-                    ],
-                    layout=ipw.Layout(grid_template_columns="repeat(2, 45%)")),
-                self.w_recipe_label,
-                ipw.GridBox(
-                    [
-                        self.w_recipe_select,
-                        self.w_recipe_preview,
-                        self.w_sample_metadata_name,
-                        self.w_sample_metadata_creation_process,
-                    ],
-                    layout=ipw.Layout(grid_template_columns="repeat(2, 45%)")),
-                ipw.HBox([self.w_update, self.w_reset],
-                         layout={
-                             'justify_content': 'center',
-                             'margin': '5px'
-                         }),
-            ],
-                     layout=self.MAIN_LAYOUT),
+            ipw.VBox(
+                [
+                    self.w_specs_label,
+                    ipw.GridBox(
+                        [
+                            self.w_specs_manufacturer,
+                            self.w_specs_composition,
+                            self.w_specs_capacity,
+                            self.w_specs_form_factor,
+                        ],
+                        layout=ipw.Layout(
+                            grid_template_columns="repeat(2, 45%)"),
+                    ),
+                    self.w_recipe_label,
+                    ipw.GridBox(
+                        [
+                            self.w_recipe_select,
+                            self.w_recipe_preview,
+                            self.w_sample_metadata_name,
+                            self.w_sample_metadata_creation_process,
+                        ],
+                        layout=ipw.Layout(
+                            grid_template_columns="repeat(2, 45%)"),
+                    ),
+                    ipw.HBox(
+                        [self.w_update, self.w_reset],
+                        layout={
+                            'justify_content': 'center',
+                            'margin': '5px'
+                        },
+                    ),
+                ],
+                layout=self.MAIN_LAYOUT,
+            ),
             self.w_validate,
             # self.w_cookit,
         ]
@@ -184,7 +194,7 @@ class SampleFromRecipe(ipw.VBox):
             self.w_sample_metadata_creation_process.value,
         })
 
-    #@staticmethod
+    # @staticmethod
     def _build_recipies_options(self):
         """Returns a (name, description) list."""
         dic = self.experiment_model.query_available_recipies()

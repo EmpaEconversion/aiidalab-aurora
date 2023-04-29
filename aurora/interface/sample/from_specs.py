@@ -7,7 +7,7 @@ TODO: implement creation and labeling of sample nodes. Store them in a group, re
 import ipywidgets as ipw
 from IPython.display import display
 
-#from aurora.query import update_available_samples, query_available_samples, update_available_specs, query_available_specs, write_pd_query_from_dict
+# from aurora.query import update_available_samples, query_available_samples, update_available_specs, query_available_specs, write_pd_query_from_dict
 from aurora.schemas.battery import BatterySample
 from aurora.schemas.utils import (dict_to_formatted_json,
                                   remove_empties_from_dict_decorator)
@@ -48,7 +48,7 @@ class SampleFromSpecs(ipw.VBox):
         'manufacturer', 'composition.description', 'capacity.nominal',
         'capacity.actual', 'capacity.units', 'form_factor', 'metadata.name',
         'metadata.creation_datetime'
-    ]  #, 'metadata.creation_process']
+    ]  # , 'metadata.creation_process']
 
     def __init__(self, experiment_model, validate_callback_f,
                  recipe_callback_f):
@@ -109,8 +109,8 @@ class SampleFromSpecs(ipw.VBox):
             layout=self.BOX_LAYOUT_1,
             style={'description_width': 'initial'})
         self.w_cookit = ipw.Button(
-            description=
-            "Load/Synthesize new",  #['primary', 'success', 'info', 'warning', 'danger', '']
+            # ['primary', 'success', 'info', 'warning', 'danger', '']
+            description="Load/Synthesize new",
             button_style="primary",
             tooltip="Synthesize sample with these specs",
             icon="",
@@ -143,22 +143,28 @@ class SampleFromSpecs(ipw.VBox):
                     # self.w_specs_metadata_creation_process,
                 ],
                 layout=ipw.Layout(grid_template_columns="repeat(2, 45%)")),
-            ipw.HBox([self.w_update, self.w_reset],
-                     layout={
-                         'justify_content': 'center',
-                         'margin': '5px'
-                     }),
+            ipw.HBox(
+                [self.w_update, self.w_reset],
+                layout={
+                    'justify_content': 'center',
+                    'margin': '5px'
+                },
+            ),
             self.w_query_result,
-            ipw.VBox([
-                ipw.HBox([
-                    self.w_select_sample_id,
-                    ipw.Label(' or '), self.w_cookit
+            ipw.VBox(
+                [
+                    ipw.HBox(
+                        [
+                            self.w_select_sample_id,
+                            ipw.Label(' or '), self.w_cookit
+                        ],
+                        layout={'justify_content': 'space-around'},
+                    ),
+                    self.w_sample_preview,
+                    self.w_sample_node_label,
                 ],
-                         layout={'justify_content': 'space-around'}),
-                self.w_sample_preview,
-                self.w_sample_node_label,
-            ],
-                     layout=self.SAMPLE_BOX_LAYOUT),
+                layout=self.SAMPLE_BOX_LAYOUT,
+            ),
             self.w_validate
         ]
 
@@ -277,7 +283,7 @@ class SampleFromSpecs(ipw.VBox):
     def update_options(self):
         """Update the specs' options."""
         if self._DEBUG:
-            print(f'updating options!')
+            print('updating options!')
         self._unset_specs_observers()
         self._update_options()
         self._set_specs_observers()

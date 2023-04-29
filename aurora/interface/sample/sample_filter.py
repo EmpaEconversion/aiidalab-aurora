@@ -1,12 +1,5 @@
-import json
-import os
-
 import ipywidgets as ipw
 from IPython.display import display
-
-from aurora.schemas.battery import BatterySample
-from aurora.schemas.utils import (dict_to_formatted_json,
-                                  remove_empties_from_dict_decorator)
 
 
 class SampleFilterWidget(ipw.VBox):
@@ -28,7 +21,7 @@ class SampleFilterWidget(ipw.VBox):
         'manufacturer', 'composition.description', 'capacity.nominal',
         'capacity.actual', 'capacity.units', 'form_factor', 'metadata.name',
         'metadata.creation_datetime'
-    ]  #, 'metadata.creation_process']
+    ]  # , 'metadata.creation_process']
 
     def __init__(self, available_samples_model):
         """Constructs the `SampleFilter` widget from components"""
@@ -54,9 +47,9 @@ class SampleFilterWidget(ipw.VBox):
                                               layout=self.BOX_LAYOUT_1,
                                               style=self.BOX_STYLE_1)
 
-        #----------------------------------------#
+        # ----------------------------------------#
         # BUTTONS
-        #----------------------------------------#
+        # ----------------------------------------#
 
         self.w_button_reset_d = ipw.Button(description="Reset changes",
                                            button_style='primary',
@@ -90,10 +83,10 @@ class SampleFilterWidget(ipw.VBox):
             disabled=True,
         )
 
-        #----------------------------------------#
+        # ----------------------------------------#
         # DATA DISPLAYS
-        #----------------------------------------#
-        #self.w_query_result0 = ipw.Output(layout=self.OUTPUT_LAYOUT)
+        # ----------------------------------------#
+        # self.w_query_result0 = ipw.Output(layout=self.OUTPUT_LAYOUT)
         self.w_query_result = ipw.Select(
             rows=10,
             layout={
@@ -113,15 +106,17 @@ class SampleFilterWidget(ipw.VBox):
                     self.w_specs_form_factor,
                 ],
                 layout=ipw.Layout(grid_template_columns="repeat(2, 45%)")),
-            ipw.HBox([
-                self.w_button_reset_f, self.w_button_reset_d,
-                self.w_button_delete, self.w_button_save
-            ],
-                     layout={
-                         'justify_content': 'center',
-                         'margin': '5px'
-                     }),
-            #self.w_query_result0,
+            ipw.HBox(
+                [
+                    self.w_button_reset_f, self.w_button_reset_d,
+                    self.w_button_delete, self.w_button_save
+                ],
+                layout={
+                    'justify_content': 'center',
+                    'margin': '5px'
+                },
+            ),
+            # self.w_query_result0,
             self.w_query_result,
             self.w_extra_info,
         ]
@@ -221,11 +216,11 @@ class SampleFilterWidget(ipw.VBox):
 
         # count values
         value_counts = query_res[spec_field].value_counts()
-        #for a,b in value_counts.items():
+        # for a,b in value_counts.items():
         #    raise ValueError(f'Let us start: {type(b)}\n\n{b}\n\n')
 
         options_pairs = [(f"(no filter)  [{value_counts.sum()}]", None)]
-        #for value in spec_field_options_list:
+        # for value in spec_field_options_list:
         #    options_pairs.append((f"{value}  [{value_counts.get(value, 0)}]", value))
 
         sample_query_filter_dict = {
@@ -278,7 +273,7 @@ class SampleFilterWidget(ipw.VBox):
     def update_options(self):
         """Update the specs' options."""
         if self._DEBUG:
-            print(f'updating options!')
+            print('updating options!')
         self._unset_specs_observers()
         self._update_options()
         self._set_specs_observers()
@@ -335,8 +330,8 @@ class SampleFilterWidget(ipw.VBox):
                                            names='value')
 
     def display_query_result(self):
-        #self.w_query_result0.clear_output()
-        #with self.w_query_result0:
+        # self.w_query_result0.clear_output()
+        # with self.w_query_result0:
         #    query_inp = self.available_samples_model.write_pd_query_from_dict(self.current_specs)
         #    query_res = self.available_samples_model.query_available_samples(query_inp)
         #    query_res = query_res.set_index('battery_id')[self.QUERY_PRINT_COLUMNS]
@@ -358,8 +353,8 @@ class SampleFilterWidget(ipw.VBox):
         # Check if saveable
         self.w_button_save.disabled = not self.available_samples_model.has_unsaved_changes(
         )
-        #raise ValueError(f'Let us start: {type(query_res)}\n\n{query_res}\n\n')
-        #self.w_query_result.options = []
+        # raise ValueError(f'Let us start: {type(query_res)}\n\n{query_res}\n\n')
+        # self.w_query_result.options = []
 
     def update_extra_info(self, widget=None):
         self.w_extra_info.clear_output()

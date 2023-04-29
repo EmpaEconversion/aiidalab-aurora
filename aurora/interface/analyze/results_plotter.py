@@ -1,10 +1,8 @@
 import aiida_aurora.utils
 import ipywidgets as ipw
 import matplotlib.pyplot as plt
-import pandas as pd
 
-from aurora import __version__
-from aurora.engine.results import cycling_analysis, query_jobs
+from aurora.engine.results import cycling_analysis
 
 
 class ResultsPlotterComponent(ipw.VBox):
@@ -88,7 +86,6 @@ class ResultsPlotterComponent(ipw.VBox):
         self.w_plot_output.clear_output()
 
     def draw_plot(self, dummy=None):
-        title = None
         if self.selected_job_id and self.selected_plot_type:
             self.w_plot_output.clear_output()
             with self.w_plot_output:
@@ -112,9 +109,9 @@ class ResultsPlotterComponent(ipw.VBox):
         """Draws the default blank plot"""
         self.w_plot_output.clear_output()
         with self.w_plot_output:
-            #plt.close() # unnecessary with the clear_output?
+            # plt.close() # unnecessary with the clear_output?
             fig, axx = plt.subplots(1, figsize=(9, 4))
             plt.subplots_adjust(left=0.1, right=0.95, bottom=0.15, top=0.9)
             fig.suptitle('title1')
             plt.show()
-            #return fig, axx
+            # return fig, axx

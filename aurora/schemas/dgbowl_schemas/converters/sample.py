@@ -11,7 +11,6 @@ def batterysample_to_sample_0(batsample: BatterySample,
     Compatible with the following dgbowl-schemas payload versions:
         [0.1, 0.2]
     """
-    _COMPATIBLE_PAYLOAD_VERSIONS = ["0.1", "0.2"]
 
     if not isinstance(batsample, BatterySample):
         if isinstance(batsample, dict):

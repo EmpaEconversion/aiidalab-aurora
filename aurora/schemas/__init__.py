@@ -1,3 +1,8 @@
-__all__ = ['battery', 'cycling', 'dgbowl_schemas', 'utils']
+from . import battery, cycling, dgbowl_schemas, utils
 
-from . import *
+__all__ = [
+    'battery',
+    'cycling',
+    'dgbowl_schemas',
+    'utils',
+]

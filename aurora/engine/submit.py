@@ -1,12 +1,12 @@
-import aiida
-from aiida import load_profile
-
-load_profile()
 from time import sleep
 
+import aiida
+from aiida import load_profile
 from aiida.common.exceptions import NotExistent
 from aiida.engine import submit
-from aiida.orm import load_code, load_computer, load_group, load_node
+from aiida.orm import load_code, load_group
+
+load_profile()
 
 BatterySampleData = aiida.plugins.DataFactory('aurora.batterysample')
 CyclingSpecsData = aiida.plugins.DataFactory('aurora.cyclingspecs')
@@ -18,7 +18,7 @@ TomatoMonitorData = aiida.plugins.DataFactory(
 TomatoMonitorCalcjob = aiida.plugins.CalculationFactory(
     'calcmonitor.calcjob_monitor')
 
-#MONITOR_CODE = load_code("monitor@localhost-verdi")
+# MONITOR_CODE = load_code("monitor@localhost-verdi")
 GROUP_SAMPLES = load_group("BatterySamples")
 GROUP_METHODS = load_group("CyclingSpecs")
 GROUP_CALCJOBS = load_group("CalcJobs")

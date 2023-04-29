@@ -1,8 +1,8 @@
-import aiida_aurora.utils
 import ipywidgets as ipw
 import pandas as pd
+from IPython.display import display
 
-from aurora.engine.results import cycling_analysis, query_jobs
+from aurora.engine.results import query_jobs
 
 
 class OutputExplorerComponent(ipw.VBox):
@@ -67,16 +67,18 @@ class OutputExplorerComponent(ipw.VBox):
             return
         self.job_list['ctime'] = self.job_list['ctime'].dt.strftime(
             '%Y-%m-%d %H:%m:%S')
-        self.job_list.rename(columns={
-            'id': 'ID',
-            'label': 'Label',
-            'ctime': 'creation time',
-            'attributes.process_label': 'job type',
-            'attributes.state': 'state',
-            'attributes.status': 'reason',
-            'extras.monitored': 'monitored'
-        },
-                             inplace=True)
+        self.job_list.rename(
+            columns={
+                'id': 'ID',
+                'label': 'Label',
+                'ctime': 'creation time',
+                'attributes.process_label': 'job type',
+                'attributes.state': 'state',
+                'attributes.status': 'reason',
+                'extras.monitored': 'monitored'
+            },
+            inplace=True,
+        )
         self.job_list['monitored'] = self.job_list['monitored'].astype(bool)
 
     @staticmethod
@@ -88,12 +90,11 @@ class OutputExplorerComponent(ipw.VBox):
 
     def _update_sample_id_options(self):
         """Update the specs' options."""
-        #         self._unset_specs_observers()
+        # self._unset_specs_observers()
         self.w_select_sample_id.options = self._build_sample_id_options(
             self.job_list)
 
-
-#         self._set_specs_observers()
+        # self._set_specs_observers()
 
     def update_job_list(self, dummy=None):
         self._build_job_list()
