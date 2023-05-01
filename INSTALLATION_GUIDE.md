@@ -232,10 +232,10 @@
 - Create the necessary AiiDA groups:
 
   ```
-  verdi create group BatterySamples
-  verdi create group CyclingSpecs
-  verdi create group CalcJobs
-  verdi create group MonitorJobs
+  verdi group create BatterySamples
+  verdi group create CyclingSpecs
+  verdi group create CalcJobs
+  verdi group create MonitorJobs
   ```
 
 ## 4. Aurora app installation
