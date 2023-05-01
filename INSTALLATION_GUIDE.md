@@ -135,6 +135,8 @@
   ```
   pip install dgbowl-schemas
 
+  mkdir ~/src
+
   cd ~/src
   git clone https://github.com/lorisercole/aiida-core.git
   cd aiida-core
