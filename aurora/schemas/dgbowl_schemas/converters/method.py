@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
-
-from aurora.schemas.cycling import ElectroChemSequence
 from pydantic import BaseModel
 
+from aurora.schemas.cycling import ElectroChemSequence
 
-def electrochemsequence_to_method_list_0(
-    elchemsequence: ElectroChemSequence,
-    MethodSchema: BaseModel):
+
+def electrochemsequence_to_method_list_0(elchemsequence: ElectroChemSequence,
+                                         MethodSchema: BaseModel):
     """
     Convert an ElectroChemSequence into a list of Method.
     Parameter values that are None will be ignored.
@@ -14,7 +12,6 @@ def electrochemsequence_to_method_list_0(
     Compatible with the following dgbowl-schemas payload versions:
         [0.1, 0.2]
     """
-    _COMPATIBLE_PAYLOAD_VERSIONS = ["0.1", "0.2"]
 
     if not isinstance(elchemsequence, ElectroChemSequence):
         if isinstance(elchemsequence, dict):
@@ -23,12 +20,17 @@ def electrochemsequence_to_method_list_0(
             raise TypeError()
     sequence = []
     for step in elchemsequence.method:
-        parameters = {name: param.value for name, param in step.parameters.items() if param.value is not None}
-        
-        sequence.append(MethodSchema(**{
-            'device': step.device,
-            'technique': step.technique,
-            }, **parameters)
-        )
+        parameters = {
+            name: param.value
+            for name, param in step.parameters.items()
+            if param.value is not None
+        }
+
+        sequence.append(
+            MethodSchema(
+                **{
+                    'device': step.device,
+                    'technique': step.technique,
+                }, **parameters))
 
     return sequence

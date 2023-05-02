@@ -1,0 +1,55 @@
+# Install pre-commit hooks via:
+# pre-commit install
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+      - id: check-json
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.31.0
+    hooks:
+      - id: pyupgrade
+        args: ["--py37-plus"]
+
+  - repo: https://github.com/ikamensh/flynt/
+    rev: "0.76"
+    hooks:
+      - id: flynt
+
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.12.0"
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: v0.32.0
+    hooks:
+      - id: yapf
+        name: yapf
+        types: [python]
+        args: ["-i"]
+        exclude: &exclude_files >
+          (?x)^(
+            docs/.*|
+            tests/.*(?<!\.py)$
+          )$
+        additional_dependencies: ["toml"]
+
+  - repo: https://github.com/executablebooks/mdformat
+    rev: "0.7.16"
+    hooks:
+      - id: mdformat
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: '6.0.0'
+    hooks:
+      - id: flake8
+        # E501 - line length limit
+        # E741 - ambiguous variable name, used sparsely when appropriate
+        args: ["--ignore=E501,E741"]
+        exclude: *exclude_files

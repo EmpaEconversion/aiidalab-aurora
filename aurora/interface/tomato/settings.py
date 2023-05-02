@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 Widget to setup tomato's settings
 """
 
-import logging
-from aurora.interface.cycling.technique_widget import BOX_STYLE
 import ipywidgets as ipw
+
 from aurora.schemas.dgbowl_schemas import Tomato_0p2
 from aurora.schemas.utils import remove_empties_from_dict_decorator
+
 
 class TomatoSettings(ipw.VBox):
 
@@ -15,84 +14,108 @@ class TomatoSettings(ipw.VBox):
     BOX_LAYOUT = {'width': '95%'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
-    BOX_LAYOUT_2 = {'width': '60%', 'border': 'solid blue 2px', 'align_content': 'center', 'margin': '5px', 'padding': '5px'}
+    BOX_LAYOUT_2 = {
+        'width': '60%',
+        'border': 'solid blue 2px',
+        'align_content': 'center',
+        'margin': '5px',
+        'padding': '5px'
+    }
 
     def __init__(self, validate_callback_f):
 
         if not callable(validate_callback_f):
-            raise TypeError("validate_callback_f should be a callable function")
+            raise TypeError(
+                "validate_callback_f should be a callable function")
 
         # initialize job settings
         self.w_job_header = ipw.HTML("<h2>Tomato Job configuration:</h2>")
 
         self.w_job_unlock_when_done = ipw.Checkbox(
-            value=False, description="Unlock when done?") # indent=True)
+            value=False, description="Unlock when done?")  # indent=True)
         self.w_job_verbosity = ipw.Dropdown(
-            description="Verbosity:", value="INFO",
-            options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],)
-            #layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+            description="Verbosity:",
+            value="INFO",
+            options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        )
+        # layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
 
-        self.w_job_monitor_header = ipw.HTML("<h2>Job Monitor configuration:</h2>")
+        self.w_job_monitor_header = ipw.HTML(
+            "<h2>Job Monitor configuration:</h2>")
         self.w_job_monitored = ipw.Checkbox(
-            value=False, description="Monitored job?") # indent=True)
+            value=False, description="Monitored job?")  # indent=True)
 
         self.w_job_monitor_refresh_rate = ipw.BoundedIntText(
-            description="Refresh rate (s):", min=10, max=1e99, step=1,
-            value=600, style=self.BOX_STYLE)
+            description="Refresh rate (s):",
+            min=10,
+            max=1e99,
+            step=1,
+            value=600,
+            style=self.BOX_STYLE)
         self.w_job_monitor_check_type = ipw.Dropdown(
-            description="Check type:", value="discharge_capacity",
-            options=["discharge_capacity", "charge_capacity"],)
+            description="Check type:",
+            value="discharge_capacity",
+            options=["discharge_capacity", "charge_capacity"],
+        )
         self.w_job_monitor_threshold = ipw.BoundedFloatText(
-            description="Threshold:", min=1e-6, max=1.0,
-            value=0.80, style=self.BOX_STYLE)
+            description="Threshold:",
+            min=1e-6,
+            max=1.0,
+            value=0.80,
+            style=self.BOX_STYLE)
         self.w_job_monitor_consecutive_cycles = ipw.BoundedIntText(
-            description="Number of consecutive cycles:", min=2, max=1e6, step=1,
-            value=2, style=self.BOX_STYLE)
+            description="Number of consecutive cycles:",
+            min=2,
+            max=1e6,
+            step=1,
+            value=2,
+            style=self.BOX_STYLE)
         self.w_job_monitor_parameters = ipw.VBox()
 
         self.w_job_calcjob_node_label = ipw.Text(
             description="AiiDA CalcJob node label:",
             placeholder="Enter a name for the BatteryCyclerExperiment node",
-            layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
-        self.w_validate = ipw.Button(
-            description="Validate",
-            button_style='success', tooltip="Validate the settings", icon='check',
-            style=self.BUTTON_STYLE, layout=self.BUTTON_LAYOUT)
+            layout=self.BOX_LAYOUT,
+            style=self.BOX_STYLE)
+        self.w_validate = ipw.Button(description="Validate",
+                                     button_style='success',
+                                     tooltip="Validate the settings",
+                                     icon='check',
+                                     style=self.BUTTON_STYLE,
+                                     layout=self.BUTTON_LAYOUT)
 
         # initialize widgets
         super().__init__()
         self.children = [
             self.w_job_header,
-            ipw.VBox([
-                self.w_job_unlock_when_done,
-                self.w_job_verbosity
-            ], layout=self.BOX_LAYOUT_2),
+            ipw.VBox([self.w_job_unlock_when_done, self.w_job_verbosity],
+                     layout=self.BOX_LAYOUT_2),
             self.w_job_monitor_header,
-            ipw.VBox([
-                self.w_job_monitored,
-                self.w_job_monitor_parameters
-            ], layout=self.BOX_LAYOUT_2),
+            ipw.VBox([self.w_job_monitored, self.w_job_monitor_parameters],
+                     layout=self.BOX_LAYOUT_2),
             self.w_job_calcjob_node_label,
             self.w_validate,
         ]
         self._build_job_monitor_parameters()
 
         # setup automations
-        ### job monitored checkbox
-        self.w_job_monitored.observe(self._build_job_monitor_parameters, names="value")
+        # job monitored checkbox
+        self.w_job_monitored.observe(self._build_job_monitor_parameters,
+                                     names="value")
 
-        ### validate protocol
-        self.w_validate.on_click(lambda arg: self.callback_call(validate_callback_f))
+        # validate protocol
+        self.w_validate.on_click(
+            lambda arg: self.callback_call(validate_callback_f))
 
     @property
     @remove_empties_from_dict_decorator
     def selected_monitor_job_settings(self):
         if self.w_job_monitored.value:
             return dict(
-                refresh_rate = self.w_job_monitor_refresh_rate.value,
-                check_type = self.w_job_monitor_check_type.value,
-                threshold = self.w_job_monitor_threshold.value,
-                consecutive_cycles = self.w_job_monitor_consecutive_cycles.value,
+                refresh_rate=self.w_job_monitor_refresh_rate.value,
+                check_type=self.w_job_monitor_check_type.value,
+                threshold=self.w_job_monitor_threshold.value,
+                consecutive_cycles=self.w_job_monitor_consecutive_cycles.value,
             )
         else:
             return {}
@@ -110,16 +133,16 @@ class TomatoSettings(ipw.VBox):
                 'prefix': 'snapshot'
             }
         return d
-    
+
     @property
     def selected_tomato_settings(self):
         "The selected battery sample returned as a `aurora.schemas.dgbowl_schemas.Tomato_0p2` object."
         return Tomato_0p2.parse_obj(self.selected_tomato_settings_dict)
-    
+
     @property
     def calcjob_node_label(self):
         return self.w_job_calcjob_node_label.value,
-    
+
     def _build_job_monitor_parameters(self, dummy=None):
         if self.w_job_monitored.value:
             self.w_job_monitor_parameters.children = [

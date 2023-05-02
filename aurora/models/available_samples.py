@@ -1,31 +1,30 @@
-# -*- coding: utf-8 -*-
 import json
-import logging
+
 import pandas as pd
 
-from pydantic import BaseModel
-from typing import Dict, Generic, Sequence, TypeVar, Literal, Union
+from aurora.schemas.battery import BatterySample, BatterySampleJsonTypes
 
-from aurora.schemas.battery import BatterySample, BatterySpecsJsonTypes, BatterySampleJsonTypes
 from .pattern_observer import ObserverManager
 
 AVAILABLE_SAMPLES_FILE = 'available_samples.json'
 
+
 class AvailableSamplesModel():
     """This model represents the experimental setup of samples in the devices."""
-    
+
     def __init__(self):
         self.observer_manager = ObserverManager()
         self.recorded_samples = self._load_samples_file()
         self.available_samples = self._load_samples_file()
-        self.available_samples_cache = self._update_pandas_cache(self.available_samples)
+        self.available_samples_cache = self._update_pandas_cache(
+            self.available_samples)
 
     def suscribe_observer(self, observer):
         self.observer_manager.add_observer(observer)
 
     def _load_samples_file(self, source_file=AVAILABLE_SAMPLES_FILE):
         """Loads the content of the available samples file"""
-        with open(source_file, 'r') as fileobj:
+        with open(source_file) as fileobj:
             battery_datalist = json.load(fileobj)
 
         new_available_samples = []
@@ -39,7 +38,8 @@ class AvailableSamplesModel():
         """Loads the content of the available samples file"""
         self.recorded_samples = self._load_samples_file()
         self.available_samples = self._load_samples_file()
-        self.available_samples_cache = self._update_pandas_cache(self.available_samples)
+        self.available_samples_cache = self._update_pandas_cache(
+            self.available_samples)
         self.observer_manager.update_all()
 
     def save_samples_file(self, source_file=AVAILABLE_SAMPLES_FILE):
@@ -47,7 +47,7 @@ class AvailableSamplesModel():
         output_list = [sample.dict() for sample in self.available_samples]
         with open(source_file, 'w') as fileobj:
             json.dump(output_list, fileobj, default=str)
-            #json.dump(output_list, fileobj, indent=2, default=str)
+            # json.dump(output_list, fileobj, indent=2, default=str)
         self.recorded_samples = self._load_samples_file()
         self.observer_manager.update_all()
 
@@ -59,7 +59,7 @@ class AvailableSamplesModel():
         """Gets the highest batteryid"""
         highest_id = 0
         for sample in self.available_samples:
-            highest_id = max(highest_id,sample.battery_id)
+            highest_id = max(highest_id, sample.battery_id)
         return highest_id
 
     def remove_sample_with_id(self, sample_id):
@@ -70,10 +70,11 @@ class AvailableSamplesModel():
             if sample_id == sample.battery_id:
                 index_of_sample_to_remove = idx
                 break
-    
+
         if index_of_sample_to_remove is not None:
             del self.available_samples[index_of_sample_to_remove]
-            self.available_samples_cache = self._update_pandas_cache(self.available_samples)
+            self.available_samples_cache = self._update_pandas_cache(
+                self.available_samples)
             self.observer_manager.update_all()
 
     def parseadd_robot_output(self, filepath, basedict):
@@ -81,12 +82,10 @@ class AvailableSamplesModel():
         import csv
 
         datadicts = []
-        with open(filepath, 'r') as fileobj:
+        with open(filepath) as fileobj:
             reader = csv.DictReader(fileobj, delimiter=';')
             for datadict in reader:
                 datadicts.append(datadict)
-
-        unadata = datadicts[0]
 
         battery_idx = self._get_highest_batteryid()
 
@@ -96,7 +95,8 @@ class AvailableSamplesModel():
             new_sample = self.parse_sample_datadict(basedict, datadict)
             self.available_samples.append(new_sample)
 
-        self.available_samples_cache = self._update_pandas_cache(self.available_samples)
+        self.available_samples_cache = self._update_pandas_cache(
+            self.available_samples)
         self.observer_manager.update_all()
 
     def parse_sample_datadict(self, basedict, datadict):
@@ -111,15 +111,21 @@ class AvailableSamplesModel():
         capacity_a = weight_ag * rate_amahg
         capacity_c = weight_cg * rate_cmahg
         capacity = min(capacity_a, capacity_c)
-        capacity = float(int(capacity*10))/10
+        capacity = float(int(capacity * 10)) / 10
 
         metadata_name = basedict['basename'] + '-' + datadict['Battery_Number']
 
         initdict = {
             "manufacturer": basedict['manufacturer'],
-            "composition": {"description": basedict['description']},
+            "composition": {
+                "description": basedict['description']
+            },
             "form_factor": datadict['Casing Type'],
-            "capacity": {"nominal": capacity, "actual": None, "units": "mAh"},
+            "capacity": {
+                "nominal": capacity,
+                "actual": None,
+                "units": "mAh"
+            },
             "battery_id": basedict['battery_id'],
             "metadata": {
                 "name": metadata_name,
@@ -130,7 +136,6 @@ class AvailableSamplesModel():
 
         return BatterySample(**initdict)
 
-
     def has_unsaved_changes(self):
         return not self.recorded_samples == self.available_samples
 
@@ -139,12 +144,13 @@ class AvailableSamplesModel():
         source_json = json.loads(json.dumps(source_json, default=str))
         AVAIL_SAMPLES_DF = pd.json_normalize(source_json)
         dtype_dict = {
-            col: typ for col, typ in BatterySampleJsonTypes.items() if col in AVAIL_SAMPLES_DF.columns
+            col: typ
+            for col, typ in BatterySampleJsonTypes.items()
+            if col in AVAIL_SAMPLES_DF.columns
         }
         AVAIL_SAMPLES_DF = AVAIL_SAMPLES_DF.astype(dtype=dtype_dict)
         AVAIL_SAMPLES_DF["metadata.creation_datetime"] = pd.to_datetime(
-            AVAIL_SAMPLES_DF["metadata.creation_datetime"]
-        )
+            AVAIL_SAMPLES_DF["metadata.creation_datetime"])
         return AVAIL_SAMPLES_DF
 
     def query_available_samples(self, query=None, project=None):
@@ -170,10 +176,14 @@ class AvailableSamplesModel():
     def write_pd_query_from_dict(self, query_dict):
         """
         Write a pandas query from a dictionary {field: value}.
-        Example: 
+        Example:
             write_pandas_query({'manufacturer': 'BIG-MAP', 'battery_id': 98})
         returns "(`manufacturer` == 'BIG-MAP') and (`battery_id` == 98)"
         """
-        query = " and ".join(["(`{}` == {})".format(k, f"{v}" if isinstance(v, (int, float)) else f"'{v}'") for k, v in query_dict.items() if v])
+        query = " and ".join([
+            "(`{}` == {})".format(
+                k, f"{v}" if isinstance(v, (int, float)) else f"'{v}'")
+            for k, v in query_dict.items() if v
+        ])
         if query:
             return query
