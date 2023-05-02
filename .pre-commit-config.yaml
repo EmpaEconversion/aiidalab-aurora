@@ -49,4 +49,7 @@ repos:
     rev: '6.0.0'
     hooks:
       - id: flake8
+        # E501 - line length limit
+        # E741 - ambiguous variable name, used sparsely when appropriate
+        args: ["--ignore=E501,E741"]
         exclude: *exclude_files
