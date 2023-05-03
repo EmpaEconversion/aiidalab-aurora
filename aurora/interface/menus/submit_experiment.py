@@ -96,28 +96,7 @@ class MainPanel(ipw.VBox):
 
         self.w_header_box = get_header_box(self._SECTION_TITLE)
 
-        # Sample selection
-        self.w_sample_from_id = SampleFromId(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_sample)
-        self.w_sample_from_specs = SampleFromSpecs(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_sample,
-            recipe_callback_f=self.switch_to_recipe)
-        self.w_sample_from_recipe = SampleFromRecipe(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_specs_recipe)
-
-        self.w_sample_selection_tab = ipw.Tab(
-            children=[
-                self.w_sample_from_id,
-                self.w_sample_from_specs,
-                self.w_sample_from_recipe,
-            ],
-            selected_index=0,
-        )
-        for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
-            self.w_sample_selection_tab.set_title(i, title)
+        self._build_sample_selection_section(experiment_model)
 
         # Method selection
         self.w_test_sample_label = ipw.HTML("Selected sample:")
@@ -199,6 +178,35 @@ class MainPanel(ipw.VBox):
 
         self.w_submit_button.on_click(self.submit_job)
         self.w_reset_button.on_click(self.reset)
+
+    def _build_sample_selection_section(self, experiment_model):
+        self.w_sample_from_id = SampleFromId(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_sample,
+        )
+
+        self.w_sample_from_specs = SampleFromSpecs(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_sample,
+            recipe_callback_f=self.switch_to_recipe,
+        )
+
+        self.w_sample_from_recipe = SampleFromRecipe(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_specs_recipe,
+        )
+
+        self.w_sample_selection_tab = ipw.Tab(
+            children=[
+                self.w_sample_from_id,
+                self.w_sample_from_specs,
+                self.w_sample_from_recipe,
+            ],
+            selected_index=0,
+        )
+
+        for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
+            self.w_sample_selection_tab.set_title(i, title)
 
     #######################################################################################
     # FAKE TRAITLES
