@@ -102,27 +102,7 @@ class MainPanel(ipw.VBox):
 
         self._build_job_settings_section()
 
-        # Submit
-        self.w_job_preview = ipw.Output(
-            layout=self._SUBMISSION_INPUT_LAYOUT
-        )  # TODO: write better preview of the job inputs
-        self.w_code = ipw.Dropdown(
-            description="Select code:",
-            options=[CODE_NAME],  # TODO: get codes
-            value=CODE_NAME)
-        self.w_submit_button = ipw.Button(description="SUBMIT",
-                                          button_style="success",
-                                          tooltip="Submit the experiment",
-                                          icon="play",
-                                          disabled=True,
-                                          style=self._BUTTON_STYLE,
-                                          layout=self._BUTTON_LAYOUT)
-
-        self.w_submit_tab = ipw.VBox([
-            self.w_job_preview,
-            self.w_code,
-            self.w_submit_button,
-        ])
+        self._build_job_submission_section()
 
         # Reset
         self.w_reset_button = ipw.Button(description="RESET",
@@ -220,6 +200,32 @@ class MainPanel(ipw.VBox):
     def _build_job_settings_section(self):
         self.w_settings_tab = TomatoSettings(
             validate_callback_f=self.return_selected_settings)
+
+    def _build_job_submission_section(self):
+        # TODO: write better preview of the job inputs
+        self.w_job_preview = ipw.Output(layout=self._SUBMISSION_INPUT_LAYOUT)
+
+        self.w_code = ipw.Dropdown(
+            description="Select code:",
+            options=[CODE_NAME],  # TODO: get codes
+            value=CODE_NAME,
+        )
+
+        self.w_submit_button = ipw.Button(
+            description="SUBMIT",
+            button_style="success",
+            tooltip="Submit the experiment",
+            icon="play",
+            disabled=True,
+            style=self._BUTTON_STYLE,
+            layout=self._BUTTON_LAYOUT,
+        )
+
+        self.w_submit_tab = ipw.VBox([
+            self.w_job_preview,
+            self.w_code,
+            self.w_submit_button,
+        ])
 
     #######################################################################################
     # FAKE TRAITLES
