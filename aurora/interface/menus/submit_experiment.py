@@ -7,6 +7,7 @@ from IPython.display import display
 from aurora import __version__
 from aurora.engine import submit_experiment
 from aurora.interface.cycling import CyclingCustom, CyclingStandard
+from aurora.interface.menus.utils import get_header_box
 from aurora.interface.sample import (SampleFromId, SampleFromRecipe,
                                      SampleFromSpecs)
 from aurora.interface.tomato import TomatoSettings
@@ -18,6 +19,7 @@ CODE_NAME = "ketchup-0.2rc2"
 
 
 class MainPanel(ipw.VBox):
+    _SECTION_TITLE = "Submit Experiment"
 
     _ACCORDION_STEPS = [
         'Sample Selection',
@@ -89,21 +91,7 @@ class MainPanel(ipw.VBox):
         self.experiment_model = experiment_model
         self.available_samples_model = AvailableSamplesModel()
 
-        # ------------------------------------------------------------ #
-        # HEADER BOX
-        # ------------------------------------------------------------ #
-        self.w_header_box = ipw.VBox(
-            [
-                ipw.HTML(value="<h1>Aurora - Submit Experiment</h1>"),
-                ipw.HTML(value=f"Aurora app version {__version__}"),
-            ],
-            layout={
-                'width': '100%',
-                'border': 'solid black 4px',
-                'padding': '10px'
-            },
-        )
-        # ------------------------------------------------------------ #
+        self.w_header_box = get_header_box(self._SECTION_TITLE)
 
         # initialize variables
         self.reset_all_inputs()
