@@ -106,16 +106,7 @@ class MainPanel(ipw.VBox):
 
         self._build_reset_button()
 
-        ########################################################################
-        # MAIN ACCORDION
-        self.w_main_accordion = ipw.Accordion(children=[
-            self.w_sample_selection_tab,
-            self.w_test_tab,
-            self.w_settings_tab,
-            self.w_submit_tab,
-        ])
-        for i, title in enumerate(self._ACCORDION_STEPS):
-            self.w_main_accordion.set_title(i, title)
+        self._build_accordion()
 
         super().__init__()
         self.children = [
@@ -230,6 +221,17 @@ class MainPanel(ipw.VBox):
             style=self._BUTTON_STYLE,
             layout=self._BUTTON_LAYOUT,
         )
+
+    def _build_accordion(self):
+        self.w_main_accordion = ipw.Accordion(children=[
+            self.w_sample_selection_tab,
+            self.w_test_tab,
+            self.w_settings_tab,
+            self.w_submit_tab,
+        ])
+
+        for i, title in enumerate(self._ACCORDION_STEPS):
+            self.w_main_accordion.set_title(i, title)
 
     #######################################################################################
     # FAKE TRAITLES
