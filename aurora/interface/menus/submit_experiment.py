@@ -98,24 +98,7 @@ class MainPanel(ipw.VBox):
 
         self._build_sample_selection_section(experiment_model)
 
-        # Method selection
-        self.w_test_sample_label = ipw.HTML("Selected sample:")
-        self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
-        self.w_test_standard = CyclingStandard(lambda x: x)
-        self.w_test_custom = CyclingCustom(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_protocol)
-        self.w_test_method_tab = ipw.Tab(
-            children=[self.w_test_standard, self.w_test_custom],
-            selected_index=1)
-        for i, title in enumerate(self._METHOD_LABELS):
-            self.w_test_method_tab.set_title(i, title)
-
-        self.w_test_tab = ipw.VBox([
-            self.w_test_sample_label,
-            self.w_test_sample_preview,
-            self.w_test_method_tab,
-        ])
+        self._build_cycling_protocol_section(experiment_model)
 
         # Settings selection
         self.w_settings_tab = TomatoSettings(
@@ -207,6 +190,34 @@ class MainPanel(ipw.VBox):
 
         for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
             self.w_sample_selection_tab.set_title(i, title)
+
+    def _build_cycling_protocol_section(self, experiment_model):
+        self.w_test_sample_label = ipw.HTML("Selected sample:")
+        self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
+
+        self.w_test_standard = CyclingStandard(lambda x: x)
+
+        self.w_test_custom = CyclingCustom(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_protocol,
+        )
+
+        self.w_test_method_tab = ipw.Tab(
+            children=[
+                self.w_test_standard,
+                self.w_test_custom,
+            ],
+            selected_index=1,
+        )
+
+        for i, title in enumerate(self._METHOD_LABELS):
+            self.w_test_method_tab.set_title(i, title)
+
+        self.w_test_tab = ipw.VBox([
+            self.w_test_sample_label,
+            self.w_test_sample_preview,
+            self.w_test_method_tab,
+        ])
 
     #######################################################################################
     # FAKE TRAITLES
