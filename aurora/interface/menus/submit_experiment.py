@@ -96,16 +96,7 @@ class MainPanel(ipw.VBox):
 
         self._build_widgets(experiment_model)
 
-        # setup automations
-        # reset selected sample/specs/recipe when the user selects another sample input tab
-        self.w_sample_selection_tab.observe(self.reset_sample_selection,
-                                            names='selected_index')
-        # trigger presubmission checks when we are in the "Submit Job" accordion tab
-        self.w_main_accordion.observe(self.presubmission_checks_preview,
-                                      names='selected_index')
-
-        self.w_submit_button.on_click(self.submit_job)
-        self.w_reset_button.on_click(self.reset)
+        self._subscribe_observables()
 
     def _build_sample_selection_section(self, experiment_model):
         self.w_sample_from_id = SampleFromId(
@@ -238,6 +229,22 @@ class MainPanel(ipw.VBox):
             self.w_reset_button,
             self.w_submission_output,
         ]
+
+    def _subscribe_observables(self):
+        # reset selected sample/specs/recipe when the user selects another sample input tab
+        self.w_sample_selection_tab.observe(
+            self.reset_sample_selection,
+            names='selected_index',
+        )
+
+        # trigger presubmission checks when we are in the "Submit Job" accordion tab
+        self.w_main_accordion.observe(
+            self.presubmission_checks_preview,
+            names='selected_index',
+        )
+
+        self.w_submit_button.on_click(self.submit_job)
+        self.w_reset_button.on_click(self.reset)
 
     #######################################################################################
     # FAKE TRAITLES
