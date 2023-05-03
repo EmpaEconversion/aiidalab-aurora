@@ -20,44 +20,64 @@ CODE_NAME = "ketchup-0.2rc2"
 class MainPanel(ipw.VBox):
 
     _ACCORDION_STEPS = [
-        'Sample selection',
+        'Sample Selection',
         'Cycling Protocol',
         'Job Settings',
         'Submit Job',
     ]
+
     _SAMPLE_INPUT_LABELS = [
-        'Select from ID', 'Select from Specs', 'Make from Recipe'
+        'Select from ID',
+        'Select from Specs',
+        'Make from Recipe',
     ]
-    _SAMPLE_INPUT_METHODS = ['id', 'specs', 'recipe']
-    _METHOD_LABELS = ['Standardized', 'Customized']
-    w_header = ipw.HTML(value=f"<h2>Aurora</h2>\n Version {__version__}")
+
+    _SAMPLE_INPUT_METHODS = [
+        'id',
+        'specs',
+        'recipe',
+    ]
+
+    _METHOD_LABELS = [
+        'Standardized',
+        'Customized',
+    ]
+
     _SAMPLE_BOX_LAYOUT = {
         'width': '90%',
         'border': 'solid blue 2px',
         'align_content': 'center',
         'margin': '5px',
-        'padding': '5px'
+        'padding': '5px',
     }
+
     _SUBMISSION_INPUT_LAYOUT = {
         'width': '90%',
         'border': 'solid blue 1px',
         'margin': '5px',
         'padding': '5px',
         'max_height': '500px',
-        'overflow': 'scroll'
+        'overflow': 'scroll',
     }
+
     _SUBMISSION_OUTPUT_LAYOUT = {
         'width': '90%',
         'border': 'solid red 1px',
         'margin': '5px',
         'padding': '5px',
         'max_height': '500px',
-        'overflow': 'scroll'
+        'overflow': 'scroll',
     }
+
     _BOX_LAYOUT = {'width': '100%'}
+
     _BOX_STYLE = {'description_width': '25%'}
-    _BUTTON_STYLE = {'description_width': '30%'}
+
     _BUTTON_LAYOUT = {'margin': '5px'}
+
+    _BUTTON_STYLE = {'description_width': '30%'}
+
+    w_header = ipw.HTML(value=f"<h2>Aurora</h2>\n Version {__version__}")
 
     w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
