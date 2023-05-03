@@ -94,25 +94,7 @@ class MainPanel(ipw.VBox):
 
         self.reset_all_inputs()
 
-        self.w_header_box = get_header_box(self._SECTION_TITLE)
-
-        self._build_sample_selection_section(experiment_model)
-
-        self._build_cycling_protocol_section(experiment_model)
-
-        self._build_job_settings_section()
-
-        self._build_job_submission_section()
-
-        self._build_reset_button()
-
-        self._build_accordion()
-
-        super().__init__()
-        self.children = [
-            self.w_header_box, self.w_main_accordion, self.w_reset_button,
-            self.w_submission_output
-        ]
+        self._build_widgets(experiment_model)
 
         # setup automations
         # reset selected sample/specs/recipe when the user selects another sample input tab
@@ -232,6 +214,30 @@ class MainPanel(ipw.VBox):
 
         for i, title in enumerate(self._ACCORDION_STEPS):
             self.w_main_accordion.set_title(i, title)
+
+    def _build_widgets(self, experiment_model):
+        self.w_header_box = get_header_box(self._SECTION_TITLE)
+
+        self._build_sample_selection_section(experiment_model)
+
+        self._build_cycling_protocol_section(experiment_model)
+
+        self._build_job_settings_section()
+
+        self._build_job_submission_section()
+
+        self._build_reset_button()
+
+        self._build_accordion()
+
+        super().__init__()
+
+        self.children = [
+            self.w_header_box,
+            self.w_main_accordion,
+            self.w_reset_button,
+            self.w_submission_output,
+        ]
 
     #######################################################################################
     # FAKE TRAITLES
