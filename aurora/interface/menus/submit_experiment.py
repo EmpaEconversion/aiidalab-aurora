@@ -104,13 +104,7 @@ class MainPanel(ipw.VBox):
 
         self._build_job_submission_section()
 
-        # Reset
-        self.w_reset_button = ipw.Button(description="RESET",
-                                         button_style="danger",
-                                         tooltip="Start over",
-                                         icon="times",
-                                         style=self._BUTTON_STYLE,
-                                         layout=self._BUTTON_LAYOUT)
+        self._build_reset_button()
 
         ########################################################################
         # MAIN ACCORDION
@@ -226,6 +220,16 @@ class MainPanel(ipw.VBox):
             self.w_code,
             self.w_submit_button,
         ])
+
+    def _build_reset_button(self):
+        self.w_reset_button = ipw.Button(
+            description="RESET",
+            button_style="danger",
+            tooltip="Start over",
+            icon="times",
+            style=self._BUTTON_STYLE,
+            layout=self._BUTTON_LAYOUT,
+        )
 
     #######################################################################################
     # FAKE TRAITLES
