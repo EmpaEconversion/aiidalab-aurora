@@ -87,14 +87,14 @@ class MainPanel(ipw.VBox):
 
         if experiment_model is None:
             experiment_model = BatteryExperimentModel()
-            # raise ValueError('An experiment model must be provided.')
+
         self.experiment_model = experiment_model
+
         self.available_samples_model = AvailableSamplesModel()
 
-        self.w_header_box = get_header_box(self._SECTION_TITLE)
-
-        # initialize variables
         self.reset_all_inputs()
+
+        self.w_header_box = get_header_box(self._SECTION_TITLE)
 
         # Sample selection
         self.w_sample_from_id = SampleFromId(
