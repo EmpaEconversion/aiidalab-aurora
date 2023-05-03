@@ -61,6 +61,137 @@ class MainPanel(ipw.VBox):
 
     w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
+    def __init__(self, experiment_model=None):
+
+        if experiment_model is None:
+            experiment_model = BatteryExperimentModel()
+            # raise ValueError('An experiment model must be provided.')
+        self.experiment_model = experiment_model
+        self.available_samples_model = AvailableSamplesModel()
+
+        # ------------------------------------------------------------ #
+        # HEADER BOX
+        # ------------------------------------------------------------ #
+        self.w_header_box = ipw.VBox(
+            [
+                ipw.HTML(value="<h1>Aurora - Submit Experiment</h1>"),
+                ipw.HTML(value=f"Aurora app version {__version__}"),
+            ],
+            layout={
+                'width': '100%',
+                'border': 'solid black 4px',
+                'padding': '10px'
+            },
+        )
+        # ------------------------------------------------------------ #
+
+        # initialize variables
+        self.reset_all_inputs()
+
+        # Sample selection
+        self.w_sample_from_id = SampleFromId(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_sample)
+        self.w_sample_from_specs = SampleFromSpecs(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_sample,
+            recipe_callback_f=self.switch_to_recipe)
+        self.w_sample_from_recipe = SampleFromRecipe(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_specs_recipe)
+
+        self.w_sample_selection_tab = ipw.Tab(
+            children=[
+                self.w_sample_from_id,
+                self.w_sample_from_specs,
+                self.w_sample_from_recipe,
+            ],
+            selected_index=0,
+        )
+        for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
+            self.w_sample_selection_tab.set_title(i, title)
+
+        # Method selection
+        self.w_test_sample_label = ipw.HTML("Selected sample:")
+        self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
+        self.w_test_standard = CyclingStandard(lambda x: x)
+        self.w_test_custom = CyclingCustom(
+            experiment_model=experiment_model,
+            validate_callback_f=self.return_selected_protocol)
+        self.w_test_method_tab = ipw.Tab(
+            children=[self.w_test_standard, self.w_test_custom],
+            selected_index=1)
+        for i, title in enumerate(self._METHOD_LABELS):
+            self.w_test_method_tab.set_title(i, title)
+
+        self.w_test_tab = ipw.VBox([
+            self.w_test_sample_label,
+            self.w_test_sample_preview,
+            self.w_test_method_tab,
+        ])
+
+        # Settings selection
+        self.w_settings_tab = TomatoSettings(
+            validate_callback_f=self.return_selected_settings)
+
+        # Submit
+        self.w_job_preview = ipw.Output(
+            layout=self._SUBMISSION_INPUT_LAYOUT
+        )  # TODO: write better preview of the job inputs
+        self.w_code = ipw.Dropdown(
+            description="Select code:",
+            options=[CODE_NAME],  # TODO: get codes
+            value=CODE_NAME)
+        self.w_submit_button = ipw.Button(description="SUBMIT",
+                                          button_style="success",
+                                          tooltip="Submit the experiment",
+                                          icon="play",
+                                          disabled=True,
+                                          style=self._BUTTON_STYLE,
+                                          layout=self._BUTTON_LAYOUT)
+
+        self.w_submit_tab = ipw.VBox([
+            self.w_job_preview,
+            self.w_code,
+            self.w_submit_button,
+        ])
+
+        # Reset
+        self.w_reset_button = ipw.Button(description="RESET",
+                                         button_style="danger",
+                                         tooltip="Start over",
+                                         icon="times",
+                                         style=self._BUTTON_STYLE,
+                                         layout=self._BUTTON_LAYOUT)
+
+        ########################################################################
+        # MAIN ACCORDION
+        self.w_main_accordion = ipw.Accordion(children=[
+            self.w_sample_selection_tab,
+            self.w_test_tab,
+            self.w_settings_tab,
+            self.w_submit_tab,
+        ])
+        for i, title in enumerate(self._ACCORDION_STEPS):
+            self.w_main_accordion.set_title(i, title)
+
+        super().__init__()
+        self.children = [
+            self.w_header_box, self.w_main_accordion, self.w_reset_button,
+            self.w_submission_output
+        ]
+
+        # setup automations
+        # reset selected sample/specs/recipe when the user selects another sample input tab
+        self.w_sample_selection_tab.observe(self.reset_sample_selection,
+                                            names='selected_index')
+        # trigger presubmission checks when we are in the "Submit Job" accordion tab
+        self.w_main_accordion.observe(self.presubmission_checks_preview,
+                                      names='selected_index')
+
+        self.w_submit_button.on_click(self.submit_job)
+        self.w_reset_button.on_click(self.reset)
+
     #######################################################################################
     # FAKE TRAITLES
     # these are the properties shared between widgets
@@ -260,137 +391,3 @@ class MainPanel(ipw.VBox):
         self.reset_all_inputs()
         self.w_submission_output.clear_output()
         self.w_main_accordion.selected_index = 0
-
-    #######################################################################################
-    # MAIN
-    #######################################################################################
-    def __init__(self, experiment_model=None):
-
-        if experiment_model is None:
-            experiment_model = BatteryExperimentModel()
-            # raise ValueError('An experiment model must be provided.')
-        self.experiment_model = experiment_model
-        self.available_samples_model = AvailableSamplesModel()
-
-        # ------------------------------------------------------------ #
-        # HEADER BOX
-        # ------------------------------------------------------------ #
-        self.w_header_box = ipw.VBox(
-            [
-                ipw.HTML(value="<h1>Aurora - Submit Experiment</h1>"),
-                ipw.HTML(value=f"Aurora app version {__version__}"),
-            ],
-            layout={
-                'width': '100%',
-                'border': 'solid black 4px',
-                'padding': '10px'
-            },
-        )
-        # ------------------------------------------------------------ #
-
-        # initialize variables
-        self.reset_all_inputs()
-
-        # Sample selection
-        self.w_sample_from_id = SampleFromId(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_sample)
-        self.w_sample_from_specs = SampleFromSpecs(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_sample,
-            recipe_callback_f=self.switch_to_recipe)
-        self.w_sample_from_recipe = SampleFromRecipe(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_specs_recipe)
-
-        self.w_sample_selection_tab = ipw.Tab(
-            children=[
-                self.w_sample_from_id,
-                self.w_sample_from_specs,
-                self.w_sample_from_recipe,
-            ],
-            selected_index=0,
-        )
-        for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
-            self.w_sample_selection_tab.set_title(i, title)
-
-        # Method selection
-        self.w_test_sample_label = ipw.HTML("Selected sample:")
-        self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
-        self.w_test_standard = CyclingStandard(lambda x: x)
-        self.w_test_custom = CyclingCustom(
-            experiment_model=experiment_model,
-            validate_callback_f=self.return_selected_protocol)
-        self.w_test_method_tab = ipw.Tab(
-            children=[self.w_test_standard, self.w_test_custom],
-            selected_index=1)
-        for i, title in enumerate(self._METHOD_LABELS):
-            self.w_test_method_tab.set_title(i, title)
-
-        self.w_test_tab = ipw.VBox([
-            self.w_test_sample_label,
-            self.w_test_sample_preview,
-            self.w_test_method_tab,
-        ])
-
-        # Settings selection
-        self.w_settings_tab = TomatoSettings(
-            validate_callback_f=self.return_selected_settings)
-
-        # Submit
-        self.w_job_preview = ipw.Output(
-            layout=self._SUBMISSION_INPUT_LAYOUT
-        )  # TODO: write better preview of the job inputs
-        self.w_code = ipw.Dropdown(
-            description="Select code:",
-            options=[CODE_NAME],  # TODO: get codes
-            value=CODE_NAME)
-        self.w_submit_button = ipw.Button(description="SUBMIT",
-                                          button_style="success",
-                                          tooltip="Submit the experiment",
-                                          icon="play",
-                                          disabled=True,
-                                          style=self._BUTTON_STYLE,
-                                          layout=self._BUTTON_LAYOUT)
-
-        self.w_submit_tab = ipw.VBox([
-            self.w_job_preview,
-            self.w_code,
-            self.w_submit_button,
-        ])
-
-        # Reset
-        self.w_reset_button = ipw.Button(description="RESET",
-                                         button_style="danger",
-                                         tooltip="Start over",
-                                         icon="times",
-                                         style=self._BUTTON_STYLE,
-                                         layout=self._BUTTON_LAYOUT)
-
-        ########################################################################
-        # MAIN ACCORDION
-        self.w_main_accordion = ipw.Accordion(children=[
-            self.w_sample_selection_tab,
-            self.w_test_tab,
-            self.w_settings_tab,
-            self.w_submit_tab,
-        ])
-        for i, title in enumerate(self._ACCORDION_STEPS):
-            self.w_main_accordion.set_title(i, title)
-
-        super().__init__()
-        self.children = [
-            self.w_header_box, self.w_main_accordion, self.w_reset_button,
-            self.w_submission_output
-        ]
-
-        # setup automations
-        # reset selected sample/specs/recipe when the user selects another sample input tab
-        self.w_sample_selection_tab.observe(self.reset_sample_selection,
-                                            names='selected_index')
-        # trigger presubmission checks when we are in the "Submit Job" accordion tab
-        self.w_main_accordion.observe(self.presubmission_checks_preview,
-                                      names='selected_index')
-
-        self.w_submit_button.on_click(self.submit_job)
-        self.w_reset_button.on_click(self.reset)
