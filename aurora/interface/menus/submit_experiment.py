@@ -100,9 +100,7 @@ class MainPanel(ipw.VBox):
 
         self._build_cycling_protocol_section(experiment_model)
 
-        # Settings selection
-        self.w_settings_tab = TomatoSettings(
-            validate_callback_f=self.return_selected_settings)
+        self._build_job_settings_section()
 
         # Submit
         self.w_job_preview = ipw.Output(
@@ -218,6 +216,10 @@ class MainPanel(ipw.VBox):
             self.w_test_sample_preview,
             self.w_test_method_tab,
         ])
+
+    def _build_job_settings_section(self):
+        self.w_settings_tab = TomatoSettings(
+            validate_callback_f=self.return_selected_settings)
 
     #######################################################################################
     # FAKE TRAITLES
