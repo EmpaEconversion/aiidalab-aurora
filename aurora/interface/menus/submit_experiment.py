@@ -94,24 +94,24 @@ class MainPanel(ipw.VBox):
 
         self.reset_all_inputs()
 
-        self._build_widgets(experiment_model)
+        self._build_widgets()
 
         self._subscribe_observables()
 
-    def _build_sample_selection_section(self, experiment_model):
+    def _build_sample_selection_section(self):
         self.w_sample_from_id = SampleFromId(
-            experiment_model=experiment_model,
+            experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_sample,
         )
 
         self.w_sample_from_specs = SampleFromSpecs(
-            experiment_model=experiment_model,
+            experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_sample,
             recipe_callback_f=self.switch_to_recipe,
         )
 
         self.w_sample_from_recipe = SampleFromRecipe(
-            experiment_model=experiment_model,
+            experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_specs_recipe,
         )
 
@@ -127,14 +127,14 @@ class MainPanel(ipw.VBox):
         for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
             self.w_sample_selection_tab.set_title(i, title)
 
-    def _build_cycling_protocol_section(self, experiment_model):
+    def _build_cycling_protocol_section(self):
         self.w_test_sample_label = ipw.HTML("Selected sample:")
         self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
 
         self.w_test_standard = CyclingStandard(lambda x: x)
 
         self.w_test_custom = CyclingCustom(
-            experiment_model=experiment_model,
+            experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_protocol,
         )
 
@@ -206,12 +206,12 @@ class MainPanel(ipw.VBox):
         for i, title in enumerate(self._ACCORDION_STEPS):
             self.w_main_accordion.set_title(i, title)
 
-    def _build_widgets(self, experiment_model):
+    def _build_widgets(self):
         self.w_header_box = get_header_box(self._SECTION_TITLE)
 
-        self._build_sample_selection_section(experiment_model)
+        self._build_sample_selection_section()
 
-        self._build_cycling_protocol_section(experiment_model)
+        self._build_cycling_protocol_section()
 
         self._build_job_settings_section()
 
