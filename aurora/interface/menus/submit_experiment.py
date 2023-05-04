@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 import ipywidgets as ipw
 import pandas as pd
@@ -83,7 +84,10 @@ class MainPanel(ipw.VBox):
 
     w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
-    def __init__(self, experiment_model=None):
+    def __init__(
+        self,
+        experiment_model: Optional[BatteryExperimentModel] = None,
+    ) -> None:
 
         if experiment_model is None:
             experiment_model = BatteryExperimentModel()
@@ -98,7 +102,7 @@ class MainPanel(ipw.VBox):
 
         self._subscribe_observables()
 
-    def _build_sample_selection_section(self):
+    def _build_sample_selection_section(self) -> None:
         self.w_sample_from_id = SampleFromId(
             experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_sample,
@@ -127,7 +131,7 @@ class MainPanel(ipw.VBox):
         for i, title in enumerate(self._SAMPLE_INPUT_LABELS):
             self.w_sample_selection_tab.set_title(i, title)
 
-    def _build_cycling_protocol_section(self):
+    def _build_cycling_protocol_section(self) -> None:
         self.w_test_sample_label = ipw.HTML("Selected sample:")
         self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
 
@@ -155,11 +159,11 @@ class MainPanel(ipw.VBox):
             self.w_test_method_tab,
         ])
 
-    def _build_job_settings_section(self):
+    def _build_job_settings_section(self) -> None:
         self.w_settings_tab = TomatoSettings(
             validate_callback_f=self.return_selected_settings)
 
-    def _build_job_submission_section(self):
+    def _build_job_submission_section(self) -> None:
         # TODO: write better preview of the job inputs
         self.w_job_preview = ipw.Output(layout=self._SUBMISSION_INPUT_LAYOUT)
 
@@ -185,7 +189,7 @@ class MainPanel(ipw.VBox):
             self.w_submit_button,
         ])
 
-    def _build_reset_button(self):
+    def _build_reset_button(self) -> None:
         self.w_reset_button = ipw.Button(
             description="RESET",
             button_style="danger",
@@ -195,7 +199,7 @@ class MainPanel(ipw.VBox):
             layout=self._BUTTON_LAYOUT,
         )
 
-    def _build_accordion(self):
+    def _build_accordion(self) -> None:
         self.w_main_accordion = ipw.Accordion(children=[
             self.w_sample_selection_tab,
             self.w_test_tab,
@@ -206,7 +210,7 @@ class MainPanel(ipw.VBox):
         for i, title in enumerate(self._ACCORDION_STEPS):
             self.w_main_accordion.set_title(i, title)
 
-    def _build_widgets(self):
+    def _build_widgets(self) -> None:
         self.w_header_box = get_header_box(self._SECTION_TITLE)
 
         self._build_sample_selection_section()
@@ -230,7 +234,7 @@ class MainPanel(ipw.VBox):
             self.w_submission_output,
         ]
 
-    def _subscribe_observables(self):
+    def _subscribe_observables(self) -> None:
         # reset selected sample/specs/recipe when the user selects another sample input tab
         self.w_sample_selection_tab.observe(
             self.reset_sample_selection,
