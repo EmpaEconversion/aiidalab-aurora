@@ -20,6 +20,8 @@ CODE_NAME = "ketchup-0.2rc2"
 
 
 class MainPanel(ipw.VBox):
+    """Aurora's main widgets panel."""
+
     _SECTION_TITLE = "Submit Experiment"
 
     _ACCORDION_STEPS = [
@@ -88,6 +90,13 @@ class MainPanel(ipw.VBox):
         self,
         experiment_model: Optional[BatteryExperimentModel] = None,
     ) -> None:
+        """Initialize main panel and set up automation.
+
+        Parameters
+        ----------
+        `experiment_model` : `Optional[BatteryExperimentModel]`, optional
+            The experiment model, by default None
+        """
 
         if experiment_model is None:
             experiment_model = BatteryExperimentModel()
@@ -103,6 +112,8 @@ class MainPanel(ipw.VBox):
         self._subscribe_observables()
 
     def _build_sample_selection_section(self) -> None:
+        """Build the sample selection section."""
+
         self.w_sample_from_id = SampleFromId(
             experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_sample,
@@ -132,6 +143,8 @@ class MainPanel(ipw.VBox):
             self.w_sample_selection_tab.set_title(i, title)
 
     def _build_cycling_protocol_section(self) -> None:
+        """Build the cycling protocol section."""
+
         self.w_test_sample_label = ipw.HTML("Selected sample:")
         self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
 
@@ -160,10 +173,13 @@ class MainPanel(ipw.VBox):
         ])
 
     def _build_job_settings_section(self) -> None:
+        """Build the job settings section."""
         self.w_settings_tab = TomatoSettings(
             validate_callback_f=self.return_selected_settings)
 
     def _build_job_submission_section(self) -> None:
+        """Build the job submission section."""
+
         # TODO: write better preview of the job inputs
         self.w_job_preview = ipw.Output(layout=self._SUBMISSION_INPUT_LAYOUT)
 
@@ -190,6 +206,7 @@ class MainPanel(ipw.VBox):
         ])
 
     def _build_reset_button(self) -> None:
+        """Build the reset button."""
         self.w_reset_button = ipw.Button(
             description="RESET",
             button_style="danger",
@@ -200,6 +217,8 @@ class MainPanel(ipw.VBox):
         )
 
     def _build_accordion(self) -> None:
+        """Combine the sections in the main accordion widget."""
+
         self.w_main_accordion = ipw.Accordion(children=[
             self.w_sample_selection_tab,
             self.w_test_tab,
@@ -211,6 +230,8 @@ class MainPanel(ipw.VBox):
             self.w_main_accordion.set_title(i, title)
 
     def _build_widgets(self) -> None:
+        """Build panel widgets."""
+
         self.w_header_box = get_header_box(self._SECTION_TITLE)
 
         self._build_sample_selection_section()
@@ -235,6 +256,8 @@ class MainPanel(ipw.VBox):
         ]
 
     def _subscribe_observables(self) -> None:
+        """Set up observables."""
+
         # reset selected sample/specs/recipe when the user selects another sample input tab
         self.w_sample_selection_tab.observe(
             self.reset_sample_selection,
