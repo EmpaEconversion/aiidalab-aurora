@@ -53,3 +53,9 @@ repos:
         # E741 - ambiguous variable name, used sparsely when appropriate
         args: ["--ignore=E501,E741"]
         exclude: *exclude_files
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.2.0
+    hooks:
+      - id: mypy
+        exclude: *exclude_files
