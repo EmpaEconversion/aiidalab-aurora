@@ -1,4 +1,7 @@
+# mypy: disable-error-code=name-defined
+
 import json
+from typing import Optional
 
 import pandas as pd
 
@@ -58,7 +61,7 @@ def update_available_recipies():
     available_recipies = load_available_recipies()
 
 
-def query_available_specs(field: str = None):
+def query_available_specs(field: Optional[str] = None):
     """
     This mock function returns a pandas.DataFrame of allowed specs.
         field (optional): name of a field to query [manufacturer, composition, capacity, form_factor]

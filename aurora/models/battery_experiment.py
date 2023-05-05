@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Optional
 
 import pandas as pd
 
@@ -191,7 +192,7 @@ class BatteryExperimentModel():
         observators_chain += ' -> update_available_protocols'
         self.update_observers(observators_chain)
 
-    def query_available_specs(self, field: str = None):
+    def query_available_specs(self, field: Optional[str] = None):
         """
         This mock function returns a pandas.DataFrame of allowed specs.
             field (optional): name of a field to query [manufacturer, composition, capacity, form_factor]

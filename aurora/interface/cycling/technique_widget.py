@@ -2,7 +2,7 @@
 Technique widget: the dropdowns corresponding to each parameters are generated dynamically.
 """
 
-import typing
+from typing import Literal, Union, get_args, get_origin
 
 import ipywidgets as ipw
 from pydantic.types import NonNegativeFloat, NonNegativeInt
@@ -14,7 +14,6 @@ from aurora.schemas.cycling import CyclingParameter, ElectroChemPayloads
 CHECKBOX_STYLE = {'description_width': '5px'}
 CHECKBOX_LAYOUT = {'width': '8%'}
 BOX_STYLE = {'description_width': 'initial'}
-BOX_LAYOUT = {}  # 'width': '30%', 'margin': '5px'}
 
 
 def build_parameter_widget(param_obj):
@@ -36,19 +35,19 @@ def build_parameter_widget(param_obj):
     param_value = param_obj.value if param_obj.value is not None else param_obj.default_value
     value_type = param_obj.__annotations__['value']
 
-    if typing.get_origin(value_type) is typing.Union:
+    if get_origin(value_type) is Union:
         # value_type is a union of types
         # by default, we choose the most generic one, that is a string
-        if str in typing.get_args(value_type):
+        if str in get_args(value_type):
             value_type = str
             param_value = str(param_value)
         else:
             raise NotImplementedError()
 
-    if typing.get_origin(value_type) is typing.Literal:
+    if get_origin(value_type) is Literal:
         w_param = ipw.Dropdown(description=param_obj.label,
                                placeholder=param_obj.description,
-                               options=typing.get_args(value_type),
+                               options=get_args(value_type),
                                value=param_value,
                                style=BOX_STYLE)
     elif issubclass(value_type, bool):
@@ -56,8 +55,7 @@ def build_parameter_widget(param_obj):
                                placeholder=param_obj.description,
                                options=[('False', False), ('True', True)],
                                value=param_value,
-                               style=BOX_STYLE,
-                               layout=BOX_LAYOUT)
+                               style=BOX_STYLE)
     elif issubclass(value_type, float):
         if value_type in [NonNegativeFloat]:
             value_min, value_max = (0., 1.e99)
@@ -104,7 +102,7 @@ class TechniqueParametersWidget(ipw.VBox):
 
     def __init__(self, technique, **kwargs):
         # technique is an instance of one of the classes in ElecElectroChemPayloads
-        if not isinstance(technique, ElectroChemPayloads.__args__):
+        if not isinstance(technique, get_args(ElectroChemPayloads)):
             raise ValueError("Invalid technique")
 
         self.tech_short_name = technique.short_name
@@ -114,11 +112,10 @@ class TechniqueParametersWidget(ipw.VBox):
                                placeholder="Enter a custom name",
                                value=technique.name)
         # layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
-        device_options = typing.get_args(technique.__annotations__['device'])
+        device_options = get_args(technique.__annotations__['device'])
         self.w_device = ipw.Dropdown(description="Device:",
                                      options=device_options,
                                      value=device_options[0],
-                                     layout=BOX_LAYOUT,
                                      style=BOX_STYLE)
         self.w_tech_label = ipw.HTML(
             f"<b>Technique:</b> <i>{self.tech_description}</i>")
