@@ -188,8 +188,8 @@ class SampleFromId(ipw.VBox):
             # return f"<{row['battery_id']:8}>   \"{row['metadata.name']}\""
             return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['metadata.name']} ({row['composition.description']})"
 
-        return [("", None)] + [(row_label(row), row['battery_id'])
-                               for index, row in table.iterrows()]
+        return [(row_label(row), row['battery_id'])
+                for index, row in table.iterrows()]
 
     def _uptate_selected_list(self):
         """Returns a (option_string, battery_id) list."""
@@ -198,5 +198,5 @@ class SampleFromId(ipw.VBox):
         def row_label(row):
             return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['metadata.name']} ({row['composition.description']})"
 
-        return [("", None)] + [(row_label(row), row['battery_id'])
-                               for index, row in table.iterrows()]
+        return [(row_label(row), row['battery_id'])
+                for index, row in table.iterrows()]
