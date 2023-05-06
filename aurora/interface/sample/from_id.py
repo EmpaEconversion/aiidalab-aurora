@@ -53,10 +53,13 @@ class SampleFromId(ipw.VBox):
                                      style=self.BUTTON_STYLE,
                                      layout=self.BUTTON_LAYOUT)
 
-        self.w_id_list = ipw.Select(rows=10,
-                                    description="Battery ID:",
-                                    style=self.BOX_STYLE_1,
-                                    layout=self.BOX_LAYOUT_1)
+        self.w_id_list = ipw.SelectMultiple(
+            rows=10,
+            description="Battery ID:",
+            style=self.BOX_STYLE_1,
+            layout=self.BOX_LAYOUT_1,
+        )
+
         self.w_selected_list = ipw.Select(rows=10,
                                           description="Selected ID:",
                                           style=self.BOX_STYLE_1,
@@ -101,7 +104,7 @@ class SampleFromId(ipw.VBox):
             raise TypeError(
                 "validate_callback_f should be a callable function")
         # self.validate_callback_f = validate_callback_f
-        self.w_id_list.value = None
+        self.w_id_list.value = []
         self.w_selected_list.value = None
         self.on_update_button_clicked()
 
@@ -116,7 +119,7 @@ class SampleFromId(ipw.VBox):
             lambda arg: self.on_validate_button_clicked(validate_callback_f))
 
     @property
-    def selected_sample_id(self):
+    def selected_sample_ids(self):
         return self.w_id_list.value
 
     @property
@@ -134,7 +137,7 @@ class SampleFromId(ipw.VBox):
 
     def display_sample_preview(self):
         self.w_sample_preview.clear_output()
-        if self.w_id_list.value is not None:
+        if self.w_id_list.value:
             with self.w_sample_preview:
                 display(
                     self.experiment_model.query_available_samples(
@@ -142,7 +145,7 @@ class SampleFromId(ipw.VBox):
                             {'battery_id': self.w_id_list.value})))
 
     def update_validate_button_state(self):
-        self.w_validate.disabled = (self.w_id_list.value is None)
+        self.w_validate.disabled = not self.w_id_list.value
 
     def on_battery_id_change(self, _=None):
         self.display_sample_preview()
@@ -153,9 +156,9 @@ class SampleFromId(ipw.VBox):
         self.w_id_list.options = self._build_sample_id_options()
 
     def on_select_button_clicked(self, _=None):
-        sample_id = self.w_id_list.value
-        if sample_id is not None:
-            self.experiment_model.add_selected_sample(sample_id)
+        sample_ids = self.w_id_list.value
+        if sample_ids:
+            self.experiment_model.add_selected_samples(sample_ids)
         self.update_lists()
 
     def on_unselect_button_clicked(self, _=None):

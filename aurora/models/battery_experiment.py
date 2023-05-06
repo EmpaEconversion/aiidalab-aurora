@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 import pandas as pd
 
@@ -96,6 +96,18 @@ class BatteryExperimentModel():
         """Resets all inputs."""
         # Not implemented yet...
         return None
+
+    def add_selected_samples(self, sample_ids: Tuple[int]) -> None:
+        """Add selected samples to list.
+
+        Parameters
+        ----------
+        `sample_ids` : `Tuple[int]`
+            The ids of the selected samples.
+        """
+
+        for sid in sample_ids:
+            self.add_selected_sample(sid)
 
     def add_selected_sample(self, battery_sample_id, observators_chain=None):
         """Description pending."""
@@ -230,20 +242,18 @@ class BatteryExperimentModel():
         """A mock function that returns the available synthesis recipies."""
         return self.available_protocols
 
-    def write_pd_query_from_dict(self, query_dict):
+    def write_pd_query_from_dict(self, query_dict: dict) -> Optional[str]:
         """
         Write a pandas query from a dictionary {field: value}.
         Example:
             write_pandas_query({'manufacturer': 'BIG-MAP', 'battery_id': 98})
         returns "(`manufacturer` == 'BIG-MAP') and (`battery_id` == 98)"
         """
-        query = " and ".join([
-            "(`{}` == {})".format(
-                k, f"{v}" if isinstance(v, (int, float)) else f"'{v}'")
-            for k, v in query_dict.items() if v
-        ])
-        if query:
-            return query
+
+        query = " and ".join(
+            [f"(`{k}` == {v})" for k, v in _process_dict(query_dict).items()])
+
+        return query or None
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS
@@ -300,3 +310,38 @@ class BatteryExperimentModel():
 
         with open(filepath, 'w') as fileobj:
             fileobj.write(str(json_data))
+
+
+def _process_dict(query_dict: dict) -> dict:
+    """Process query dictionary, wrapping any strings in quotes.
+
+    Parameters
+    ----------
+    `query_dict` : `dict`
+        Dictionary containing query key|value pairs.
+
+    Returns
+    -------
+    `dict`
+        The processed dictionary, with strings wrapped in quotes.
+    """
+    return {
+        k: [_cast(v_) for v_ in v] if isinstance(v, list) else _cast(v)
+        for k, v in query_dict.items() if v
+    }
+
+
+def _cast(v: Union[int, float, str]) -> Union[int, float, str]:
+    """Return `int|float` as is; surround in quotes if `str`.
+
+    Parameters
+    ----------
+    v : Union[int, float, str]
+        The value to cast.
+
+    Returns
+    -------
+    Union[int, float, str]
+        The casted value.
+    """
+    return f"'{v}'" if isinstance(v, str) else v
