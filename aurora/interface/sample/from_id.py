@@ -60,10 +60,12 @@ class SampleFromId(ipw.VBox):
             layout=self.BOX_LAYOUT_1,
         )
 
-        self.w_selected_list = ipw.Select(rows=10,
-                                          description="Selected ID:",
-                                          style=self.BOX_STYLE_1,
-                                          layout=self.BOX_LAYOUT_1)
+        self.w_selected_list = ipw.SelectMultiple(
+            rows=10,
+            description="Selected ID:",
+            style=self.BOX_STYLE_1,
+            layout=self.BOX_LAYOUT_1,
+        )
 
         self.w_sample_preview = ipw.Output()
         self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
@@ -105,7 +107,7 @@ class SampleFromId(ipw.VBox):
                 "validate_callback_f should be a callable function")
         # self.validate_callback_f = validate_callback_f
         self.w_id_list.value = []
-        self.w_selected_list.value = None
+        self.w_selected_list.value = []
         self.on_update_button_clicked()
 
         # setup automations
@@ -162,9 +164,9 @@ class SampleFromId(ipw.VBox):
         self.update_lists()
 
     def on_unselect_button_clicked(self, _=None):
-        sample_id = self.w_selected_list.value
-        if sample_id is not None:
-            self.experiment_model.remove_selected_sample(sample_id)
+        sample_ids = self.w_selected_list.value
+        if sample_ids:
+            self.experiment_model.remove_selected_samples(sample_ids)
         self.update_lists()
 
     def on_validate_button_clicked(self, callback_function):

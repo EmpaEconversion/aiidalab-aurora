@@ -132,6 +132,18 @@ class BatteryExperimentModel():
         observators_chain += ' -> add_selected_sample'
         self.update_observers(observators_chain)
 
+    def remove_selected_samples(self, sample_ids: Tuple[int]) -> None:
+        """Remove selected samples from list.
+
+        Parameters
+        ----------
+        `sample_ids` : `Tuple[int]`
+            The ids of the selected samples.
+        """
+
+        for sid in sample_ids:
+            self.remove_selected_sample(sid)
+
     def remove_selected_sample(self,
                                battery_sample_id,
                                observators_chain=None):
