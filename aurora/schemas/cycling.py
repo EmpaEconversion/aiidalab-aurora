@@ -16,7 +16,7 @@ I also need to add items and __getitem__ because some other parts of the code
 expect it to behave like a dict...
 """
 
-from typing import Dict, Generic, Literal, Sequence, TypeVar, Union
+from typing import Dict, Generic, Literal, Sequence, TypeVar, Union, get_args
 
 from pydantic import BaseModel, Extra, NonNegativeFloat, NonNegativeInt
 from pydantic.generics import GenericModel
@@ -29,8 +29,8 @@ class CyclingParameter(GenericModel, Generic[DataT]):
     label: str  # the label used in a widget
     description: str = ""  # a long description
     units: str = ""  # physical units of this parameter
-    value: DataT = None  # the set value
-    default_value: DataT = None  # the default value of this parameter
+    value: DataT = None  # type: ignore[assignment] # the set value
+    default_value: DataT = None  # type: ignore[assignment] # the default value of this parameter
     required: bool = False  # True if parameter is required
 
     class Config:
@@ -65,7 +65,8 @@ allowed_E_ranges = Literal["+-2.5 V", "+-5.0 V", "+-10 V", "auto", ]
 ################################################################################
 
 
-class DummySequential(CyclingTechnique, extra=Extra.forbid):
+class DummySequential(CyclingTechnique,
+                      extra=Extra.forbid):  # type: ignore[call-arg]
     device: Literal["worker"] = "worker"
     technique: Literal["sequential"] = "sequential"
     short_name: Literal["DUMMY_SEQUENTIAL"] = "DUMMY_SEQUENTIAL"
@@ -100,7 +101,8 @@ class DummySequential(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-class DummyRandom(CyclingTechnique, extra=Extra.forbid):
+class DummyRandom(CyclingTechnique,
+                  extra=Extra.forbid):  # type: ignore[call-arg]
     device: Literal["worker"] = "worker"
     technique: Literal["random"] = "random"
     short_name: Literal["DUMMY_RANDOM"] = "DUMMY_RANDOM"
@@ -135,7 +137,8 @@ class DummyRandom(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
+class OpenCircuitVoltage(CyclingTechnique,
+                         extra=Extra.forbid):  # type: ignore[call-arg]
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["open_circuit_voltage"] = "open_circuit_voltage"
     short_name: Literal["OCV"] = "OCV"
@@ -202,7 +205,8 @@ class OpenCircuitVoltage(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
+class ConstantVoltage(CyclingTechnique,
+                      extra=Extra.forbid):  # type: ignore[call-arg]
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_voltage"] = "constant_voltage"
     short_name: Literal["CV"] = "CV"
@@ -331,7 +335,8 @@ class ConstantVoltage(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
+class ConstantCurrent(CyclingTechnique,
+                      extra=Extra.forbid):  # type: ignore[call-arg]
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_current"] = "constant_current"
     short_name: Literal["CC"] = "CC"
@@ -460,14 +465,14 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-# class SweepVoltage(CyclingTechnique, extra=Extra.forbid):
+# class SweepVoltage(CyclingTechnique, extra=Extra.forbid):  # type: ignore[call-arg]
 #    technique: Literal["sweep_voltage"] = "sweep_voltage"
 #    short_name: Literal["LSV"] = "LSV"
 #    name = "LSV"
 #    description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 ################################################################################
-# class SweepCurrent(CyclingTechnique, extra=Extra.forbid):
+# class SweepCurrent(CyclingTechnique, extra=Extra.forbid):  # type: ignore[call-arg]
 #    technique: Literal["sweep_current"] = "sweep_current"
 #    short_name: Literal["LSC"] = "LSC"
 #    name = ""
@@ -475,7 +480,7 @@ class ConstantCurrent(CyclingTechnique, extra=Extra.forbid):
 
 
 ################################################################################
-class Loop(CyclingTechnique, extra=Extra.forbid):
+class Loop(CyclingTechnique, extra=Extra.forbid):  # type: ignore[call-arg]
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["loop"] = "loop"
     short_name: Literal["LOOP"] = "LOOP"
@@ -535,7 +540,7 @@ class ElectroChemSequence(BaseModel):
         return len(self.method)
 
     def add_step(self, elem):
-        if not isinstance(elem, ElectroChemPayloads.__args__):
+        if not isinstance(elem, get_args(ElectroChemPayloads)):
             raise ValueError("Invalid technique")
         self.method.append(elem)
 

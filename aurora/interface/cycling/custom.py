@@ -4,6 +4,7 @@ TODO: Enable the user to save a customized protocol.
 """
 import logging
 import os
+from typing import get_args
 
 import ipywidgets as ipw
 from ipyfilechooser import FileChooser
@@ -39,7 +40,7 @@ class CyclingCustom(ipw.VBox):
     _TECHNIQUES_OPTIONS = {
         f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})":
         Technique
-        for Technique in ElectroChemPayloads.__args__
+        for Technique in get_args(ElectroChemPayloads)
     }
 
     def __init__(self, experiment_model, validate_callback_f):

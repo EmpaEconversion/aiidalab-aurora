@@ -8,10 +8,10 @@ from .utils import extract_schema_types
 
 
 class BatteryComposition(BaseModel):  # TypedDict?
-    description: str = None
-    cathode: str = None
-    anode: str = None
-    electrolyte: str = None
+    description: Optional[str] = None
+    cathode: Optional[str] = None
+    anode: Optional[str] = None
+    electrolyte: Optional[str] = None
 
     class Config:
         # exclude fields from export, to avoid validation errors when reloaded
