@@ -16,7 +16,8 @@ I also need to add items and __getitem__ because some other parts of the code
 expect it to behave like a dict...
 """
 
-from typing import Dict, Generic, Literal, Sequence, TypeVar, Union, get_args
+from typing import (Dict, Generic, Literal, Optional, Sequence, TypeVar, Union,
+                    get_args)
 
 from pydantic import BaseModel, Extra, NonNegativeFloat, NonNegativeInt
 from pydantic.generics import GenericModel
@@ -29,8 +30,8 @@ class CyclingParameter(GenericModel, Generic[DataT]):
     label: str  # the label used in a widget
     description: str = ""  # a long description
     units: str = ""  # physical units of this parameter
-    value: DataT = None  # type: ignore[assignment] # the set value
-    default_value: DataT = None  # type: ignore[assignment] # the default value of this parameter
+    value: Optional[DataT] = None  # the set value
+    default_value: Optional[DataT] = None  # the default value
     required: bool = False  # True if parameter is required
 
     class Config:
