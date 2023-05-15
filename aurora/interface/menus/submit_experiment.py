@@ -5,7 +5,6 @@ import ipywidgets as ipw
 import pandas as pd
 from IPython.display import display
 
-from aurora import __version__
 from aurora.engine import submit_experiment
 from aurora.interface.cycling import CyclingCustom, CyclingStandard
 from aurora.interface.menus.utils import get_header_box
@@ -81,8 +80,6 @@ class MainPanel(ipw.VBox):
     _BUTTON_LAYOUT = {'margin': '5px'}
 
     _BUTTON_STYLE = {'description_width': '30%'}
-
-    w_header = ipw.HTML(value=f"<h2>Aurora</h2>\n Version {__version__}")
 
     w_submission_output = ipw.Output(layout=_SUBMISSION_OUTPUT_LAYOUT)
 
