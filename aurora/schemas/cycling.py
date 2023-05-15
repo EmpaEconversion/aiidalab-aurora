@@ -66,8 +66,7 @@ allowed_E_ranges = Literal["+-2.5 V", "+-5.0 V", "+-10 V", "auto", ]
 ################################################################################
 
 
-class DummySequential(CyclingTechnique,
-                      extra=Extra.forbid):  # type: ignore[call-arg]
+class DummySequential(CyclingTechnique):
     device: Literal["worker"] = "worker"
     technique: Literal["sequential"] = "sequential"
     short_name: Literal["DUMMY_SEQUENTIAL"] = "DUMMY_SEQUENTIAL"
@@ -102,8 +101,7 @@ class DummySequential(CyclingTechnique,
 
 
 ################################################################################
-class DummyRandom(CyclingTechnique,
-                  extra=Extra.forbid):  # type: ignore[call-arg]
+class DummyRandom(CyclingTechnique):
     device: Literal["worker"] = "worker"
     technique: Literal["random"] = "random"
     short_name: Literal["DUMMY_RANDOM"] = "DUMMY_RANDOM"
@@ -138,8 +136,7 @@ class DummyRandom(CyclingTechnique,
 
 
 ################################################################################
-class OpenCircuitVoltage(CyclingTechnique,
-                         extra=Extra.forbid):  # type: ignore[call-arg]
+class OpenCircuitVoltage(CyclingTechnique):
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["open_circuit_voltage"] = "open_circuit_voltage"
     short_name: Literal["OCV"] = "OCV"
@@ -206,8 +203,7 @@ class OpenCircuitVoltage(CyclingTechnique,
 
 
 ################################################################################
-class ConstantVoltage(CyclingTechnique,
-                      extra=Extra.forbid):  # type: ignore[call-arg]
+class ConstantVoltage(CyclingTechnique):
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_voltage"] = "constant_voltage"
     short_name: Literal["CV"] = "CV"
@@ -336,8 +332,7 @@ class ConstantVoltage(CyclingTechnique,
 
 
 ################################################################################
-class ConstantCurrent(CyclingTechnique,
-                      extra=Extra.forbid):  # type: ignore[call-arg]
+class ConstantCurrent(CyclingTechnique):
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["constant_current"] = "constant_current"
     short_name: Literal["CC"] = "CC"
@@ -466,14 +461,14 @@ class ConstantCurrent(CyclingTechnique,
 
 
 ################################################################################
-# class SweepVoltage(CyclingTechnique, extra=Extra.forbid):  # type: ignore[call-arg]
+# class SweepVoltage(CyclingTechnique):
 #    technique: Literal["sweep_voltage"] = "sweep_voltage"
 #    short_name: Literal["LSV"] = "LSV"
 #    name = "LSV"
 #    description = "Controlled voltage technique, allowing linear change of voltage between pre-defined endpoints as a function of time, with optional current and voltage limits"
 
 ################################################################################
-# class SweepCurrent(CyclingTechnique, extra=Extra.forbid):  # type: ignore[call-arg]
+# class SweepCurrent(CyclingTechnique):
 #    technique: Literal["sweep_current"] = "sweep_current"
 #    short_name: Literal["LSC"] = "LSC"
 #    name = ""
@@ -481,7 +476,7 @@ class ConstantCurrent(CyclingTechnique,
 
 
 ################################################################################
-class Loop(CyclingTechnique, extra=Extra.forbid):  # type: ignore[call-arg]
+class Loop(CyclingTechnique):
     device: Literal["MPG2"] = "MPG2"
     technique: Literal["loop"] = "loop"
     short_name: Literal["LOOP"] = "LOOP"
