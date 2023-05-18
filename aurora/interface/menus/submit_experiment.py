@@ -131,7 +131,7 @@ class MainPanel(ipw.VBox):
             children=[
                 self.w_sample_from_id,
                 self.w_sample_from_specs,
-                self.w_sample_from_recipe,
+                # self.w_sample_from_recipe,
             ],
             selected_index=0,
         )
