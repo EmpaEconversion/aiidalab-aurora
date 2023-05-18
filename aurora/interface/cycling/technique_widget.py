@@ -2,7 +2,7 @@
 Technique widget: the dropdowns corresponding to each parameters are generated dynamically.
 """
 
-from typing import Literal, Union, get_args, get_origin
+from typing import Literal, get_args, get_origin
 
 import ipywidgets as ipw
 from pydantic.types import NonNegativeFloat, NonNegativeInt
@@ -35,14 +35,22 @@ def build_parameter_widget(param_obj):
     param_value = param_obj.value if param_obj.value is not None else param_obj.default_value
     value_type = param_obj.__annotations__['value']
 
-    if get_origin(value_type) is Union:
-        # value_type is a union of types
-        # by default, we choose the most generic one, that is a string
-        if str in get_args(value_type):
+    # since 'value' is `Optional`, all values are unions of their
+    # actual type and `NoneType`. Here we discard `NoneType`.
+    types = tuple(t for t in get_args(value_type) if t != type(None))  # noqa
+
+    if len(types) > 1:
+        # Optional[Union] case
+        # choose generic str by default
+        if str in types:
             value_type = str
             param_value = str(param_value)
         else:
             raise NotImplementedError()
+    else:
+        # Optional[all-other-types] case
+        # pick actual type
+        value_type = types[0]
 
     if get_origin(value_type) is Literal:
         w_param = ipw.Dropdown(description=param_obj.label,
