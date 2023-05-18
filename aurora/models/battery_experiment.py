@@ -339,7 +339,7 @@ def _process_dict(query_dict: dict) -> dict:
     """
     return {
         k: [_cast(v_) for v_ in v] if isinstance(v, list) else _cast(v)
-        for k, v in query_dict.items() if v
+        for k, v in query_dict.items() if v is not None
     }
 
 
