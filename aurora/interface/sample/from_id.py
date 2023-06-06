@@ -90,11 +90,20 @@ class SampleFromId(ipw.VBox):
             layout=self.SAMPLE_BUTTON_LAYOUT,
         )
 
+        self.w_select_all = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Select all samples",
+            icon='fa-angle-double-down',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
         self.w_selection_controls = ipw.VBox(
             layout={},
             children=[
                 self.w_update,
                 self.w_select,
+                self.w_select_all,
             ],
         )
 
@@ -119,9 +128,18 @@ class SampleFromId(ipw.VBox):
             layout=self.SAMPLE_BUTTON_LAYOUT,
         )
 
+        self.w_deselect_all = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Deselect all samples",
+            icon='fa-angle-double-up',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
         self.w_deselection_controls = ipw.VBox(
             layout={},
             children=[
+                self.w_deselect_all,
                 self.w_deselect,
             ],
         )
@@ -193,7 +211,9 @@ class SampleFromId(ipw.VBox):
         # setup automations
         self.w_update.on_click(self.on_update_button_clicked)
         self.w_select.on_click(self.on_select_button_clicked)
+        self.w_select_all.on_click(self.on_select_all_button_clicked)
         self.w_deselect.on_click(self.on_deselect_button_clicked)
+        self.w_deselect_all.on_click(self.on_deselect_all_button_clicked)
 
         self.w_id_list.observe(handler=self.on_battery_id_change,
                                names='value')
@@ -243,11 +263,24 @@ class SampleFromId(ipw.VBox):
             self.experiment_model.add_selected_samples(sample_ids)
         self.update_lists()
 
+    def on_select_all_button_clicked(self, _=None):
+        sample_ids = get_ids(self.w_id_list.options)
+        if sample_ids:
+            self.experiment_model.add_selected_samples(sample_ids)
+        self.update_lists()
+
     def on_deselect_button_clicked(self, _=None):
         sample_ids = self.w_selected_list.value
         if sample_ids:
             self.experiment_model.remove_selected_samples(sample_ids)
         self.update_lists()
+
+    def on_deselect_all_button_clicked(self, _=None):
+        sample_ids = get_ids(self.w_selected_list.options)
+        if sample_ids:
+            self.experiment_model.remove_selected_samples(sample_ids)
+        self.update_lists()
+        self.display_selected_samples_preview()
 
     def on_validate_button_clicked(self, callback_function):
         # call the validation callback function
@@ -285,3 +318,7 @@ class SampleFromId(ipw.VBox):
 
         return [(row_label(row), row['battery_id'])
                 for index, row in table.iterrows()]
+
+
+def get_ids(options):
+    return [i for _, i in options]
