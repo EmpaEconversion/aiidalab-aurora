@@ -2,9 +2,12 @@
 Sample selected from a list of samples and their IDs.
 TODO: implement creation and labeling of sample nodes. Store them in a group, retrieve a node if it was already created.
 """
+from typing import Callable
+
 import ipywidgets as ipw
 from IPython.display import display
 
+from aurora.models.battery_experiment import BatteryExperimentModel
 # from aurora.query import update_available_samples, query_available_samples, write_pd_query_from_dict
 from aurora.schemas.battery import BatterySample
 from aurora.schemas.utils import (dict_to_formatted_json,
@@ -53,7 +56,11 @@ class SampleFromId(ipw.VBox):
         'border': 'solid blue 2px'
     }
 
-    def __init__(self, experiment_model, validate_callback_f):
+    def __init__(
+        self,
+        experiment_model: BatteryExperimentModel,
+        validate_callback_f: Callable,
+    ) -> None:
 
         self.experiment_model = experiment_model
 
