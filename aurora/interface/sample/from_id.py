@@ -215,8 +215,16 @@ class SampleFromId(ipw.VBox):
         self.w_deselect.on_click(self.on_deselect_button_clicked)
         self.w_deselect_all.on_click(self.on_deselect_all_button_clicked)
 
-        self.w_id_list.observe(handler=self.on_battery_id_change,
-                               names='value')
+        self.w_id_list.observe(
+            names='value',
+            handler=self.on_id_list_clicked,
+        )
+
+        self.w_selected_list.observe(
+            handler=self.on_selected_list_change,
+            names='options',
+        )
+
         self.w_validate.on_click(
             lambda arg: self.on_validate_button_clicked(validate_callback_f))
 
@@ -246,49 +254,45 @@ class SampleFromId(ipw.VBox):
                         self.experiment_model.write_pd_query_from_dict(
                             {'battery_id': self.w_id_list.value})))
 
-    def update_validate_button_state(self):
-        self.w_validate.disabled = not self.w_id_list.value
-
-    def on_battery_id_change(self, _=None):
+    def on_id_list_clicked(self, _=None):
         self.display_sample_preview()
-        self.update_validate_button_state()
 
     def on_update_button_clicked(self, _=None):
         self.experiment_model.update_available_samples()
         self.w_id_list.options = self._build_sample_id_options()
 
     def on_select_button_clicked(self, _=None):
-        sample_ids = self.w_id_list.value
-        if sample_ids:
+        if sample_ids := self.w_id_list.value:
             self.experiment_model.add_selected_samples(sample_ids)
-        self.update_lists()
+        self.update_selected_list_options()
 
     def on_select_all_button_clicked(self, _=None):
-        sample_ids = get_ids(self.w_id_list.options)
-        if sample_ids:
+        if sample_ids := get_ids(self.w_id_list.options):
             self.experiment_model.add_selected_samples(sample_ids)
-        self.update_lists()
+        self.update_selected_list_options()
+
+    def on_selected_list_change(self, _=None):
+        self.update_validate_button_state()
 
     def on_deselect_button_clicked(self, _=None):
-        sample_ids = self.w_selected_list.value
-        if sample_ids:
+        if sample_ids := self.w_selected_list.value:
             self.experiment_model.remove_selected_samples(sample_ids)
-        self.update_lists()
+        self.update_selected_list_options()
 
     def on_deselect_all_button_clicked(self, _=None):
-        sample_ids = get_ids(self.w_selected_list.options)
-        if sample_ids:
+        if sample_ids := get_ids(self.w_selected_list.options):
             self.experiment_model.remove_selected_samples(sample_ids)
-        self.update_lists()
-        self.display_selected_samples_preview()
+        self.update_selected_list_options()
 
     def on_validate_button_clicked(self, callback_function):
         # call the validation callback function
         return callback_function(self)
 
-    def update_lists(self):
+    def update_validate_button_state(self):
+        self.w_validate.disabled = not self.w_selected_list.options
+
+    def update_selected_list_options(self):
         """Updates the lists."""
-        self.w_id_list.options = self._build_sample_id_options()
         self.w_selected_list.options = self._update_selected_list()
 
     ############################################################
