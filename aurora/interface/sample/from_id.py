@@ -234,15 +234,24 @@ class SampleFromId(ipw.VBox):
     @property
     @remove_empties_from_dict_decorator
     def selected_sample_dict(self):
-        return dict_to_formatted_json(
-            self.experiment_model.query_available_samples(
-                self.experiment_model.write_pd_query_from_dict(
-                    {'battery_id': self.w_sample_list.value})).iloc[0])
+        dict_query = {'battery_id': get_ids(self.w_selected_list.options)}
+        pd_query = self.experiment_model.write_pd_query_from_dict(dict_query)
+        results = self.experiment_model.query_available_samples(pd_query)
+
+        selected = []
+        for _, result in results.iterrows():
+            json = dict_to_formatted_json(result)
+            selected.append(json)
+
+        return selected
 
     @property
-    def selected_sample(self):
+    def selected_samples(self):
         "The selected battery sample returned as a `aurora.schemas.battery.BatterySample` object."
-        return BatterySample.parse_obj(self.selected_sample_dict)
+        return [
+            BatterySample.parse_obj(sample)
+            for sample in self.selected_sample_dict
+        ]
 
     def display_samples_preview(self):
         self.w_selection_preview.clear_output()
