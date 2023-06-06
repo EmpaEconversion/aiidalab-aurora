@@ -156,8 +156,8 @@ class SampleFromId(ipw.VBox):
             tooltip="Validate the selected sample",
             icon='check',
             disabled=True,
-            style=self.BUTTON_STYLE,
-            layout=self.BUTTON_LAYOUT,
+            style=self.VALIDATE_BUTTON_STYLE,
+            layout=self.VALIDATE_BUTTON_LAYOUT,
         )
 
         super().__init__(
@@ -197,7 +197,7 @@ class SampleFromId(ipw.VBox):
         # initialize options
         if not callable(validate_callback_f):
             raise TypeError(
-                "validate_callback_f shou-ld be a callable function")
+                "validate_callback_f should be a callable function")
 
         self.validate_callback_f = validate_callback_f
         self.w_sample_list.value = []

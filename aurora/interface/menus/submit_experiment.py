@@ -441,7 +441,7 @@ class MainPanel(ipw.VBox):
 
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
-        self.w_submit_button.disabed = True
+        self.w_submit_button.disabled = True
         for index, battery_sample in self.experiment_model.selected_samples.iterrows(
         ):
             json_stuff = dict_to_formatted_json(battery_sample)
