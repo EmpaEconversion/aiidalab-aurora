@@ -40,8 +40,6 @@ class SampleFromId(ipw.VBox):
         'margin': '5px auto',
     }
 
-    NODE_LABEL_STYLE = {'description_width': 'initial'}
-
     VALIDATE_BUTTON_STYLE = {'description_width': '30%'}
 
     VALIDATE_BUTTON_STYLE = {'description_width': '30%'}
@@ -153,18 +151,15 @@ class SampleFromId(ipw.VBox):
         self.w_selection_preview = ipw.Output()
         self.w_selected_preview = ipw.Output()
 
-        self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
-            description="AiiDA Sample node label:",
-            placeholder="Enter a name for the BatterySampleData node",
-            layout=self.BOX_LAYOUT_1,
-            style=self.BOX_STYLE_2)
-        self.w_validate = ipw.Button(description="Validate",
-                                     button_style='success',
-                                     tooltip="Validate the selected sample",
-                                     icon='check',
-                                     disabled=True,
-                                     style=self.BUTTON_STYLE,
-                                     layout=self.BUTTON_LAYOUT)
+        self.w_validate = ipw.Button(
+            description="Validate",
+            button_style='success',
+            tooltip="Validate the selected sample",
+            icon='check',
+            disabled=True,
+            style=self.BUTTON_STYLE,
+            layout=self.BUTTON_LAYOUT,
+        )
 
         super().__init__(
             layout={},
