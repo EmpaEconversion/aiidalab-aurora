@@ -150,7 +150,8 @@ class SampleFromId(ipw.VBox):
             layout=self.SAMPLE_BOX_LAYOUT,
         )
 
-        self.w_sample_preview = ipw.Output()
+        self.w_selection_preview = ipw.Output()
+        self.w_selected_preview = ipw.Output()
 
         self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
             description="AiiDA Sample node label:",
@@ -191,7 +192,8 @@ class SampleFromId(ipw.VBox):
                             ),
                             self.w_selected_list,
                         ]),
-                        self.w_sample_preview,
+                        self.w_selected_preview,
+                        self.w_selection_preview,
                     ],
                     layout=self.MAIN_LAYOUT,
                 ),
@@ -207,6 +209,9 @@ class SampleFromId(ipw.VBox):
         self.w_sample_list.value = []
         self.w_selected_list.value = []
         self.on_update_button_clicked()
+
+        self.display_samples_preview()
+        self.display_selected_samples_preview()
 
         # setup automations
         self.w_update.on_click(self.on_update_button_clicked)
@@ -245,17 +250,20 @@ class SampleFromId(ipw.VBox):
         "The selected battery sample returned as a `aurora.schemas.battery.BatterySample` object."
         return BatterySample.parse_obj(self.selected_sample_dict)
 
-    def display_sample_preview(self):
-        self.w_sample_preview.clear_output()
-        if self.w_sample_list.value:
-            with self.w_sample_preview:
-                display(
-                    self.experiment_model.query_available_samples(
-                        self.experiment_model.write_pd_query_from_dict(
-                            {'battery_id': self.w_sample_list.value})))
+    def display_samples_preview(self):
+        self.w_selection_preview.clear_output()
+        with self.w_selection_preview:
+            query = {'battery_id': self.w_sample_list.value}
+            self._display_query_results(query)
+
+    def display_selected_samples_preview(self):
+        self.w_selected_preview.clear_output()
+        with self.w_selected_preview:
+            query = {'battery_id': get_ids(self.w_selected_list.options)}
+            self._display_query_results(query)
 
     def on_sample_list_clicked(self, _=None):
-        self.display_sample_preview()
+        self.display_samples_preview()
 
     def on_update_button_clicked(self, _=None):
         self.experiment_model.update_available_samples()
@@ -273,6 +281,7 @@ class SampleFromId(ipw.VBox):
 
     def on_selected_list_change(self, _=None):
         self.update_validate_button_state()
+        self.display_selected_samples_preview()
 
     def on_deselect_button_clicked(self, _=None):
         if sample_ids := self.w_selected_list.value:
@@ -322,6 +331,34 @@ class SampleFromId(ipw.VBox):
 
         return [(row_label(row), row['battery_id'])
                 for index, row in table.iterrows()]
+
+    def _display_query_results(self, query):
+        pd_query = self.experiment_model.write_pd_query_from_dict(query)
+        df = self.experiment_model.query_available_samples(pd_query)
+
+        if df is None:
+            return
+
+        col = df.pop("battery_id")
+        df.insert(0, col.name, col)
+
+        display(
+            df.rename(
+                columns={
+                    "battery_id": 'id',
+                    "form_factor": 'form factor',
+                    "composition.description": 'composition',
+                    "capacity.nominal": 'C nominal',
+                    "capacity.actual": 'C actual',
+                    "capacity.units": 'C units',
+                    "metadata.name": 'name',
+                    "metadata.creation_datetime": 'creation date',
+                    "metadata.creation_process": 'creation process',
+                }).style.set_table_styles([
+                    dict(selector='th', props=[('text-align', 'center')])
+                ]).set_properties(**{
+                    'text-align': 'center'
+                }).hide_index())
 
 
 def get_ids(options):
