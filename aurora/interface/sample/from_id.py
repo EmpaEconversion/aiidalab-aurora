@@ -14,10 +14,39 @@ from aurora.schemas.utils import (dict_to_formatted_json,
 class SampleFromId(ipw.VBox):
 
     BOX_LAYOUT_1 = {'width': '40%'}
-    BOX_STYLE_1 = {'description_width': '15%'}
+    BOX_LAYOUT_2 = {'width': '100%'}
+    BOX_STYLE_1 = {'description_width': '25%'}
     BOX_STYLE_2 = {'description_width': 'initial'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
+
+    SAMPLE_BOX_STYLE = {'description_width': '5%'}
+
+    SAMPLE_BOX_LAYOUT = {
+        'flex': '1',
+    }
+
+    SAMPLE_CONTROLS_LAYOUT = {
+        'width': '80px',
+    }
+
+    SAMPLE_LABEL_LAYOUT = {'margin': '0 auto'}
+
+    SAMPLE_BUTTON_LAYOUT = {
+        'width': '35px',
+        'margin': '5px auto',
+    }
+
+    NODE_LABEL_STYLE = {'description_width': 'initial'}
+
+    VALIDATE_BUTTON_STYLE = {'description_width': '30%'}
+
+    VALIDATE_BUTTON_STYLE = {'description_width': '30%'}
+
+    VALIDATE_BUTTON_LAYOUT = {
+        'margin': '5px',
+    }
+
     MAIN_LAYOUT = {
         'width': '100%',
         'padding': '10px',
