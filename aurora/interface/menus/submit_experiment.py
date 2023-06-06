@@ -391,39 +391,53 @@ class MainPanel(ipw.VBox):
     # SUBMIT JOB
     #######################################################################################
 
-    def presubmission_checks_preview(self, dummy=None):
-        "Verify that all the input is there and display preview. If so, enable submission button."
-        if self.w_main_accordion.selected_index == 3:
-            self.w_job_preview.clear_output()
-            with self.w_job_preview:
-                try:
-                    if self.selected_battery_samples is None:
-                        raise ValueError("A Battery sample was not selected!")
-                    if self.selected_cycling_protocol is None:
-                        raise ValueError(
-                            "A Cycling protocol was not selected!")
-                    if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
-                        raise ValueError("Tomato settings were not selected!")
+    def presubmission_checks_preview(self, _=None) -> None:
+        """
+        Verify that all the input is there and display preview.
+        If so, enable submission button.
+        """
 
-                    output_battery_sample = f'{self.selected_battery_samples}'
-                    output_cycling_protocol = json.dumps(
-                        self.selected_cycling_protocol.dict(), indent=2)
-                    output_tomato_settings = f'{self.selected_tomato_settings}'
-                    output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+        if self.w_main_accordion.selected_index != 3:
+            return
 
-                    print(f"Battery Sample:\n{output_battery_sample}\n")
-                    print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
-                    print(f"Tomato Settings:\n{output_tomato_settings}\n")
-                    print(
-                        f"Monitor Job Settings:{output_monitor_job_settings}\n"
-                    )
+        self.w_job_preview.clear_output()
 
-                except ValueError as err:
-                    self.w_submit_button.disabled = True
-                    print(f"❌ {err}")
-                else:
-                    self.w_submit_button.disabled = False
-                    print("✅ All good!")
+        with self.w_job_preview:
+
+            if not self._has_valid_settings():
+                return
+
+            output_cycling_protocol = json.dumps(
+                self.selected_cycling_protocol.dict(),
+                indent=2,
+            )
+
+            output_tomato_settings = f'{self.selected_tomato_settings}'
+
+            output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+
+            if not self.selected_battery_samples:
+                return
+
+            print("Battery Samples:")
+
+            query = {
+                'battery_id': [
+                    sample.battery_id
+                    for sample in self.selected_battery_samples
+                ]
+            }
+            self.experiment_model.display_query_results(query)
+
+            print()
+
+            print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
+            print(f"Tomato Settings:\n{output_tomato_settings}\n")
+            print(f"Monitor Job Settings:{output_monitor_job_settings}\n")
+
+            print("✅ All good!")
+
+        self.w_submit_button.disabled = False
 
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
@@ -445,6 +459,33 @@ class MainPanel(ipw.VBox):
                 calcjob_node_label="")
 
         self.w_main_accordion.selected_index = None
+
+    def _has_valid_settings(self) -> bool:
+        """Validate job settings.
+
+        Returns
+        -------
+        `bool`
+            `True` if job settings are valid, `False` otherwise.
+        """
+
+        try:
+
+            if self.selected_battery_samples is None:
+                raise ValueError("A Battery sample was not selected!")
+
+            if self.selected_cycling_protocol is None:
+                raise ValueError("A Cycling protocol was not selected!")
+
+            if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
+                raise ValueError("Tomato settings were not selected!")
+
+            return True
+
+        except ValueError as err:
+            self.w_submit_button.disabled = True
+            print(f"❌ {err}")
+            return False
 
     #######################################################################################
     # RESET
