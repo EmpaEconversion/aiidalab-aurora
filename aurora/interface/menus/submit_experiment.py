@@ -46,10 +46,10 @@ class MainPanel(ipw.VBox):
     ]
 
     _SAMPLE_BOX_LAYOUT = {
-        'width': '90%',
+        'width': '100%',
         'border': 'solid blue 2px',
         'align_content': 'center',
-        'margin': '5px',
+        'margin': '5px 0',
         'padding': '5px',
     }
 
