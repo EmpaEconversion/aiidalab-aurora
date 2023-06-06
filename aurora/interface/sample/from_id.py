@@ -289,7 +289,6 @@ class SampleFromId(ipw.VBox):
         self.update_selected_list_options()
 
     def on_validate_button_clicked(self, callback_function):
-        # call the validation callback function
         return callback_function(self)
 
     def update_validate_button_state(self):
@@ -306,26 +305,15 @@ class SampleFromId(ipw.VBox):
     # @staticmethod
     def _build_sample_id_options(self):
         """Returns a (option_string, battery_id) list."""
-        # table = query_available_samples(project=['battery_id', 'metadata.name']).sort_values('battery_id')
         table = self.experiment_model.query_available_samples().sort_values(
             'battery_id')
 
-        def row_label(row):
-            # return f"<{row['battery_id']:8}>   \"{row['metadata.name']}\""
-            return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['metadata.name']} ({row['composition.description']})"
-
-        return [(row_label(row), row['battery_id'])
-                for index, row in table.iterrows()]
+        return [(row_label(r), r['battery_id']) for _, r in table.iterrows()]
 
     def _update_selected_list(self):
         """Returns a (option_string, battery_id) list."""
         table = self.experiment_model.selected_samples
-
-        def row_label(row):
-            return f"{row['battery_id']:8}   [{row['manufacturer'].split()[0]}]  ({row['capacity.nominal']} {row['capacity.units']})  {row['metadata.name']} ({row['composition.description']})"
-
-        return [(row_label(row), row['battery_id'])
-                for index, row in table.iterrows()]
+        return [(row_label(r), r['battery_id']) for _, r in table.iterrows()]
 
     def _display_query_results(self, query):
         pd_query = self.experiment_model.write_pd_query_from_dict(query)
@@ -354,6 +342,10 @@ class SampleFromId(ipw.VBox):
                 ]).set_properties(**{
                     'text-align': 'center'
                 }).hide_index())
+
+
+def row_label(row):
+    return f"{row['battery_id']:8} [{row['manufacturer'].split()[0]}] ({row['capacity.nominal']} {row['capacity.units']}) {row['metadata.name']} {row['composition.description']})"
 
 
 def get_ids(options):
