@@ -5,7 +5,6 @@ TODO: implement creation and labeling of sample nodes. Store them in a group, re
 from typing import Callable
 
 import ipywidgets as ipw
-from IPython.display import display
 
 from aurora.models.battery_experiment import BatteryExperimentModel
 # from aurora.query import update_available_samples, query_available_samples, write_pd_query_from_dict
@@ -249,13 +248,13 @@ class SampleFromId(ipw.VBox):
         self.w_selection_preview.clear_output()
         with self.w_selection_preview:
             query = {'battery_id': self.w_sample_list.value}
-            self._display_query_results(query)
+            self.experiment_model.display_query_results(query)
 
     def display_selected_samples_preview(self):
         self.w_selected_preview.clear_output()
         with self.w_selected_preview:
             query = {'battery_id': get_ids(self.w_selected_list.options)}
-            self._display_query_results(query)
+            self.experiment_model.display_query_results(query)
 
     def on_sample_list_clicked(self, _=None):
         self.display_samples_preview()
@@ -314,34 +313,6 @@ class SampleFromId(ipw.VBox):
         """Returns a (option_string, battery_id) list."""
         table = self.experiment_model.selected_samples
         return [(row_label(r), r['battery_id']) for _, r in table.iterrows()]
-
-    def _display_query_results(self, query):
-        pd_query = self.experiment_model.write_pd_query_from_dict(query)
-        df = self.experiment_model.query_available_samples(pd_query)
-
-        if df is None:
-            return
-
-        col = df.pop("battery_id")
-        df.insert(0, col.name, col)
-
-        display(
-            df.rename(
-                columns={
-                    "battery_id": 'id',
-                    "form_factor": 'form factor',
-                    "composition.description": 'composition',
-                    "capacity.nominal": 'C nominal',
-                    "capacity.actual": 'C actual',
-                    "capacity.units": 'C units',
-                    "metadata.name": 'name',
-                    "metadata.creation_datetime": 'creation date',
-                    "metadata.creation_process": 'creation process',
-                }).style.set_table_styles([
-                    dict(selector='th', props=[('text-align', 'center')])
-                ]).set_properties(**{
-                    'text-align': 'center'
-                }).hide_index())
 
 
 def row_label(row):

@@ -3,6 +3,7 @@ import logging
 from typing import Optional, Tuple, Union
 
 import pandas as pd
+from IPython.display import display
 
 from aurora.schemas.battery import (BatterySampleJsonTypes,
                                     BatterySpecsJsonTypes)
@@ -266,6 +267,36 @@ class BatteryExperimentModel():
             [f"(`{k}` == {v})" for k, v in _process_dict(query_dict).items()])
 
         return query or None
+
+    def display_query_results(self, query: dict) -> None:
+        """Display query results in a pandas table."""
+
+        pd_query = self.write_pd_query_from_dict(query)
+        df = self.query_available_samples(pd_query)
+
+        if df is None:
+            return
+
+        col = df.pop("battery_id")
+        df.insert(0, col.name, col)
+
+        display(
+            df.rename(
+                columns={
+                    "battery_id": 'id',
+                    "form_factor": 'form factor',
+                    "composition.description": 'composition',
+                    "capacity.nominal": 'C nominal',
+                    "capacity.actual": 'C actual',
+                    "capacity.units": 'C units',
+                    "metadata.name": 'name',
+                    "metadata.creation_datetime": 'creation date',
+                    "metadata.creation_process": 'creation process',
+                }).style.set_table_styles([
+                    dict(selector='th', props=[('text-align', 'center')])
+                ]).set_properties(**{
+                    'text-align': 'center'
+                }).hide_index())
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS
