@@ -67,9 +67,6 @@ class SampleFromId(ipw.VBox):
         # initialize widgets
         self.w_header_label = ipw.HTML(value="<h2>Battery Selection</h2>")
 
-        self.w_visualize_info = ipw.Output(
-            layout={'border': '1px solid black'})
-
         self.w_update = ipw.Button(description="Update",
                                    button_style='',
                                    tooltip="Update available samples",
@@ -122,7 +119,6 @@ class SampleFromId(ipw.VBox):
             self.w_header_label,
             ipw.VBox(
                 [
-                    self.w_visualize_info,
                     ipw.HBox([
                         self.w_id_list,
                         ipw.VBox([
