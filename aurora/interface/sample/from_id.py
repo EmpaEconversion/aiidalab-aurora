@@ -82,7 +82,51 @@ class SampleFromId(ipw.VBox):
             layout=self.SAMPLE_BUTTON_LAYOUT,
         )
 
+        self.w_select = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Select chosen sample",
+            icon='fa-angle-down',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        self.w_selection_controls = ipw.VBox(
+            layout={},
+            children=[
+                self.w_update,
+                self.w_select,
+            ],
+        )
+
         self.w_id_list = ipw.SelectMultiple(
+            rows=10,
+            style=self.SAMPLE_BOX_STYLE,
+            layout=self.SAMPLE_BOX_LAYOUT,
+        )
+
+        # selected
+
+        self.w_selected_label = ipw.HTML(
+            value="Selected ID:",
+            layout=self.SAMPLE_LABEL_LAYOUT,
+        )
+
+        self.w_deselect = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Deselect chosen sample",
+            icon='fa-angle-up',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        self.w_deselection_controls = ipw.VBox(
+            layout={},
+            children=[
+                self.w_deselect,
+            ],
+        )
+
+        self.w_selected_list = ipw.SelectMultiple(
             rows=10,
             style=self.SAMPLE_BOX_STYLE,
             layout=self.SAMPLE_BOX_LAYOUT,
@@ -113,11 +157,21 @@ class SampleFromId(ipw.VBox):
                             ipw.VBox(
                                 [
                                     self.w_selection_label,
-                                    self.w_update,
+                                    self.w_selection_controls,
                                 ],
                                 layout=self.SAMPLE_CONTROLS_LAYOUT,
                             ),
                             self.w_id_list,
+                        ]),
+                        ipw.HBox([
+                            ipw.VBox(
+                                [
+                                    self.w_selected_label,
+                                    self.w_deselection_controls,
+                                ],
+                                layout=self.SAMPLE_CONTROLS_LAYOUT,
+                            ),
+                            self.w_selected_list,
                         ]),
                         self.w_sample_preview,
                     ],
@@ -129,13 +183,17 @@ class SampleFromId(ipw.VBox):
         # initialize options
         if not callable(validate_callback_f):
             raise TypeError(
-                "validate_callback_f should be a callable function")
-        # self.validate_callback_f = validate_callback_f
+                "validate_callback_f shou-ld be a callable function")
+
+        self.validate_callback_f = validate_callback_f
         self.w_id_list.value = []
+        self.w_selected_list.value = []
         self.on_update_button_clicked()
 
         # setup automations
         self.w_update.on_click(self.on_update_button_clicked)
+        self.w_select.on_click(self.on_select_button_clicked)
+        self.w_deselect.on_click(self.on_deselect_button_clicked)
 
         self.w_id_list.observe(handler=self.on_battery_id_change,
                                names='value')
@@ -185,6 +243,12 @@ class SampleFromId(ipw.VBox):
             self.experiment_model.add_selected_samples(sample_ids)
         self.update_lists()
 
+    def on_deselect_button_clicked(self, _=None):
+        sample_ids = self.w_selected_list.value
+        if sample_ids:
+            self.experiment_model.remove_selected_samples(sample_ids)
+        self.update_lists()
+
     def on_validate_button_clicked(self, callback_function):
         # call the validation callback function
         return callback_function(self)
@@ -192,6 +256,7 @@ class SampleFromId(ipw.VBox):
     def update_lists(self):
         """Updates the lists."""
         self.w_id_list.options = self._build_sample_id_options()
+        self.w_selected_list.options = self._update_selected_list()
 
     ############################################################
     # This should go to control
@@ -211,7 +276,7 @@ class SampleFromId(ipw.VBox):
         return [(row_label(row), row['battery_id'])
                 for index, row in table.iterrows()]
 
-    def _uptate_selected_list(self):
+    def _update_selected_list(self):
         """Returns a (option_string, battery_id) list."""
         table = self.experiment_model.selected_samples
 
