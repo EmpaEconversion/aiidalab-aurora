@@ -67,40 +67,29 @@ class SampleFromId(ipw.VBox):
         # initialize widgets
         self.w_header_label = ipw.HTML(value="<h2>Battery Selection</h2>")
 
-        self.w_update = ipw.Button(description="Update",
-                                   button_style='',
-                                   tooltip="Update available samples",
-                                   icon='refresh',
-                                   style=self.BUTTON_STYLE,
-                                   layout=self.BUTTON_LAYOUT)
-        self.w_select = ipw.Button(description="Select",
-                                   button_style='',
-                                   tooltip="Select chosen sample",
-                                   icon='fa-arrow-right',
-                                   style=self.BUTTON_STYLE,
-                                   layout=self.BUTTON_LAYOUT)
-        self.w_unselect = ipw.Button(description="Unselect",
-                                     button_style='',
-                                     tooltip="Unselect chosen sample",
-                                     icon='fa-arrow-left',
-                                     style=self.BUTTON_STYLE,
-                                     layout=self.BUTTON_LAYOUT)
+        # selection
+
+        self.w_selection_label = ipw.HTML(
+            value="Battery ID:",
+            layout=self.SAMPLE_LABEL_LAYOUT,
+        )
+
+        self.w_update = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Update available samples",
+            icon='refresh',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
 
         self.w_id_list = ipw.SelectMultiple(
             rows=10,
-            description="Battery ID:",
-            style=self.BOX_STYLE_1,
-            layout=self.BOX_LAYOUT_1,
-        )
-
-        self.w_selected_list = ipw.SelectMultiple(
-            rows=10,
-            description="Selected ID:",
-            style=self.BOX_STYLE_1,
-            layout=self.BOX_LAYOUT_1,
+            style=self.SAMPLE_BOX_STYLE,
+            layout=self.SAMPLE_BOX_LAYOUT,
         )
 
         self.w_sample_preview = ipw.Output()
+
         self.w_sample_node_label = ipw.Text(  # TODO: this is not used yet - create a default or retrieve it from a node
             description="AiiDA Sample node label:",
             placeholder="Enter a name for the BatterySampleData node",
@@ -114,24 +103,28 @@ class SampleFromId(ipw.VBox):
                                      style=self.BUTTON_STYLE,
                                      layout=self.BUTTON_LAYOUT)
 
-        super().__init__()
-        self.children = [
-            self.w_header_label,
-            ipw.VBox(
-                [
-                    ipw.HBox([
-                        self.w_id_list,
-                        ipw.VBox([
-                            self.w_update, self.w_select, self.w_unselect
-                        ]), self.w_selected_list
-                    ]),
-                    self.w_sample_preview,
-                    self.w_sample_node_label,
-                ],
-                layout=self.MAIN_LAYOUT,
-            ),
-            self.w_validate,
-        ]
+        super().__init__(
+            layout={},
+            children=[
+                self.w_header_label,
+                ipw.VBox(
+                    [
+                        ipw.HBox([
+                            ipw.VBox(
+                                [
+                                    self.w_selection_label,
+                                    self.w_update,
+                                ],
+                                layout=self.SAMPLE_CONTROLS_LAYOUT,
+                            ),
+                            self.w_id_list,
+                        ]),
+                        self.w_sample_preview,
+                    ],
+                    layout=self.MAIN_LAYOUT,
+                ),
+                self.w_validate,
+            ])
 
         # initialize options
         if not callable(validate_callback_f):
@@ -139,13 +132,10 @@ class SampleFromId(ipw.VBox):
                 "validate_callback_f should be a callable function")
         # self.validate_callback_f = validate_callback_f
         self.w_id_list.value = []
-        self.w_selected_list.value = []
         self.on_update_button_clicked()
 
         # setup automations
         self.w_update.on_click(self.on_update_button_clicked)
-        self.w_select.on_click(self.on_select_button_clicked)
-        self.w_unselect.on_click(self.on_unselect_button_clicked)
 
         self.w_id_list.observe(handler=self.on_battery_id_change,
                                names='value')
@@ -195,12 +185,6 @@ class SampleFromId(ipw.VBox):
             self.experiment_model.add_selected_samples(sample_ids)
         self.update_lists()
 
-    def on_unselect_button_clicked(self, _=None):
-        sample_ids = self.w_selected_list.value
-        if sample_ids:
-            self.experiment_model.remove_selected_samples(sample_ids)
-        self.update_lists()
-
     def on_validate_button_clicked(self, callback_function):
         # call the validation callback function
         return callback_function(self)
@@ -208,7 +192,6 @@ class SampleFromId(ipw.VBox):
     def update_lists(self):
         """Updates the lists."""
         self.w_id_list.options = self._build_sample_id_options()
-        self.w_selected_list.options = self._uptate_selected_list()
 
     ############################################################
     # This should go to control
