@@ -107,7 +107,7 @@ class SampleFromId(ipw.VBox):
             ],
         )
 
-        self.w_id_list = ipw.SelectMultiple(
+        self.w_sample_list = ipw.SelectMultiple(
             rows=10,
             style=self.SAMPLE_BOX_STYLE,
             layout=self.SAMPLE_BOX_LAYOUT,
@@ -179,7 +179,7 @@ class SampleFromId(ipw.VBox):
                                 ],
                                 layout=self.SAMPLE_CONTROLS_LAYOUT,
                             ),
-                            self.w_id_list,
+                            self.w_sample_list,
                         ]),
                         ipw.HBox([
                             ipw.VBox(
@@ -204,7 +204,7 @@ class SampleFromId(ipw.VBox):
                 "validate_callback_f shou-ld be a callable function")
 
         self.validate_callback_f = validate_callback_f
-        self.w_id_list.value = []
+        self.w_sample_list.value = []
         self.w_selected_list.value = []
         self.on_update_button_clicked()
 
@@ -215,9 +215,9 @@ class SampleFromId(ipw.VBox):
         self.w_deselect.on_click(self.on_deselect_button_clicked)
         self.w_deselect_all.on_click(self.on_deselect_all_button_clicked)
 
-        self.w_id_list.observe(
+        self.w_sample_list.observe(
             names='value',
-            handler=self.on_id_list_clicked,
+            handler=self.on_sample_list_clicked,
         )
 
         self.w_selected_list.observe(
@@ -230,7 +230,7 @@ class SampleFromId(ipw.VBox):
 
     @property
     def selected_sample_ids(self):
-        return self.w_id_list.value
+        return self.w_sample_list.value
 
     @property
     @remove_empties_from_dict_decorator
@@ -238,7 +238,7 @@ class SampleFromId(ipw.VBox):
         return dict_to_formatted_json(
             self.experiment_model.query_available_samples(
                 self.experiment_model.write_pd_query_from_dict(
-                    {'battery_id': self.w_id_list.value})).iloc[0])
+                    {'battery_id': self.w_sample_list.value})).iloc[0])
 
     @property
     def selected_sample(self):
@@ -247,27 +247,27 @@ class SampleFromId(ipw.VBox):
 
     def display_sample_preview(self):
         self.w_sample_preview.clear_output()
-        if self.w_id_list.value:
+        if self.w_sample_list.value:
             with self.w_sample_preview:
                 display(
                     self.experiment_model.query_available_samples(
                         self.experiment_model.write_pd_query_from_dict(
-                            {'battery_id': self.w_id_list.value})))
+                            {'battery_id': self.w_sample_list.value})))
 
-    def on_id_list_clicked(self, _=None):
+    def on_sample_list_clicked(self, _=None):
         self.display_sample_preview()
 
     def on_update_button_clicked(self, _=None):
         self.experiment_model.update_available_samples()
-        self.w_id_list.options = self._build_sample_id_options()
+        self.w_sample_list.options = self._build_sample_id_options()
 
     def on_select_button_clicked(self, _=None):
-        if sample_ids := self.w_id_list.value:
+        if sample_ids := self.w_sample_list.value:
             self.experiment_model.add_selected_samples(sample_ids)
         self.update_selected_list_options()
 
     def on_select_all_button_clicked(self, _=None):
-        if sample_ids := get_ids(self.w_id_list.options):
+        if sample_ids := get_ids(self.w_sample_list.options):
             self.experiment_model.add_selected_samples(sample_ids)
         self.update_selected_list_options()
 
