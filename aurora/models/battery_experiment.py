@@ -1,8 +1,9 @@
 import json
 import logging
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 import pandas as pd
+from IPython.display import display
 
 from aurora.schemas.battery import (BatterySampleJsonTypes,
                                     BatterySpecsJsonTypes)
@@ -97,6 +98,18 @@ class BatteryExperimentModel():
         # Not implemented yet...
         return None
 
+    def add_selected_samples(self, sample_ids: Tuple[int]) -> None:
+        """Add selected samples to list.
+
+        Parameters
+        ----------
+        `sample_ids` : `Tuple[int]`
+            The ids of the selected samples.
+        """
+
+        for sid in sample_ids:
+            self.add_selected_sample(sid)
+
     def add_selected_sample(self, battery_sample_id, observators_chain=None):
         """Description pending."""
         for index, row in self.selected_samples.iterrows():
@@ -119,6 +132,18 @@ class BatteryExperimentModel():
             observators_chain = ''
         observators_chain += ' -> add_selected_sample'
         self.update_observers(observators_chain)
+
+    def remove_selected_samples(self, sample_ids: Tuple[int]) -> None:
+        """Remove selected samples from list.
+
+        Parameters
+        ----------
+        `sample_ids` : `Tuple[int]`
+            The ids of the selected samples.
+        """
+
+        for sid in sample_ids:
+            self.remove_selected_sample(sid)
 
     def remove_selected_sample(self,
                                battery_sample_id,
@@ -230,20 +255,48 @@ class BatteryExperimentModel():
         """A mock function that returns the available synthesis recipies."""
         return self.available_protocols
 
-    def write_pd_query_from_dict(self, query_dict):
+    def write_pd_query_from_dict(self, query_dict: dict) -> Optional[str]:
         """
         Write a pandas query from a dictionary {field: value}.
         Example:
             write_pandas_query({'manufacturer': 'BIG-MAP', 'battery_id': 98})
         returns "(`manufacturer` == 'BIG-MAP') and (`battery_id` == 98)"
         """
-        query = " and ".join([
-            "(`{}` == {})".format(
-                k, f"{v}" if isinstance(v, (int, float)) else f"'{v}'")
-            for k, v in query_dict.items() if v
-        ])
-        if query:
-            return query
+
+        query = " and ".join(
+            [f"(`{k}` == {v})" for k, v in _process_dict(query_dict).items()])
+
+        return query or None
+
+    def display_query_results(self, query: dict) -> None:
+        """Display query results in a pandas table."""
+
+        pd_query = self.write_pd_query_from_dict(query)
+        df = self.query_available_samples(pd_query)
+
+        if df is None:
+            return
+
+        col = df.pop("battery_id")
+        df.insert(0, col.name, col)
+
+        display(
+            df.rename(
+                columns={
+                    "battery_id": 'id',
+                    "form_factor": 'form factor',
+                    "composition.description": 'composition',
+                    "capacity.nominal": 'C nominal',
+                    "capacity.actual": 'C actual',
+                    "capacity.units": 'C units',
+                    "metadata.name": 'name',
+                    "metadata.creation_datetime": 'creation date',
+                    "metadata.creation_process": 'creation process',
+                }).style.set_table_styles([
+                    dict(selector='th', props=[('text-align', 'center')])
+                ]).set_properties(**{
+                    'text-align': 'center'
+                }).hide_index())
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS
@@ -300,3 +353,38 @@ class BatteryExperimentModel():
 
         with open(filepath, 'w') as fileobj:
             fileobj.write(str(json_data))
+
+
+def _process_dict(query_dict: dict) -> dict:
+    """Process query dictionary, wrapping any strings in quotes.
+
+    Parameters
+    ----------
+    `query_dict` : `dict`
+        Dictionary containing query key|value pairs.
+
+    Returns
+    -------
+    `dict`
+        The processed dictionary, with strings wrapped in quotes.
+    """
+    return {
+        k: [_cast(v_) for v_ in v] if isinstance(v, list) else _cast(v)
+        for k, v in query_dict.items() if v is not None
+    }
+
+
+def _cast(v: Union[int, float, str]) -> Union[int, float, str]:
+    """Return `int|float` as is; surround in quotes if `str`.
+
+    Parameters
+    ----------
+    v : Union[int, float, str]
+        The value to cast.
+
+    Returns
+    -------
+    Union[int, float, str]
+        The casted value.
+    """
+    return f"'{v}'" if isinstance(v, str) else v

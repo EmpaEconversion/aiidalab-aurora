@@ -2,8 +2,6 @@ import json
 from typing import Optional
 
 import ipywidgets as ipw
-import pandas as pd
-from IPython.display import display
 
 from aurora.engine import submit_experiment
 from aurora.interface.cycling import CyclingCustom, CyclingStandard
@@ -48,10 +46,10 @@ class MainPanel(ipw.VBox):
     ]
 
     _SAMPLE_BOX_LAYOUT = {
-        'width': '90%',
+        'width': '100%',
         'border': 'solid blue 2px',
         'align_content': 'center',
-        'margin': '5px',
+        'margin': '5px 0',
         'padding': '5px',
     }
 
@@ -113,12 +111,12 @@ class MainPanel(ipw.VBox):
 
         self.w_sample_from_id = SampleFromId(
             experiment_model=self.experiment_model,
-            validate_callback_f=self.return_selected_sample,
+            validate_callback_f=self.return_selected_samples,
         )
 
         self.w_sample_from_specs = SampleFromSpecs(
             experiment_model=self.experiment_model,
-            validate_callback_f=self.return_selected_sample,
+            validate_callback_f=self.return_selected_samples,
             recipe_callback_f=self.switch_to_recipe,
         )
 
@@ -131,7 +129,7 @@ class MainPanel(ipw.VBox):
             children=[
                 self.w_sample_from_id,
                 self.w_sample_from_specs,
-                self.w_sample_from_recipe,
+                # self.w_sample_from_recipe,
             ],
             selected_index=0,
         )
@@ -142,7 +140,7 @@ class MainPanel(ipw.VBox):
     def _build_cycling_protocol_section(self) -> None:
         """Build the cycling protocol section."""
 
-        self.w_test_sample_label = ipw.HTML("Selected sample:")
+        self.w_test_sample_label = ipw.HTML("Selected samples:")
         self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
 
         self.w_test_standard = CyclingStandard(lambda x: x)
@@ -277,9 +275,9 @@ class MainPanel(ipw.VBox):
     # (see Quantum Espresso app for an example)
     #######################################################################################
     @property
-    def selected_battery_sample(self):
-        "The Battery Sample selected. Used by a BatteryCyclerExperiment."
-        return self._selected_battery_sample
+    def selected_battery_samples(self):
+        "The Battery Samples selected. Used by a BatteryCyclerExperiment."
+        return self._selected_battery_samples
 
     @property
     def selected_battery_specs(self):
@@ -315,9 +313,9 @@ class MainPanel(ipw.VBox):
     #######################################################################################
     # SAMPLE SELECTION
     #######################################################################################
-    def return_selected_sample(self, sample_widget_obj):
+    def return_selected_samples(self, sample_widget_obj):
         "Store the selected sample in `self.selected_battery_sample` and call post action."
-        self._selected_battery_sample = sample_widget_obj.selected_sample
+        self._selected_battery_samples = sample_widget_obj.selected_samples
         self.post_sample_selection()
 
     def return_selected_specs_recipe(self, sample_widget_obj):
@@ -337,12 +335,18 @@ class MainPanel(ipw.VBox):
     def display_tested_sample_preview(self):
         "Display sample properties in the Method tab."
         self.w_test_sample_preview.clear_output()
-        if self.selected_battery_sample is not None:
-            with self.w_test_sample_preview:
-                # display(query_available_samples(write_pd_query_from_dict({'battery_id': self.w_select_sample_id.value})))
-                display(
-                    pd.json_normalize(
-                        self.selected_battery_sample.dict()).iloc[0])
+
+        if self.selected_battery_samples is None:
+            return
+
+        with self.w_test_sample_preview:
+            query = {
+                'battery_id': [
+                    sample.battery_id
+                    for sample in self.selected_battery_samples
+                ]
+            }
+            self.experiment_model.display_query_results(query)
 
     def post_sample_selection(self):
         "Switch to method accordion tab"
@@ -365,7 +369,7 @@ class MainPanel(ipw.VBox):
 
     def post_protocol_selection(self):
         "Switch to Tomato settings accordion tab."
-        if self.selected_battery_sample is None:
+        if self.selected_battery_samples is None:
             raise ValueError("A Battery sample was not selected!")
         # self.w_settings_tab.set_default_calcjob_node_label(self.selected_battery_sample_node.label, self.selected_cycling_protocol_node.label)  # TODO: uncomment this
         self.w_main_accordion.selected_index = 2
@@ -387,43 +391,57 @@ class MainPanel(ipw.VBox):
     # SUBMIT JOB
     #######################################################################################
 
-    def presubmission_checks_preview(self, dummy=None):
-        "Verify that all the input is there and display preview. If so, enable submission button."
-        if self.w_main_accordion.selected_index == 3:
-            self.w_job_preview.clear_output()
-            with self.w_job_preview:
-                try:
-                    if self.selected_battery_sample is None:
-                        raise ValueError("A Battery sample was not selected!")
-                    if self.selected_cycling_protocol is None:
-                        raise ValueError(
-                            "A Cycling protocol was not selected!")
-                    if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
-                        raise ValueError("Tomato settings were not selected!")
+    def presubmission_checks_preview(self, _=None) -> None:
+        """
+        Verify that all the input is there and display preview.
+        If so, enable submission button.
+        """
 
-                    output_battery_sample = f'{self.selected_battery_sample}'
-                    output_cycling_protocol = json.dumps(
-                        self.selected_cycling_protocol.dict(), indent=2)
-                    output_tomato_settings = f'{self.selected_tomato_settings}'
-                    output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+        if self.w_main_accordion.selected_index != 3:
+            return
 
-                    print(f"Battery Sample:\n{output_battery_sample}\n")
-                    print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
-                    print(f"Tomato Settings:\n{output_tomato_settings}\n")
-                    print(
-                        f"Monitor Job Settings:{output_monitor_job_settings}\n"
-                    )
+        self.w_job_preview.clear_output()
 
-                except ValueError as err:
-                    self.w_submit_button.disabled = True
-                    print(f"❌ {err}")
-                else:
-                    self.w_submit_button.disabled = False
-                    print("✅ All good!")
+        with self.w_job_preview:
+
+            if not self._has_valid_settings():
+                return
+
+            output_cycling_protocol = json.dumps(
+                self.selected_cycling_protocol.dict(),
+                indent=2,
+            )
+
+            output_tomato_settings = f'{self.selected_tomato_settings}'
+
+            output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+
+            if not self.selected_battery_samples:
+                return
+
+            print("Battery Samples:")
+
+            query = {
+                'battery_id': [
+                    sample.battery_id
+                    for sample in self.selected_battery_samples
+                ]
+            }
+            self.experiment_model.display_query_results(query)
+
+            print()
+
+            print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
+            print(f"Tomato Settings:\n{output_tomato_settings}\n")
+            print(f"Monitor Job Settings:{output_monitor_job_settings}\n")
+
+            print("✅ All good!")
+
+        self.w_submit_button.disabled = False
 
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
-        self.w_submit_button.disabed = True
+        self.w_submit_button.disabled = True
         for index, battery_sample in self.experiment_model.selected_samples.iterrows(
         ):
             json_stuff = dict_to_formatted_json(battery_sample)
@@ -442,20 +460,47 @@ class MainPanel(ipw.VBox):
 
         self.w_main_accordion.selected_index = None
 
+    def _has_valid_settings(self) -> bool:
+        """Validate job settings.
+
+        Returns
+        -------
+        `bool`
+            `True` if job settings are valid, `False` otherwise.
+        """
+
+        try:
+
+            if self.selected_battery_samples is None:
+                raise ValueError("A Battery sample was not selected!")
+
+            if self.selected_cycling_protocol is None:
+                raise ValueError("A Cycling protocol was not selected!")
+
+            if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
+                raise ValueError("Tomato settings were not selected!")
+
+            return True
+
+        except ValueError as err:
+            self.w_submit_button.disabled = True
+            print(f"❌ {err}")
+            return False
+
     #######################################################################################
     # RESET
     #######################################################################################
 
     def reset_sample_selection(self, dummy=None):
         "Reset sample data."
-        self._selected_battery_sample = None
+        self._selected_battery_samples = None
         self._selected_battery_specs = None
         self._selected_recipe = None
 
     def reset_all_inputs(self, dummy=None):
         "Reset all the selected inputs."
         self.experiment_model.reset_inputs()
-        self._selected_battery_sample = None
+        self._selected_battery_samples = None
         self._selected_battery_specs = None
         self._selected_recipe = None
         self._selected_cycling_protocol = None
