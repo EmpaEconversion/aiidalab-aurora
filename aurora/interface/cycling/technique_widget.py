@@ -5,9 +5,8 @@ Technique widget: the dropdowns corresponding to each parameters are generated d
 from typing import Literal, get_args, get_origin
 
 import ipywidgets as ipw
+from aiida_aurora.schemas.cycling import CyclingParameter, ElectroChemPayloads
 from pydantic.types import NonNegativeFloat, NonNegativeInt
-
-from aurora.schemas.cycling import CyclingParameter, ElectroChemPayloads
 
 # NOTE: requirements of parameters is not enforced when assigning
 

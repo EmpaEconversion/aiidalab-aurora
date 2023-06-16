@@ -4,8 +4,8 @@ import json
 from typing import Optional
 
 import pandas as pd
-
-from .schemas.battery import BatterySampleJsonTypes, BatterySpecsJsonTypes
+from aiida_aurora.schemas.battery import (BatterySampleJsonTypes,
+                                          BatterySpecsJsonTypes)
 
 AVAILABLE_SAMPLES_FILE = 'available_samples.json'
 

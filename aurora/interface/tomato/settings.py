@@ -3,9 +3,8 @@ Widget to setup tomato's settings
 """
 
 import ipywidgets as ipw
-
-from aurora.schemas.dgbowl_schemas import Tomato_0p2
-from aurora.schemas.utils import remove_empties_from_dict_decorator
+from aiida_aurora.schemas.dgbowl import Tomato_0p2
+from aiida_aurora.schemas.utils import remove_empties_from_dict_decorator
 
 
 class TomatoSettings(ipw.VBox):
@@ -136,7 +135,7 @@ class TomatoSettings(ipw.VBox):
 
     @property
     def selected_tomato_settings(self):
-        "The selected battery sample returned as a `aurora.schemas.dgbowl_schemas.Tomato_0p2` object."
+        "The selected battery sample returned as a `aiida_aurora.schemas.dgbowl_schemas.Tomato_0p2` object."
         return Tomato_0p2.parse_obj(self.selected_tomato_settings_dict)
 
     @property

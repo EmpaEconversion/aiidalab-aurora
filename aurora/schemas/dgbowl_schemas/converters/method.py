@@ -1,6 +1,5 @@
+from aiida_aurora.schemas.cycling import ElectroChemSequence
 from pydantic import BaseModel
-
-from aurora.schemas.cycling import ElectroChemSequence
 
 
 def electrochemsequence_to_method_list_0(elchemsequence: ElectroChemSequence,

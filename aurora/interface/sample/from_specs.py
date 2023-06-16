@@ -5,12 +5,11 @@ TODO: implement creation and labeling of sample nodes. Store them in a group, re
 """
 
 import ipywidgets as ipw
-from IPython.display import display
-
 # from aurora.query import update_available_samples, query_available_samples, update_available_specs, query_available_specs, write_pd_query_from_dict
-from aurora.schemas.battery import BatterySample
-from aurora.schemas.utils import (dict_to_formatted_json,
-                                  remove_empties_from_dict_decorator)
+from aiida_aurora.schemas.battery import BatterySample
+from aiida_aurora.schemas.utils import (dict_to_formatted_json,
+                                        remove_empties_from_dict_decorator)
+from IPython.display import display
 
 
 class SampleFromSpecs(ipw.VBox):
@@ -199,7 +198,7 @@ class SampleFromSpecs(ipw.VBox):
 
     @property
     def selected_sample(self):
-        "The selected battery sample returned as a `aurora.schemas.battery.BatterySample` object."
+        "The selected battery sample returned as a `aiida_aurora.schemas.battery.BatterySample` object."
         return BatterySample.parse_obj(self.selected_sample_dict)
 
     @property

@@ -4,10 +4,9 @@ NOTE: This is a mock interface. NOT IMPLEMENTED YET.
 """
 
 import ipywidgets as ipw
-
 # from IPython.display import display
-from aurora.schemas.battery import BatterySpecs
-from aurora.schemas.utils import dict_to_formatted_json
+from aiida_aurora.schemas.battery import BatterySpecs
+from aiida_aurora.schemas.utils import dict_to_formatted_json
 
 
 class SampleFromRecipe(ipw.VBox):
@@ -180,7 +179,7 @@ class SampleFromRecipe(ipw.VBox):
 
     @property
     def selected_specs(self):
-        "The selected battery specs returned as a `aurora.schemas.battery.BatterySpecs` object."
+        "The selected battery specs returned as a `aiida_aurora.schemas.battery.BatterySpecs` object."
         return BatterySpecs.parse_obj(self.selected_specs_dict)
 
     @property

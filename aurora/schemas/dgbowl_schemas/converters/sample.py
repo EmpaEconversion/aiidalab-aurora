@@ -1,6 +1,5 @@
+from aiida_aurora.schemas.battery import BatterySample
 from pydantic import BaseModel
-
-from aurora.schemas.battery import BatterySample
 
 
 def batterysample_to_sample_0(batsample: BatterySample,

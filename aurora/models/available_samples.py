@@ -1,8 +1,7 @@
 import json
 
 import pandas as pd
-
-from aurora.schemas.battery import BatterySample, BatterySampleJsonTypes
+from aiida_aurora.schemas.battery import BatterySample, BatterySampleJsonTypes
 
 from .pattern_observer import ObserverManager
 
