@@ -3,11 +3,11 @@ import logging
 from typing import Optional, Tuple, Union
 
 import pandas as pd
+from aiida_aurora.schemas.battery import (BatterySampleJsonTypes,
+                                          BatterySpecsJsonTypes)
+from aiida_aurora.schemas.cycling import (ElectroChemSequence,
+                                          OpenCircuitVoltage)
 from IPython.display import display
-
-from aurora.schemas.battery import (BatterySampleJsonTypes,
-                                    BatterySpecsJsonTypes)
-from aurora.schemas.cycling import ElectroChemSequence, OpenCircuitVoltage
 
 AVAILABLE_SAMPLES_FILE = 'available_samples.json'
 

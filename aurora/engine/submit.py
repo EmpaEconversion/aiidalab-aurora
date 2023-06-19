@@ -56,9 +56,9 @@ def submit_experiment(sample,
                       calcjob_node_label="",
                       monitor_code=None):
     """
-    sample : `aurora.schemas.battery.BatterySample`
-    method : `aurora.schemas.cycling.ElectroChemSequence`
-    tomato_settings : `aurora.schemas.dgbowl_schemas.Tomato_0p2`
+    sample : `aiida_aurora.schemas.battery.BatterySample`
+    method : `aiida_aurora.schemas.cycling.ElectroChemSequence`
+    tomato_settings : `aiida_aurora.schemas.dgbowl_schemas.Tomato_0p2`
     """
 
     sample_node = BatterySampleData(sample.dict())

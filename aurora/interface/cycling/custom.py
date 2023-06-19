@@ -6,11 +6,10 @@ import logging
 import os
 from typing import get_args
 
+import aiida_aurora.schemas.cycling
 import ipywidgets as ipw
+from aiida_aurora.schemas.cycling import ElectroChemPayloads
 from ipyfilechooser import FileChooser
-
-import aurora.schemas.cycling
-from aurora.schemas.cycling import ElectroChemPayloads
 
 from .technique_widget import TechniqueParametersWidget
 
@@ -36,7 +35,7 @@ class CyclingCustom(ipw.VBox):
         'width': '100%',
         'margin': '5px'
     }  # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
-    DEFAULT_PROTOCOL = aurora.schemas.cycling.OpenCircuitVoltage
+    DEFAULT_PROTOCOL = aiida_aurora.schemas.cycling.OpenCircuitVoltage
     _TECHNIQUES_OPTIONS = {
         f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})":
         Technique
