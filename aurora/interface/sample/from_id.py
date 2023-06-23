@@ -66,193 +66,13 @@ class SampleFromId(ipw.VBox):
         experiment_model: BatteryExperimentModel,
         validate_callback_f: Callable,
     ) -> None:
+        """docstring"""
 
         self.experiment_model = experiment_model
 
-        # filters
+        filters_container = self._build_filter_container()
 
-        self.w_specs_manufacturer = ipw.Select(
-            description="Manufacturer:",
-            placeholder="Enter manufacturer",
-            layout=self.BOX_LAYOUT_2,
-            style=self.BOX_STYLE_1,
-        )
-
-        self.w_specs_composition = ipw.Select(
-            description="Composition:",
-            placeholder="Enter composition",
-            layout=self.BOX_LAYOUT_2,
-            style=self.BOX_STYLE_1,
-        )
-
-        self.w_specs_capacity = ipw.Select(
-            description="Nominal capacity:",
-            placeholder="Enter nominal capacity",
-            layout=self.BOX_LAYOUT_2,
-            style=self.BOX_STYLE_1,
-        )
-
-        self.w_specs_form_factor = ipw.Select(
-            description="Form factor:",
-            placeholder="Enter form factor",
-            layout=self.BOX_LAYOUT_2,
-            style=self.BOX_STYLE_1,
-        )
-
-        # self.w_specs_metadata_creation_date = ipw.DatePicker(
-        #     description="Creation time:",
-        #     layout=self.BOX_LAYOUT_2,
-        #     style=self.BOX_STYLE_1,
-        # )
-
-        # self.w_specs_metadata_creation_process = ipw.Text(
-        #     description="Creation process",
-        #     placeholder="Describe creation process",
-        #     layout=self.BOX_LAYOUT_2,
-        #     style=self.BOX_STYLE_1,
-        # )
-
-        self.w_update_filters = ipw.Button(
-            description="Update",
-            button_style='',
-            tooltip="Update available samples",
-            icon="refresh",
-            style=self.BUTTON_STYLE,
-            layout=self.BUTTON_LAYOUT,
-        )
-
-        self.w_reset_filters = ipw.Button(
-            description="Reset",
-            button_style='danger',
-            tooltip="Clear fields",
-            icon="times",
-            style=self.BUTTON_STYLE,
-            layout=self.BUTTON_LAYOUT,
-        )
-
-        filters_container = ipw.Accordion(
-            layout={},
-            children=[
-                ipw.VBox(
-                    layout={},
-                    children=[
-                        ipw.GridBox(
-                            [
-                                self.w_specs_manufacturer,
-                                self.w_specs_composition,
-                                self.w_specs_capacity,
-                                self.w_specs_form_factor,
-                                # self.w_specs_metadata_creation_date,
-                                # self.w_specs_metadata_creation_process,
-                            ],
-                            layout={
-                                "grid_template_columns": "repeat(2, 45%)",
-                            },
-                        ),
-                        ipw.HBox(
-                            [
-                                self.w_update_filters,
-                                self.w_reset_filters,
-                            ],
-                            layout={
-                                'justify_content': 'center',
-                                'margin': '5px'
-                            },
-                        ),
-                    ],
-                ),
-            ],
-            selected_index=None,
-        )
-
-        filters_container.set_title(0, 'Filter samples by specification')
-
-        # selection
-
-        self.w_selection_label = ipw.HTML(
-            value="Battery ID:",
-            layout=self.SAMPLE_LABEL_LAYOUT,
-        )
-
-        self.w_update = ipw.Button(
-            description="",
-            button_style='',
-            tooltip="Update available samples",
-            icon='refresh',
-            layout=self.SAMPLE_BUTTON_LAYOUT,
-        )
-
-        self.w_select = ipw.Button(
-            description="",
-            button_style='',
-            tooltip="Select chosen sample",
-            icon='fa-angle-down',
-            layout=self.SAMPLE_BUTTON_LAYOUT,
-        )
-
-        self.w_select_all = ipw.Button(
-            description="",
-            button_style='',
-            tooltip="Select all samples",
-            icon='fa-angle-double-down',
-            layout=self.SAMPLE_BUTTON_LAYOUT,
-        )
-
-        self.w_selection_controls = ipw.VBox(
-            layout={},
-            children=[
-                self.w_update,
-                self.w_select,
-                self.w_select_all,
-            ],
-        )
-
-        self.w_sample_list = ipw.SelectMultiple(
-            rows=10,
-            style=self.SAMPLE_BOX_STYLE,
-            layout=self.SAMPLE_BOX_LAYOUT,
-        )
-
-        # selected
-
-        self.w_selected_label = ipw.HTML(
-            value="Selected ID:",
-            layout=self.SAMPLE_LABEL_LAYOUT,
-        )
-
-        self.w_deselect = ipw.Button(
-            description="",
-            button_style='',
-            tooltip="Deselect chosen sample",
-            icon='fa-angle-up',
-            layout=self.SAMPLE_BUTTON_LAYOUT,
-        )
-
-        self.w_deselect_all = ipw.Button(
-            description="",
-            button_style='',
-            tooltip="Deselect all samples",
-            icon='fa-angle-double-up',
-            layout=self.SAMPLE_BUTTON_LAYOUT,
-        )
-
-        self.w_deselection_controls = ipw.VBox(
-            layout={},
-            children=[
-                self.w_deselect_all,
-                self.w_deselect,
-            ],
-        )
-
-        self.w_selected_list = ipw.SelectMultiple(
-            rows=10,
-            style=self.SAMPLE_BOX_STYLE,
-            layout=self.SAMPLE_BOX_LAYOUT,
-        )
-
-        self.w_selection_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
-
-        self.w_selected_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
+        selection_container = self._build_selection_container()
 
         self.w_validate = ipw.Button(
             description="Validate",
@@ -268,37 +88,11 @@ class SampleFromId(ipw.VBox):
             layout={},
             children=[
                 filters_container,
-                ipw.VBox(
-                    [
-                        ipw.HBox([
-                            ipw.VBox(
-                                [
-                                    self.w_selection_label,
-                                    self.w_selection_controls,
-                                ],
-                                layout=self.SAMPLE_CONTROLS_LAYOUT,
-                            ),
-                            self.w_sample_list,
-                        ]),
-                        self.w_selection_preview,
-                        ipw.HBox([
-                            ipw.VBox(
-                                [
-                                    self.w_selected_label,
-                                    self.w_deselection_controls,
-                                ],
-                                layout=self.SAMPLE_CONTROLS_LAYOUT,
-                            ),
-                            self.w_selected_list,
-                        ]),
-                        self.w_selected_preview,
-                    ],
-                    layout=self.MAIN_LAYOUT,
-                ),
+                selection_container,
                 self.w_validate,
-            ])
+            ],
+        )
 
-        # initialize options
         if not callable(validate_callback_f):
             raise TypeError(
                 "validate_callback_f should be a callable function")
@@ -549,6 +343,279 @@ class SampleFromId(ipw.VBox):
         self.w_specs_form_factor.unobserve(handler=self.on_specs_value_change,
                                            names='value')
         # self.w_specs_metadata_creation_date.unobserve(handler=self.update_options, names='value')
+
+    #########
+    # widgets
+    #########
+
+    def _build_filter_container(self) -> ipw.VBox:
+        """docstring"""
+
+        filters = self._build_filters()
+
+        filter_controls = self._build_filter_controls()
+
+        filters_container = ipw.Accordion(
+            layout={},
+            children=[
+                ipw.VBox(
+                    layout={},
+                    children=[
+                        filters,
+                        filter_controls,
+                    ],
+                ),
+            ],
+            selected_index=None,
+        )
+
+        filters_container.set_title(0, 'Filter samples by specification')
+
+        return filters_container
+
+    def _build_filters(self) -> ipw.GridBox:
+        """docstring"""
+
+        self.w_specs_manufacturer = ipw.Select(
+            description="Manufacturer:",
+            placeholder="Enter manufacturer",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        self.w_specs_composition = ipw.Select(
+            description="Composition:",
+            placeholder="Enter composition",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        self.w_specs_capacity = ipw.Select(
+            description="Nominal capacity:",
+            placeholder="Enter nominal capacity",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        self.w_specs_form_factor = ipw.Select(
+            description="Form factor:",
+            placeholder="Enter form factor",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        # self.w_specs_metadata_creation_date = ipw.DatePicker(
+        #     description="Creation time:",
+        #     layout=self.BOX_LAYOUT_2,
+        #     style=self.BOX_STYLE_1,
+        # )
+
+        # self.w_specs_metadata_creation_process = ipw.Text(
+        #     description="Creation process",
+        #     placeholder="Describe creation process",
+        #     layout=self.BOX_LAYOUT_2,
+        #     style=self.BOX_STYLE_1,
+        # )
+
+        return ipw.GridBox(
+            layout={
+                "grid_template_columns": "repeat(2, 45%)",
+            },
+            children=[
+                self.w_specs_manufacturer,
+                self.w_specs_composition,
+                self.w_specs_capacity,
+                self.w_specs_form_factor,
+                # self.w_specs_metadata_creation_date,
+                # self.w_specs_metadata_creation_process,
+            ],
+        )
+
+    def _build_filter_controls(self) -> ipw.HBox:
+        """docstring"""
+
+        self.w_update_filters = ipw.Button(
+            description="Update",
+            button_style='',
+            tooltip="Update available samples",
+            icon="refresh",
+            style=self.BUTTON_STYLE,
+            layout=self.BUTTON_LAYOUT,
+        )
+
+        self.w_reset_filters = ipw.Button(
+            description="Reset",
+            button_style='danger',
+            tooltip="Clear fields",
+            icon="times",
+            style=self.BUTTON_STYLE,
+            layout=self.BUTTON_LAYOUT,
+        )
+
+        return ipw.HBox(
+            layout={
+                'justify_content': 'center',
+                'margin': '5px'
+            },
+            children=[
+                self.w_update_filters,
+                self.w_reset_filters,
+            ],
+        )
+
+    def _build_selection_container(self) -> ipw.VBox:
+        """docstring"""
+
+        selection_section = self._build_selection_section()
+
+        deselection_section = self._build_selected_section()
+
+        return ipw.VBox(
+            layout=self.MAIN_LAYOUT,
+            children=[
+                selection_section,
+                deselection_section,
+            ],
+        )
+
+    def _build_selection_section(self) -> ipw.VBox:
+        """docstring"""
+
+        w_selection_label = ipw.HTML(
+            value="Battery ID:",
+            layout=self.SAMPLE_LABEL_LAYOUT,
+        )
+
+        selection_controls = self._build_selection_controls()
+
+        self.w_sample_list = ipw.SelectMultiple(
+            rows=10,
+            style=self.SAMPLE_BOX_STYLE,
+            layout=self.SAMPLE_BOX_LAYOUT,
+        )
+
+        self.w_selection_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
+
+        return ipw.VBox(
+            layout={},
+            children=[
+                ipw.HBox(
+                    layout={},
+                    children=[
+                        ipw.VBox(
+                            layout=self.SAMPLE_CONTROLS_LAYOUT,
+                            children=[
+                                w_selection_label,
+                                selection_controls,
+                            ],
+                        ),
+                        self.w_sample_list,
+                    ],
+                ),
+                self.w_selection_preview,
+            ],
+        )
+
+    def _build_selection_controls(self) -> ipw.VBox:
+        """docstring"""
+
+        self.w_update = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Update available samples",
+            icon='refresh',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        self.w_select = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Select chosen sample",
+            icon='fa-angle-down',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        self.w_select_all = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Select all samples",
+            icon='fa-angle-double-down',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        return ipw.VBox(
+            layout={},
+            children=[
+                self.w_update,
+                self.w_select,
+                self.w_select_all,
+            ],
+        )
+
+    def _build_selected_section(self) -> ipw.VBox:
+        """docstring"""
+
+        w_selected_label = ipw.HTML(
+            value="Selected ID:",
+            layout=self.SAMPLE_LABEL_LAYOUT,
+        )
+
+        deselection_controls = self._build_deselection_controls()
+
+        self.w_selected_list = ipw.SelectMultiple(
+            rows=10,
+            style=self.SAMPLE_BOX_STYLE,
+            layout=self.SAMPLE_BOX_LAYOUT,
+        )
+
+        self.w_selected_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
+
+        return ipw.VBox(
+            layout={},
+            children=[
+                ipw.HBox(
+                    layout={},
+                    children=[
+                        ipw.VBox(
+                            layout=self.SAMPLE_CONTROLS_LAYOUT,
+                            children=[
+                                w_selected_label,
+                                deselection_controls,
+                            ],
+                        ),
+                        self.w_selected_list,
+                    ],
+                ),
+                self.w_selected_preview,
+            ],
+        )
+
+    def _build_deselection_controls(self) -> ipw.VBox:
+        """docstring"""
+
+        self.w_deselect = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Deselect chosen sample",
+            icon='fa-angle-up',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        self.w_deselect_all = ipw.Button(
+            description="",
+            button_style='',
+            tooltip="Deselect all samples",
+            icon='fa-angle-double-up',
+            layout=self.SAMPLE_BUTTON_LAYOUT,
+        )
+
+        return ipw.VBox(
+            layout={},
+            children=[
+                self.w_deselect_all,
+                self.w_deselect,
+            ],
+        )
 
 
 def row_label(row):
