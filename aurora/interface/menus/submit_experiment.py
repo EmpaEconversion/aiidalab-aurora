@@ -128,7 +128,7 @@ class MainPanel(ipw.VBox):
         self.w_sample_selection_tab = ipw.Tab(
             children=[
                 self.w_sample_from_id,
-                self.w_sample_from_specs,
+                # self.w_sample_from_specs,
                 # self.w_sample_from_recipe,
             ],
             selected_index=0,
