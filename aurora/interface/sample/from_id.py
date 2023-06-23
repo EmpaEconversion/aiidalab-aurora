@@ -167,8 +167,6 @@ class SampleFromId(ipw.VBox):
 
         filters_container.set_title(0, 'Filter samples by specification')
 
-        self.w_header_label = ipw.HTML(value="<h2>Battery Selection</h2>")
-
         # selection
 
         self.w_selection_label = ipw.HTML(
@@ -270,7 +268,6 @@ class SampleFromId(ipw.VBox):
             layout={},
             children=[
                 filters_container,
-                self.w_header_label,
                 ipw.VBox(
                     [
                         ipw.HBox([
