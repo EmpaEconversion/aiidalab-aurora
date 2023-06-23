@@ -68,6 +68,10 @@ class SampleFromId(ipw.VBox):
     ) -> None:
         """docstring"""
 
+        if not callable(validate_callback_f):
+            raise TypeError(
+                "validate_callback_f should be a callable function")
+
         self.experiment_model = experiment_model
 
         filters_container = self._build_filter_container()
@@ -93,44 +97,11 @@ class SampleFromId(ipw.VBox):
             ],
         )
 
-        if not callable(validate_callback_f):
-            raise TypeError(
-                "validate_callback_f should be a callable function")
+        self._initialize_filters()
 
-        self.on_reset_filters_button_clicked()
-        self.experiment_model.update_available_specs()
-        self._update_options()
+        self._initialize_selectors()
 
-        self.w_update_filters.on_click(self.on_update_filters_button_clicked)
-        self.w_reset_filters.on_click(self.on_reset_filters_button_clicked)
-        self._set_specs_observers()
-
-        self.w_sample_list.value = []
-        self.w_selected_list.value = []
-        self.on_update_button_clicked()
-
-        self.display_samples_preview()
-        self.display_selected_samples_preview()
-
-        # setup automations
-        self.w_update.on_click(self.on_update_button_clicked)
-        self.w_select.on_click(self.on_select_button_clicked)
-        self.w_select_all.on_click(self.on_select_all_button_clicked)
-        self.w_deselect.on_click(self.on_deselect_button_clicked)
-        self.w_deselect_all.on_click(self.on_deselect_all_button_clicked)
-
-        self.w_sample_list.observe(
-            names='value',
-            handler=self.on_sample_list_clicked,
-        )
-
-        self.w_selected_list.observe(
-            handler=self.on_selected_list_change,
-            names='options',
-        )
-
-        self.w_validate.on_click(
-            lambda arg: self.on_validate_button_clicked(validate_callback_f))
+        self._set_event_listeners(validate_callback_f)
 
     @property
     def current_specs(self):
@@ -321,28 +292,6 @@ class SampleFromId(ipw.VBox):
         """Returns a (option_string, battery_id) list."""
         table = self.experiment_model.selected_samples
         return [(row_label(r), r['battery_id']) for _, r in table.iterrows()]
-
-    def _set_specs_observers(self):
-        self.w_specs_manufacturer.observe(handler=self.on_specs_value_change,
-                                          names='value')
-        self.w_specs_composition.observe(handler=self.on_specs_value_change,
-                                         names='value')
-        self.w_specs_capacity.observe(handler=self.on_specs_value_change,
-                                      names='value')
-        self.w_specs_form_factor.observe(handler=self.on_specs_value_change,
-                                         names='value')
-        # self.w_specs_metadata_creation_date.observe(handler=self.update_options, names='value')
-
-    def _unset_specs_observers(self):
-        self.w_specs_manufacturer.unobserve(handler=self.on_specs_value_change,
-                                            names='value')
-        self.w_specs_composition.unobserve(handler=self.on_specs_value_change,
-                                           names='value')
-        self.w_specs_capacity.unobserve(handler=self.on_specs_value_change,
-                                        names='value')
-        self.w_specs_form_factor.unobserve(handler=self.on_specs_value_change,
-                                           names='value')
-        # self.w_specs_metadata_creation_date.unobserve(handler=self.update_options, names='value')
 
     #########
     # widgets
@@ -616,6 +565,72 @@ class SampleFromId(ipw.VBox):
                 self.w_deselect,
             ],
         )
+
+    def _initialize_filters(self) -> None:
+        """docstring"""
+        self.on_reset_filters_button_clicked()
+        self.experiment_model.update_available_specs()
+        self._update_options()
+
+    def _initialize_selectors(self) -> None:
+        """docstring"""
+        self.w_sample_list.value = []
+        self.w_selected_list.value = []
+        self.on_update_button_clicked()
+        self.display_samples_preview()
+        self.display_selected_samples_preview()
+
+    def _set_event_listeners(self, validate_callback_f) -> None:
+        """docstring"""
+
+        self.w_update_filters.on_click(self.on_update_filters_button_clicked)
+        self.w_reset_filters.on_click(self.on_reset_filters_button_clicked)
+        self._set_specs_observers()
+
+        self.w_update.on_click(self.on_update_button_clicked)
+        self.w_select.on_click(self.on_select_button_clicked)
+        self.w_select_all.on_click(self.on_select_all_button_clicked)
+        self.w_deselect.on_click(self.on_deselect_button_clicked)
+        self.w_deselect_all.on_click(self.on_deselect_all_button_clicked)
+
+        self.w_sample_list.observe(
+            names='value',
+            handler=self.on_sample_list_clicked,
+        )
+
+        self.w_selected_list.observe(
+            handler=self.on_selected_list_change,
+            names='options',
+        )
+
+        self.w_validate.on_click(
+            lambda arg: self.on_validate_button_clicked(validate_callback_f))
+
+    def _set_specs_observers(self) -> None:
+        """docstring"""
+
+        self.w_specs_manufacturer.observe(handler=self.on_specs_value_change,
+                                          names='value')
+        self.w_specs_composition.observe(handler=self.on_specs_value_change,
+                                         names='value')
+        self.w_specs_capacity.observe(handler=self.on_specs_value_change,
+                                      names='value')
+        self.w_specs_form_factor.observe(handler=self.on_specs_value_change,
+                                         names='value')
+        # self.w_specs_metadata_creation_date.observe(handler=self.update_options, names='value')
+
+    def _unset_specs_observers(self) -> None:
+        """docstring"""
+
+        self.w_specs_manufacturer.unobserve(handler=self.on_specs_value_change,
+                                            names='value')
+        self.w_specs_composition.unobserve(handler=self.on_specs_value_change,
+                                           names='value')
+        self.w_specs_capacity.unobserve(handler=self.on_specs_value_change,
+                                        names='value')
+        self.w_specs_form_factor.unobserve(handler=self.on_specs_value_change,
+                                           names='value')
+        # self.w_specs_metadata_creation_date.unobserve(handler=self.update_options, names='value')
 
 
 def row_label(row):
