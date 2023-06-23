@@ -53,6 +53,14 @@ class SampleFromId(ipw.VBox):
         'border': 'solid blue 2px'
     }
 
+    PREVIEW_LAYOUT = {
+        "margin": "0 auto 10px auto",
+        "height": "150px",
+        "max_height": "150px",
+        "overflow": "auto",
+        "align_items": "center",
+    }
+
     def __init__(
         self,
         experiment_model: BatteryExperimentModel,
@@ -147,8 +155,9 @@ class SampleFromId(ipw.VBox):
             layout=self.SAMPLE_BOX_LAYOUT,
         )
 
-        self.w_selection_preview = ipw.Output()
-        self.w_selected_preview = ipw.Output()
+        self.w_selection_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
+
+        self.w_selected_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
 
         self.w_validate = ipw.Button(
             description="Validate",
@@ -176,6 +185,7 @@ class SampleFromId(ipw.VBox):
                             ),
                             self.w_sample_list,
                         ]),
+                        self.w_selection_preview,
                         ipw.HBox([
                             ipw.VBox(
                                 [
@@ -187,7 +197,6 @@ class SampleFromId(ipw.VBox):
                             self.w_selected_list,
                         ]),
                         self.w_selected_preview,
-                        self.w_selection_preview,
                     ],
                     layout=self.MAIN_LAYOUT,
                 ),
