@@ -54,9 +54,10 @@ class SampleFromId(ipw.VBox):
     }
 
     MAIN_LAYOUT = {
-        'width': '100%',
+        'width': 'auto',
+        'margin': '2px',
         'padding': '10px',
-        'border': 'solid blue 2px'
+        'border': 'solid darkgrey 1px'
     }
 
     PREVIEW_LAYOUT = {
@@ -271,7 +272,7 @@ class SampleFromId(ipw.VBox):
 
         return ipw.GridBox(
             layout={
-                "grid_template_columns": "repeat(2, 45%)",
+                "grid_template_columns": "repeat(2, 49%)",
             },
             children=[
                 self.w_specs_manufacturer,

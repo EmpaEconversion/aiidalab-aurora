@@ -14,10 +14,9 @@ class TomatoSettings(ipw.VBox):
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     BOX_LAYOUT_2 = {
-        'width': '60%',
-        'border': 'solid blue 2px',
+        'width': 'auto',
+        'border': 'solid darkgrey 1px',
         'align_content': 'center',
-        'margin': '5px',
         'padding': '5px'
     }
 
@@ -74,7 +73,10 @@ class TomatoSettings(ipw.VBox):
         self.w_job_calcjob_node_label = ipw.Text(
             description="AiiDA CalcJob node label:",
             placeholder="Enter a name for the BatteryCyclerExperiment node",
-            layout=self.BOX_LAYOUT,
+            layout={
+                'width': 'auto',
+                "margin": "5px 0",
+            },
             style=self.BOX_STYLE)
         self.w_validate = ipw.Button(description="Validate",
                                      button_style='success',
