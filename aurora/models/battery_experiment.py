@@ -356,10 +356,21 @@ class BatteryExperimentModel():
                     "metadata.creation_datetime": 'creation date',
                     "metadata.creation_process": 'creation process',
                 }).style.set_table_styles([
-                    dict(selector='th', props=[('text-align', 'center')])
-                ]).set_properties(**{
-                    'text-align': 'center'
-                }).hide_index())
+                    dict(
+                        selector='th',
+                        props=[
+                            ('text-align', 'center'),
+                            ("width", "100vw"),
+                        ],
+                    ),
+                    dict(
+                        selector='td',
+                        props=[
+                            ('text-align', 'center'),
+                            ("width", "100vw"),
+                        ],
+                    )
+                ]).hide_index())
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS
