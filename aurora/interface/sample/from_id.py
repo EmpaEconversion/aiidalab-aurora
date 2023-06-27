@@ -17,6 +17,8 @@ class SampleFromId(ipw.VBox):
     TODO implement creation and labeling of sample nodes.
     TODO store submitted samples in a group
     TODO retrieve a node if it was already created.
+
+    TODO refactor filters to separate class
     """
 
     BOX_LAYOUT_1 = {'width': '40%'}
@@ -180,207 +182,6 @@ class SampleFromId(ipw.VBox):
             BatterySample.parse_obj(sample)
             for sample in self.selected_sample_dict
         ]
-
-    def update_spec_options(self) -> None:
-        """Update sample filters with newly fetched spec options.
-        Filter observation is paused during the process.
-        """
-        self._unset_specs_observers()
-        self._build_spec_options()
-        self._set_specs_observers()
-
-    def on_update_filters_button_click(self, _=None) -> None:
-        """Fetch and update current spec options."""
-        self.experiment_model.update_available_specs()
-        self.update_spec_options()
-
-    def on_reset_filters_button_click(self, _=None) -> None:
-        """Reset current spec selections."""
-        self.w_specs_manufacturer.value = None
-        self.w_specs_composition.value = None
-        self.w_specs_form_factor.value = None
-        self.w_specs_capacity.value = None
-        # self.w_specs_metadata_creation_date.value = None
-        # self.w_specs_metadata_creation_process.value = None
-
-    def on_spec_value_change(self, _=None):
-        """Update spec and sample options."""
-        # TODO this does a lot per value change. Consider decoupling!
-        self.update_spec_options()
-        self.update_sample_options()
-
-    def update_sample_options(self) -> None:
-        """Fetch and update current sample options."""
-        self.experiment_model.update_available_samples()
-        self.w_sample_list.options = self._build_sample_id_options()
-
-    def display_samples_preview(self) -> None:
-        """Display details for current sample selection in a
-        `pandas.DataFrame`."""
-
-        self.w_selection_preview.clear_output()
-        with self.w_selection_preview:
-            query = {'battery_id': self.w_sample_list.value}
-            self.experiment_model.display_query_results(query)
-
-    def display_selected_samples_preview(self) -> None:
-        """Display details for selected samples in a
-        `pandas.DataFrame`."""
-
-        self.w_selected_preview.clear_output()
-        with self.w_selected_preview:
-            query = {'battery_id': get_ids(self.w_selected_list.options)}
-            self.experiment_model.display_query_results(query)
-
-    def on_sample_list_click(self, _=None) -> None:
-        """Display sample preview for selected sample option."""
-        self.display_samples_preview()
-
-    def on_update_button_click(self, _=None) -> None:
-        """Fetch and update sample options."""
-        self.update_sample_options()
-
-    def on_select_button_click(self, _=None) -> None:
-        """Add selected sample option to selected samples list."""
-        if sample_ids := self.w_sample_list.value:
-            self.experiment_model.add_selected_samples(sample_ids)
-        self.update_selected_list_options()
-
-    def on_select_all_button_click(self, _=None) -> None:
-        """Add all sample options to selected samples list."""
-        if sample_ids := get_ids(self.w_sample_list.options):
-            self.experiment_model.add_selected_samples(sample_ids)
-        self.update_selected_list_options()
-
-    def on_selected_list_change(self, _=None) -> None:
-        """Update validate button state and display preview for
-        current selected samples."""
-        self.update_validate_button_state()
-        self.display_selected_samples_preview()
-
-    def on_deselect_button_click(self, _=None) -> None:
-        """Remove selected sample option from selected samples list."""
-        if sample_ids := self.w_selected_list.value:
-            self.experiment_model.remove_selected_samples(sample_ids)
-        self.update_selected_list_options()
-
-    def on_deselect_all_button_click(self, _=None) -> None:
-        """Clear selected samples list."""
-        # TODO simplify! Just clear the list
-        if sample_ids := get_ids(self.w_selected_list.options):
-            self.experiment_model.remove_selected_samples(sample_ids)
-        self.update_selected_list_options()
-
-    def on_validate_button_click(self, callback_function: Callable):
-        """Communicate widget state out to parent container."""
-        # TODO use (d)link?
-        return callback_function(self)
-
-    def update_validate_button_state(self) -> None:
-        """Enable validate button if selected samples are present."""
-        self.w_validate.disabled = not self.w_selected_list.options
-
-    def update_selected_list_options(self) -> None:
-        """Update selected list options."""
-        # TODO discard redundant method!
-        self.w_selected_list.options = self._update_selected_list()
-
-    ############################################################
-    # This should go to control
-    ############################################################
-
-    def _build_single_spec_options(
-        self,
-        spec_field: str,
-    ) -> List[Tuple[str, Optional[int]]]:
-        """Build spec options by querying the available specs,
-        filtering results for the given spec field.
-
-        A count of available samples w.r.t. the selected field
-        is computed and added to the option string.
-
-        Parameters
-        ----------
-        `spec_field` : `str`
-            The spec name to query by.
-
-        Returns
-        -------
-        `List[Tuple]`
-            A list of spec-option/battery-id pairs.
-        """
-
-        spec_field_options_list = self.experiment_model.query_available_specs(
-            spec_field)
-
-        # setup sample query filter from current specs
-        # and remove current field from query
-        sample_query_filter_dict = self.current_specs.copy()
-        sample_query_filter_dict[spec_field] = None
-
-        # perform query of samples
-        query = self.experiment_model.write_pd_query_from_dict(
-            sample_query_filter_dict)
-
-        result = self.experiment_model.query_available_samples(
-            query,
-            project=[spec_field, 'battery_id'],
-        ).sort_values('battery_id')
-
-        value_counts = result[spec_field].value_counts()
-
-        options_pairs: List[Tuple[str, Optional[int]]] = [
-            (f"(no filter)  [{value_counts.sum()}]", None)
-        ]
-
-        options_pairs.extend([(
-            f"{value}  [{value_counts.get(value, 0)}]",
-            value,
-        ) for value in spec_field_options_list])
-
-        return options_pairs
-
-    def _build_spec_options(self) -> None:
-        """Build spec options for all fields. Current selections are
-        stored and reapplied after the process.
-        """
-
-        # store current selections
-        w_specs_manufacturer_value = self.w_specs_manufacturer.value
-        w_specs_composition_value = self.w_specs_composition.value
-        w_specs_capacity_value = self.w_specs_capacity.value
-        w_specs_form_factor_value = self.w_specs_form_factor.value
-
-        # build options
-        self.w_specs_manufacturer.options = self._build_single_spec_options(
-            'manufacturer')
-        self.w_specs_composition.options = self._build_single_spec_options(
-            'composition.description')
-        self.w_specs_capacity.options = self._build_single_spec_options(
-            'capacity.nominal')
-        self.w_specs_form_factor.options = self._build_single_spec_options(
-            'form_factor')
-
-        # reapply selections
-        self.w_specs_manufacturer.value = w_specs_manufacturer_value
-        self.w_specs_composition.value = w_specs_composition_value
-        self.w_specs_capacity.value = w_specs_capacity_value
-        self.w_specs_form_factor.value = w_specs_form_factor_value
-
-    # @staticmethod
-    def _build_sample_id_options(self):
-        """Returns a (option_string, battery_id) list."""
-        dict_query = self.current_specs
-        pd_query = self.experiment_model.write_pd_query_from_dict(dict_query)
-        unsorted = self.experiment_model.query_available_samples(pd_query)
-        table = unsorted.sort_values('battery_id')
-
-        return [(as_option(r), r['battery_id']) for _, r in table.iterrows()]
-
-    def _update_selected_list(self):
-        """Returns a (option_string, battery_id) list."""
-        table = self.experiment_model.selected_samples
-        return [(as_option(r), r['battery_id']) for _, r in table.iterrows()]
 
     #########
     # widgets
@@ -705,6 +506,207 @@ class SampleFromId(ipw.VBox):
                 self.w_deselect,
             ],
         )
+
+    ###########################
+    # TODO migrate to presenter
+    ###########################
+
+    def update_spec_options(self) -> None:
+        """Update sample filters with newly fetched spec options.
+        Filter observation is paused during the process.
+        """
+        self._unset_specs_observers()
+        self._build_spec_options()
+        self._set_specs_observers()
+
+    def on_update_filters_button_click(self, _=None) -> None:
+        """Fetch and update current spec options."""
+        self.experiment_model.update_available_specs()
+        self.update_spec_options()
+
+    def on_reset_filters_button_click(self, _=None) -> None:
+        """Reset current spec selections."""
+        self.w_specs_manufacturer.value = None
+        self.w_specs_composition.value = None
+        self.w_specs_form_factor.value = None
+        self.w_specs_capacity.value = None
+        # self.w_specs_metadata_creation_date.value = None
+        # self.w_specs_metadata_creation_process.value = None
+
+    def on_spec_value_change(self, _=None):
+        """Update spec and sample options."""
+        # TODO this does a lot per value change. Consider decoupling!
+        self.update_spec_options()
+        self.update_sample_options()
+
+    def update_sample_options(self) -> None:
+        """Fetch and update current sample options."""
+        self.experiment_model.update_available_samples()
+        self.w_sample_list.options = self._build_sample_id_options()
+
+    def display_samples_preview(self) -> None:
+        """Display details for current sample selection in a
+        `pandas.DataFrame`."""
+
+        self.w_selection_preview.clear_output()
+        with self.w_selection_preview:
+            query = {'battery_id': self.w_sample_list.value}
+            self.experiment_model.display_query_results(query)
+
+    def display_selected_samples_preview(self) -> None:
+        """Display details for selected samples in a
+        `pandas.DataFrame`."""
+
+        self.w_selected_preview.clear_output()
+        with self.w_selected_preview:
+            query = {'battery_id': get_ids(self.w_selected_list.options)}
+            self.experiment_model.display_query_results(query)
+
+    def on_sample_list_click(self, _=None) -> None:
+        """Display sample preview for selected sample option."""
+        self.display_samples_preview()
+
+    def on_update_button_click(self, _=None) -> None:
+        """Fetch and update sample options."""
+        self.update_sample_options()
+
+    def on_select_button_click(self, _=None) -> None:
+        """Add selected sample option to selected samples list."""
+        if sample_ids := self.w_sample_list.value:
+            self.experiment_model.add_selected_samples(sample_ids)
+        self.update_selected_list_options()
+
+    def on_select_all_button_click(self, _=None) -> None:
+        """Add all sample options to selected samples list."""
+        if sample_ids := get_ids(self.w_sample_list.options):
+            self.experiment_model.add_selected_samples(sample_ids)
+        self.update_selected_list_options()
+
+    def on_selected_list_change(self, _=None) -> None:
+        """Update validate button state and display preview for
+        current selected samples."""
+        self.update_validate_button_state()
+        self.display_selected_samples_preview()
+
+    def on_deselect_button_click(self, _=None) -> None:
+        """Remove selected sample option from selected samples list."""
+        if sample_ids := self.w_selected_list.value:
+            self.experiment_model.remove_selected_samples(sample_ids)
+        self.update_selected_list_options()
+
+    def on_deselect_all_button_click(self, _=None) -> None:
+        """Clear selected samples list."""
+        # TODO simplify! Just clear the list
+        if sample_ids := get_ids(self.w_selected_list.options):
+            self.experiment_model.remove_selected_samples(sample_ids)
+        self.update_selected_list_options()
+
+    def on_validate_button_click(self, callback_function: Callable):
+        """Communicate widget state out to parent container."""
+        # TODO use (d)link?
+        return callback_function(self)
+
+    def update_validate_button_state(self) -> None:
+        """Enable validate button if selected samples are present."""
+        self.w_validate.disabled = not self.w_selected_list.options
+
+    def update_selected_list_options(self) -> None:
+        """Update selected list options."""
+        # TODO discard redundant method!
+        self.w_selected_list.options = self._update_selected_list()
+
+    def _build_single_spec_options(
+        self,
+        spec_field: str,
+    ) -> List[Tuple[str, Optional[int]]]:
+        """Build spec options by querying the available specs,
+        filtering results for the given spec field.
+
+        A count of available samples w.r.t. the selected field
+        is computed and added to the option string.
+
+        Parameters
+        ----------
+        `spec_field` : `str`
+            The spec name to query by.
+
+        Returns
+        -------
+        `List[Tuple]`
+            A list of spec-option/battery-id pairs.
+        """
+
+        spec_field_options_list = self.experiment_model.query_available_specs(
+            spec_field)
+
+        # setup sample query filter from current specs
+        # and remove current field from query
+        sample_query_filter_dict = self.current_specs.copy()
+        sample_query_filter_dict[spec_field] = None
+
+        # perform query of samples
+        query = self.experiment_model.write_pd_query_from_dict(
+            sample_query_filter_dict)
+
+        result = self.experiment_model.query_available_samples(
+            query,
+            project=[spec_field, 'battery_id'],
+        ).sort_values('battery_id')
+
+        value_counts = result[spec_field].value_counts()
+
+        options_pairs: List[Tuple[str, Optional[int]]] = [
+            (f"(no filter)  [{value_counts.sum()}]", None)
+        ]
+
+        options_pairs.extend([(
+            f"{value}  [{value_counts.get(value, 0)}]",
+            value,
+        ) for value in spec_field_options_list])
+
+        return options_pairs
+
+    def _build_spec_options(self) -> None:
+        """Build spec options for all fields. Current selections are
+        stored and reapplied after the process.
+        """
+
+        # store current selections
+        w_specs_manufacturer_value = self.w_specs_manufacturer.value
+        w_specs_composition_value = self.w_specs_composition.value
+        w_specs_capacity_value = self.w_specs_capacity.value
+        w_specs_form_factor_value = self.w_specs_form_factor.value
+
+        # build options
+        self.w_specs_manufacturer.options = self._build_single_spec_options(
+            'manufacturer')
+        self.w_specs_composition.options = self._build_single_spec_options(
+            'composition.description')
+        self.w_specs_capacity.options = self._build_single_spec_options(
+            'capacity.nominal')
+        self.w_specs_form_factor.options = self._build_single_spec_options(
+            'form_factor')
+
+        # reapply selections
+        self.w_specs_manufacturer.value = w_specs_manufacturer_value
+        self.w_specs_composition.value = w_specs_composition_value
+        self.w_specs_capacity.value = w_specs_capacity_value
+        self.w_specs_form_factor.value = w_specs_form_factor_value
+
+    # @staticmethod
+    def _build_sample_id_options(self):
+        """Returns a (option_string, battery_id) list."""
+        dict_query = self.current_specs
+        pd_query = self.experiment_model.write_pd_query_from_dict(dict_query)
+        unsorted = self.experiment_model.query_available_samples(pd_query)
+        table = unsorted.sort_values('battery_id')
+
+        return [(as_option(r), r['battery_id']) for _, r in table.iterrows()]
+
+    def _update_selected_list(self):
+        """Returns a (option_string, battery_id) list."""
+        table = self.experiment_model.selected_samples
+        return [(as_option(r), r['battery_id']) for _, r in table.iterrows()]
 
     def _initialize_filters(self) -> None:
         """Initialize filters by querying for available specs."""
