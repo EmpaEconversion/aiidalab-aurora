@@ -7,7 +7,6 @@ from aiida_aurora.schemas.utils import dict_to_formatted_json
 
 from aurora.engine import submit_experiment
 from aurora.interface.cycling import CyclingCustom, CyclingStandard
-from aurora.interface.menus.utils import get_header_box
 from aurora.interface.sample import (SampleFromId, SampleFromRecipe,
                                      SampleFromSpecs)
 from aurora.interface.tomato import TomatoSettings
@@ -16,7 +15,7 @@ from aurora.models import AvailableSamplesModel, BatteryExperimentModel
 CODE_NAME = "ketchup-0.2rc2"
 
 
-class MainPanel(ipw.VBox):
+class ExperimentBuilder(ipw.VBox):
     """Aurora's main widgets panel."""
 
     _SECTION_TITLE = "Submit Experiment"
@@ -219,8 +218,6 @@ class MainPanel(ipw.VBox):
     def _build_widgets(self) -> None:
         """Build panel widgets."""
 
-        self.w_header_box = get_header_box(self._SECTION_TITLE)
-
         self._build_sample_selection_section()
 
         self._build_cycling_protocol_section()
@@ -236,7 +233,6 @@ class MainPanel(ipw.VBox):
         super().__init__()
 
         self.children = [
-            self.w_header_box,
             self.w_main_accordion,
             self.w_reset_button,
             self.w_submission_output,
