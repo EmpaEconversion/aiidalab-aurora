@@ -2,7 +2,8 @@ import ipywidgets as ipw
 
 from aurora import __version__
 from aurora.experiment import ExperimentBuilder
-from aurora.interface.menus import CyclingResultsWidget, ManageSamplesMenu
+from aurora.interface.menus import CyclingResultsWidget
+from aurora.inventory import InventoryManager
 
 
 class MainPanel(ipw.VBox):
@@ -59,7 +60,7 @@ class MainPanel(ipw.VBox):
         """
 
         experiment = ExperimentBuilder()
-        manager = ManageSamplesMenu()
+        manager = InventoryManager()
         visualizer = CyclingResultsWidget()
 
         tabs = ipw.Tab(
