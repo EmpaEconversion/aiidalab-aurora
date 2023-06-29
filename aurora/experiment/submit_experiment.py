@@ -7,10 +7,10 @@ from aiida_aurora.schemas.utils import dict_to_formatted_json
 
 from aurora.common.models import AvailableSamplesModel, BatteryExperimentModel
 from aurora.engine import submit_experiment
-from aurora.interface.cycling import CyclingCustom, CyclingStandard
-from aurora.interface.sample import (SampleFromId, SampleFromRecipe,
-                                     SampleFromSpecs)
-from aurora.interface.tomato import TomatoSettings
+
+from .protocols import CyclingCustom, CyclingStandard
+from .samples import SampleFromId, SampleFromRecipe, SampleFromSpecs
+from .tomato import TomatoSettings
 
 CODE_NAME = "ketchup-0.2rc2"
 

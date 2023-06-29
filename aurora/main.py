@@ -1,8 +1,8 @@
 import ipywidgets as ipw
 
 from aurora import __version__
-from aurora.interface.menus import (CyclingResultsWidget, ExperimentBuilder,
-                                    ManageSamplesMenu)
+from aurora.experiment import ExperimentBuilder
+from aurora.interface.menus import CyclingResultsWidget, ManageSamplesMenu
 
 
 class MainPanel(ipw.VBox):
