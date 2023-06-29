@@ -2,8 +2,8 @@ import ipywidgets as ipw
 
 from aurora import __version__
 from aurora.experiment import ExperimentBuilder
-from aurora.interface.menus import CyclingResultsWidget
 from aurora.inventory import InventoryManager
+from aurora.results import CyclingResultsWidget
 
 
 class MainPanel(ipw.VBox):
