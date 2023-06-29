@@ -3,8 +3,8 @@ import os
 import ipywidgets as ipw
 from ipyfilechooser import FileChooser
 
+from aurora.common.models import AvailableSamplesModel, BatteryExperimentModel
 from aurora.interface.sample.sample_filter import SampleFilterWidget
-from aurora.models import AvailableSamplesModel, BatteryExperimentModel
 
 
 class ManageSamplesMenu(ipw.VBox):

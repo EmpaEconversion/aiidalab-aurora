@@ -6,7 +6,7 @@ from aiida_aurora.schemas.battery import BatterySample
 from aiida_aurora.schemas.utils import (dict_to_formatted_json,
                                         remove_empties_from_dict_decorator)
 
-from aurora.models.battery_experiment import BatteryExperimentModel
+from aurora.common.models.battery_experiment import BatteryExperimentModel
 
 
 class SampleFromId(ipw.VBox):
