@@ -1,6 +1,10 @@
 from typing import List, Tuple
 
 from .model import ResultsModel
+from .plot.factory import PlotPresenterFactory
+from .plot.model import PlotModel
+from .plot.presenter import PlotPresenter
+from .plot.view import PlotView
 from .view import ResultsView
 
 
@@ -42,8 +46,50 @@ class ResultsPresenter():
     def add_plot_view(self) -> None:
         """docstring"""
 
+        experiment_ids = self.view.experiment_selector.value
+        plot_label = self.view.plot_type_selector.label
+        plot_type = self.view.plot_type_selector.value
+
+        plot_view = PlotView()
+
+        title = f"{plot_label} for experiment"
+        title += "s" if len(experiment_ids) > 1 else ""
+        title += f" {', '.join(str(id) for id in experiment_ids)}"
+
+        plot_view.set_title(0, title)
+
+        plot_model = PlotModel(self.model, experiment_ids)
+
+        plot_presenter = PlotPresenterFactory.build(
+            plot_type,
+            plot_model,
+            plot_view,
+        )
+
+        self.view.plots_container.children += (plot_view, )
+
+        plot_presenter.observe(
+            names="closing_message",
+            handler=self.remove_plot_view,
+        )
+
+        plot_presenter.start()
+
     def remove_plot_view(self, trait: dict) -> None:
         """docstring"""
+
+        plot_presenter: PlotPresenter = trait["owner"]
+
+        if (message := trait["new"]) != 'closed':
+            self.display_info_message(message)
+
+        if plot_presenter.view in self.view.plot_views:
+            self.view.plots_container.children = [
+                view for view in self.view.plot_views
+                if view is not plot_presenter.view
+            ]
+
+        plot_presenter.unobserve(self.remove_plot_view)
 
     def display_info_message(self, message: str) -> None:
         """docstring"""
