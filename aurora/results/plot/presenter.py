@@ -1,4 +1,5 @@
 import ipywidgets as ipw
+from matplotlib import pyplot as plt
 from traitlets import HasTraits, Unicode
 
 from .model import PlotModel
@@ -23,8 +24,11 @@ class PlotPresenter(HasTraits):
         view: PlotView
     ) -> None:
         """docstring"""
+
         self.model = model
         self.view = view
+
+        self._initialize_figure()
 
     def start(self) -> None:
         """docstring"""
@@ -39,6 +43,26 @@ class PlotPresenter(HasTraits):
     ###################
     # PRIVATE METHODS #
     ###################
+
+    def _initialize_figure(self) -> None:
+        """docstring"""
+
+        plt.ioff()
+
+        with self.view.plot:
+
+            self.model.fig, self.model.ax = plt.subplots(1, figsize=(10, 5))
+
+            self.model.fig.subplots_adjust(
+                left=0.22,
+                right=0.78,
+                bottom=0.1,
+                top=0.9,
+            )
+
+            self.model.fig.canvas.header_visible = False
+
+        plt.ion()
 
     def _set_event_handlers(self) -> None:
         """docstring"""
