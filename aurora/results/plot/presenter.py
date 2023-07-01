@@ -1,3 +1,4 @@
+from typing import Tuple
 import ipywidgets as ipw
 import numpy as np
 from matplotlib import pyplot as plt
@@ -66,6 +67,7 @@ class PlotPresenter(HasTraits):
         """docstring"""
 
         self.view.delete_button.on_click(self.close_view)
+        self.view.reset_button.on_click(self._reset_controls)
 
         self.view.xlim.observe(
             names='value',
@@ -155,3 +157,8 @@ class PlotPresenter(HasTraits):
         control.min = min
         control.value = (min, max)
         control.step = (max - min) / 100
+
+    def _reset_controls(self, _=None) -> None:
+        """docstring"""
+        for control in self.view.current_controls:
+            control.value = self.control_defaults[control]
