@@ -13,6 +13,7 @@ class ResultsView(ipw.VBox):
         ('Voltage vs time', 'voltage_time'),
         ('Voltage & current vs time', 'voltagecurrent_time'),
         ('Capacity vs cycle', 'capacity_cycle'),
+        ('Test', 'test'),
     ]
 
     def __init__(self) -> None:

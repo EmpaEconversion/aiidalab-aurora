@@ -61,10 +61,16 @@ class ResultsPresenter():
         plot_model = PlotModel(self.model, experiment_ids)
 
         plot_presenter = PlotPresenterFactory.build(
+            plot_label,
             plot_type,
             plot_model,
             plot_view,
         )
+
+        if plot_presenter.closing_message:
+            message = plot_presenter.closing_message
+            self.display_info_message(message)
+            return
 
         self.view.plots_container.children += (plot_view, )
 
