@@ -19,6 +19,10 @@ class PlotPresenter(HasTraits):
 
     Y_LABEL = ''
 
+    HAS_LEGEND = True
+
+    legend_pad = 0.04
+
     closing_message = Unicode('')
 
     def __init__(self, model: PlotModel, view: PlotView) -> None:
@@ -39,6 +43,18 @@ class PlotPresenter(HasTraits):
         """docstring"""
         self.closing_message = message
         self.view.close()
+
+    def extract_data(self, dataset: dict) -> Tuple:
+        """docstring"""
+        raise NotImplementedError
+
+    def plot_series(self, eid: int, dataset: dict) -> None:
+        """docstring"""
+        raise NotImplementedError
+
+    def draw(self) -> None:
+        """docstring"""
+        raise NotImplementedError
 
     ###################
     # PRIVATE METHODS #
@@ -63,6 +79,15 @@ class PlotPresenter(HasTraits):
             self.model.fig.canvas.header_visible = False
 
         plt.ion()
+
+    def _set_plot_labels(self) -> None:
+        """docstring"""
+        self.model.ax.set_title(self.TITLE, pad=10)
+        self.model.ax.set_xlabel(self.X_LABEL)
+        self.model.ax.set_ylabel(self.Y_LABEL)
+
+        if self.model.has_ax2:
+            self.model.ax2.set_ylabel(self.Y2_LABEL)
 
     def _set_event_handlers(self) -> None:
         """docstring"""
@@ -158,6 +183,37 @@ class PlotPresenter(HasTraits):
         control.min = min
         control.value = (min, max)
         control.step = (max - min) / 100
+
+    def _show_legend(self) -> None:
+        """docstring"""
+
+        if not self.HAS_LEGEND:
+            return
+
+        target = self.model.ax
+
+        with self.view.plot:
+            handles, labels = self.model.ax.get_legend_handles_labels()
+
+            if self.model.has_ax2:
+                h2, l2 = self.model.ax2.get_legend_handles_labels()
+                handles.extend(h2)
+                labels.extend(l2)
+                target = self.model.ax2
+
+            if handles and labels:
+                target.legend(
+                    handles,
+                    labels,
+                    framealpha=1.,
+                    loc='upper left',
+                    bbox_to_anchor=(1 + self.legend_pad, 1),
+                )
+
+    def _show_plot(self) -> None:
+        """docstring"""
+        with self.view.plot:
+            plt.show()
 
     def _reset_controls(self, _=None) -> None:
         """docstring"""
