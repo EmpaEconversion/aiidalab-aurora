@@ -16,6 +16,10 @@ class ResultsView(ipw.VBox):
         ('Capacity vs cycle', 'capacity_cycle'),
     ]
 
+    STATISTICAL_PLOT_TYPES = [
+        ('Capacity swarm', 'capacity_swarm'),
+    ]
+
     def __init__(self) -> None:
         """docstring"""
 
@@ -39,7 +43,7 @@ class ResultsView(ipw.VBox):
             },
             description="Select plot type:",
             value=None,
-            options=self.SINGLE_PLOT_TYPES,
+            options=self.SINGLE_PLOT_TYPES + self.STATISTICAL_PLOT_TYPES,
         )
 
         self.plot_button = ipw.Button(

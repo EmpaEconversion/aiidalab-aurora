@@ -127,6 +127,16 @@ class ResultsPresenter():
 
     def _has_valid_selection(self) -> bool:
         """docstring"""
+
+        plot_label = self.view.plot_type_selector.label
+        experiment_ids = self.view.experiment_selector.value
+
+        labels = [label for label, _ in self.view.STATISTICAL_PLOT_TYPES]
+
+        if plot_label in labels and len(experiment_ids) < 2:
+            self.display_info_message("Please select more than one experiment")
+            return False
+
         return True
 
 
