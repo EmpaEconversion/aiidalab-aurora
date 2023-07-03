@@ -37,6 +37,10 @@ class PlotPresenter(HasTraits):
         """docstring"""
         self._set_event_handlers()
         self._fetch_data()
+        self.draw()
+        self._set_plot_labels()
+        self._show_legend()
+        self._show_plot()
         self._store_defaults()
 
     def close_view(self, _=None, message='closed') -> None:
@@ -68,7 +72,8 @@ class PlotPresenter(HasTraits):
 
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
-        raise NotImplementedError
+        x, y = (np.array(a) for a in self.extract_data(dataset))
+        self.model.ax.plot(x, y, label=eid)
 
     def draw(self) -> None:
         """docstring"""
