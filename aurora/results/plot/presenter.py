@@ -19,6 +19,8 @@ class PlotPresenter(HasTraits):
 
     Y_LABEL = ''
 
+    Y2_LABEL = ''
+
     HAS_LEGEND = True
 
     legend_pad = 0.04
@@ -101,7 +103,22 @@ class PlotPresenter(HasTraits):
 
             self.model.fig.canvas.header_visible = False
 
+            if self.Y2_LABEL:
+                self._add_y2axis()
+
         plt.ion()
+
+    def _add_y2axis(self) -> None:
+        """docstring"""
+
+        with self.view.plot:
+            self.model.ax2 = self.model.ax.twinx()
+
+        self._add_y2axis_controls()
+
+        self.legend_pad = 0.14
+
+        self.model.has_ax2 = True
 
     def _set_plot_labels(self) -> None:
         """docstring"""
@@ -166,6 +183,12 @@ class PlotPresenter(HasTraits):
             ymin, ymax = self.view.ylim.value
             self.model.ax.set_ylim(ymin, ymax)
 
+    def _update_y2lim(self, _=None) -> None:
+        """docstring"""
+        with self.view.plot:
+            ymin, ymax = self.view.y2lim.value
+            self.model.ax2.set_ylim(ymin, ymax)
+
     def _store_defaults(self) -> None:
         """docstring"""
 
@@ -176,10 +199,31 @@ class PlotPresenter(HasTraits):
             for control in self.view.current_controls
         }
 
+    def _add_y2axis_controls(self) -> None:
+        """docstring"""
+
+        self.view.ylim.description = "y1-limit"
+
+        y2lim = ipw.FloatRangeSlider(
+            layout={"width": "90%"},
+            description="y2-limit",
+        )
+
+        y2lim.observe(
+            names="value",
+            handler=self._update_y2lim,
+        )
+
+        self.add_controls({'y2lim': y2lim})
+
     def _set_axes_controls(self) -> None:
         """docstring"""
+
         self._set_xaxis_control()
         self._set_yaxis_control()
+
+        if self.model.has_ax2:
+            self._set_y2axis_control()
 
     def _set_xaxis_control(self) -> None:
         """docstring"""
@@ -192,6 +236,12 @@ class PlotPresenter(HasTraits):
         min, max = self.model.ax.get_ylim()
         min, max = (min, max) if min < max else (max, min)
         self._set_axis_limit_control_params('ylim', min, max)
+
+    def _set_y2axis_control(self) -> None:
+        """docstring"""
+        min, max = self.model.ax2.get_ylim()
+        min, max = (min, max) if min < max else (max, min)
+        self._set_axis_limit_control_params('y2lim', min, max)
 
     def _set_axis_limit_control_params(
         self,
