@@ -1,7 +1,8 @@
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Union
 
 import ipywidgets as ipw
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.artist import Artist
 from matplotlib.collections import Collection
@@ -72,7 +73,7 @@ class PlotPresenter(HasTraits):
 
         self.view.controls.children = tuple(current)
 
-    def extract_data(self, dataset: dict) -> Tuple:
+    def extract_data(self, dataset: dict) -> Union[Tuple, pd.DataFrame]:
         """docstring"""
         raise NotImplementedError
 
