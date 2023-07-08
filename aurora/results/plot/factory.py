@@ -1,6 +1,8 @@
 from .model import PlotModel
 from .presenter import PlotPresenter
-from .presenters import (CapacityCyclePlotPresenter, CurrentTimePlotPresenter,
+from .presenters import (CapacityCyclePlotPresenter,
+                         CapacityVoltagePlotPresenter,
+                         CurrentTimePlotPresenter,
                          VoltageCurrentTimePlotPresenter,
                          VoltageTimePlotPresenter)
 from .view import PlotView
@@ -27,6 +29,8 @@ class PlotPresenterFactory():
             presenter = VoltageCurrentTimePlotPresenter
         elif plot_type == 'capacity_cycle':
             presenter = CapacityCyclePlotPresenter
+        elif plot_type == 'capacity_voltage':
+            presenter = CapacityVoltagePlotPresenter
         else:
             presenter = PlotPresenter(plot_model, plot_view)
             message = f"{plot_label} not yet implemented"
