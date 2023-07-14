@@ -29,6 +29,8 @@ class PlotModel():
         self.ax: Axes
         self.ax2: Axes
 
+        self.colors: Dict[int, str] = {}
+
     def fetch_data(self, eid: int) -> None:
         """docstring"""
         if eid in self.__results_model.results:

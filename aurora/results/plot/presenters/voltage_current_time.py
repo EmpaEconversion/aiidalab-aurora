@@ -28,5 +28,6 @@ class VoltageCurrentTimePlotPresenter(MultiSeriesPlotPresenter):
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, yv, yi = (np.array(a) for a in self.extract_data(dataset))
-        self.model.ax.plot(x, yv, label=f'{eid} : V')
-        self.model.ax2.plot(x, yi, '--', label=f'{eid} : I')
+        color = self.model.colors.get(eid)
+        self.model.ax.plot(x, yv, label=f'{eid} : V', color=color)
+        self.model.ax2.plot(x, yi, '--', label=f'{eid} : I', color=color)

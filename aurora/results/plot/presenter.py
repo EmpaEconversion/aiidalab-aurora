@@ -1,3 +1,5 @@
+from json import load
+from re import search
 from typing import Dict, Tuple, Union
 
 import ipywidgets as ipw
@@ -37,6 +39,10 @@ class PlotPresenter(HasTraits):
 
         self.model = model
         self.view = view
+
+        with open('weights.json') as weights_file:
+            weights: dict = load(weights_file)
+            self.weights = {int(k): v for k, v in weights.items()}
 
         self._initialize_figure()
 
@@ -80,7 +86,8 @@ class PlotPresenter(HasTraits):
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, y = (np.array(a) for a in self.extract_data(dataset))
-        self.model.ax.plot(x, y, label=eid)
+        color = self.model.colors.get(eid)
+        self.model.ax.plot(x, y, label=eid, color=color)
 
     def draw(self) -> None:
         """docstring"""
@@ -136,10 +143,22 @@ class PlotPresenter(HasTraits):
         """docstring"""
         self.model.ax.set_title(self.TITLE, pad=10)
         self.model.ax.set_xlabel(self.X_LABEL)
-        self.model.ax.set_ylabel(self.Y_LABEL)
+        self._set_yaxis_label()
 
         if self.model.has_ax2:
             self.model.ax2.set_ylabel(self.Y2_LABEL)
+
+    def _set_yaxis_label(self) -> None:
+        """docstring"""
+
+        electrode = getattr(self.view, 'electrode', None)
+
+        if electrode and electrode.value != 'none':
+            label = self.Y_LABEL.replace(']', '/g]')
+        else:
+            label = self.Y_LABEL
+
+        self.model.ax.set_ylabel(label)
 
     def _set_event_handlers(self) -> None:
         """docstring"""
@@ -210,6 +229,17 @@ class PlotPresenter(HasTraits):
             control: control.value
             for control in self.view.current_controls
         }
+
+        self._store_series_colors()
+
+    def _store_series_colors(self) -> None:
+        """docstring"""
+        line: Line2D
+        for line, eid in zip(*self.model.ax.get_legend_handles_labels()):
+            if isinstance(line, Line2D):
+                match = search(r'\d+', eid)
+                eid = match.group() if match else eid
+                self.model.colors[int(eid)] = line.get_color()
 
     def _add_y2axis_controls(self) -> None:
         """docstring"""

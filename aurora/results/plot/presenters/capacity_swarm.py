@@ -42,8 +42,20 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
             value=10,
         )
 
+        electrode = ipw.RadioButtons(
+            layout={},
+            options=[
+                'anode mass',
+                'cathode mass',
+                'none',
+            ],
+            value='cathode mass',
+            description='normalize by',
+        )
+
         controls = {
             'num_cycles': num_cycles,
+            'electrode': electrode,
         }
 
         self.add_controls(controls)
@@ -66,10 +78,12 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         }
 
         for eid, data in dataset.items():
+            weights: dict = self.weights[eid]
+            factor = weights.get(self.view.electrode.value, 1) / 3.6
             for cycle, capacity in enumerate(data['Qd'][:num_cycles]):
                 df_dict['eid'].append(eid)
                 df_dict[self.X_LABEL].append(cycle)
-                df_dict[self.Y_LABEL].append(capacity)
+                df_dict[self.Y_LABEL].append(capacity * factor)
 
         data = pd.DataFrame(df_dict)
         data = data.sort_values([self.X_LABEL, 'eid'])
@@ -138,3 +152,12 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
             names='value',
             handler=self.refresh,
         )
+
+        self.view.electrode.observe(
+            names='value',
+            handler=self._on_electrode_change,
+        )
+
+    def _on_electrode_change(self, _=None) -> None:
+        """docstring"""
+        self.refresh(skip_x=True)
