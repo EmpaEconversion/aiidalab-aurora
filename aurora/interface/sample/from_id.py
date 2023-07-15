@@ -53,6 +53,14 @@ class SampleFromId(ipw.VBox):
         'border': 'solid blue 2px'
     }
 
+    PREVIEW_LAYOUT = {
+        "margin": "0 auto 10px auto",
+        "height": "150px",
+        "max_height": "150px",
+        "overflow": "auto",
+        "align_items": "center",
+    }
+
     def __init__(
         self,
         experiment_model: BatteryExperimentModel,
@@ -61,7 +69,104 @@ class SampleFromId(ipw.VBox):
 
         self.experiment_model = experiment_model
 
-        # initialize widgets
+        # filters
+
+        self.w_specs_manufacturer = ipw.Select(
+            description="Manufacturer:",
+            placeholder="Enter manufacturer",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        self.w_specs_composition = ipw.Select(
+            description="Composition:",
+            placeholder="Enter composition",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        self.w_specs_capacity = ipw.Select(
+            description="Nominal capacity:",
+            placeholder="Enter nominal capacity",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        self.w_specs_form_factor = ipw.Select(
+            description="Form factor:",
+            placeholder="Enter form factor",
+            layout=self.BOX_LAYOUT_2,
+            style=self.BOX_STYLE_1,
+        )
+
+        # self.w_specs_metadata_creation_date = ipw.DatePicker(
+        #     description="Creation time:",
+        #     layout=self.BOX_LAYOUT_2,
+        #     style=self.BOX_STYLE_1,
+        # )
+
+        # self.w_specs_metadata_creation_process = ipw.Text(
+        #     description="Creation process",
+        #     placeholder="Describe creation process",
+        #     layout=self.BOX_LAYOUT_2,
+        #     style=self.BOX_STYLE_1,
+        # )
+
+        self.w_update_filters = ipw.Button(
+            description="Update",
+            button_style='',
+            tooltip="Update available samples",
+            icon="refresh",
+            style=self.BUTTON_STYLE,
+            layout=self.BUTTON_LAYOUT,
+        )
+
+        self.w_reset_filters = ipw.Button(
+            description="Reset",
+            button_style='danger',
+            tooltip="Clear fields",
+            icon="times",
+            style=self.BUTTON_STYLE,
+            layout=self.BUTTON_LAYOUT,
+        )
+
+        filters_container = ipw.Accordion(
+            layout={},
+            children=[
+                ipw.VBox(
+                    layout={},
+                    children=[
+                        ipw.GridBox(
+                            [
+                                self.w_specs_manufacturer,
+                                self.w_specs_composition,
+                                self.w_specs_capacity,
+                                self.w_specs_form_factor,
+                                # self.w_specs_metadata_creation_date,
+                                # self.w_specs_metadata_creation_process,
+                            ],
+                            layout={
+                                "grid_template_columns": "repeat(2, 45%)",
+                            },
+                        ),
+                        ipw.HBox(
+                            [
+                                self.w_update_filters,
+                                self.w_reset_filters,
+                            ],
+                            layout={
+                                'justify_content': 'center',
+                                'margin': '5px'
+                            },
+                        ),
+                    ],
+                ),
+            ],
+            selected_index=None,
+        )
+
+        filters_container.set_title(0, 'Filter samples by specification')
+
         self.w_header_label = ipw.HTML(value="<h2>Battery Selection</h2>")
 
         # selection
@@ -147,8 +252,9 @@ class SampleFromId(ipw.VBox):
             layout=self.SAMPLE_BOX_LAYOUT,
         )
 
-        self.w_selection_preview = ipw.Output()
-        self.w_selected_preview = ipw.Output()
+        self.w_selection_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
+
+        self.w_selected_preview = ipw.Output(layout=self.PREVIEW_LAYOUT)
 
         self.w_validate = ipw.Button(
             description="Validate",
@@ -163,6 +269,7 @@ class SampleFromId(ipw.VBox):
         super().__init__(
             layout={},
             children=[
+                filters_container,
                 self.w_header_label,
                 ipw.VBox(
                     [
@@ -176,6 +283,7 @@ class SampleFromId(ipw.VBox):
                             ),
                             self.w_sample_list,
                         ]),
+                        self.w_selection_preview,
                         ipw.HBox([
                             ipw.VBox(
                                 [
@@ -187,7 +295,6 @@ class SampleFromId(ipw.VBox):
                             self.w_selected_list,
                         ]),
                         self.w_selected_preview,
-                        self.w_selection_preview,
                     ],
                     layout=self.MAIN_LAYOUT,
                 ),
@@ -199,7 +306,14 @@ class SampleFromId(ipw.VBox):
             raise TypeError(
                 "validate_callback_f should be a callable function")
 
-        self.validate_callback_f = validate_callback_f
+        self.on_reset_filters_button_clicked()
+        self.experiment_model.update_available_specs()
+        self._update_options()
+
+        self.w_update_filters.on_click(self.on_update_filters_button_clicked)
+        self.w_reset_filters.on_click(self.on_reset_filters_button_clicked)
+        self._set_specs_observers()
+
         self.w_sample_list.value = []
         self.w_selected_list.value = []
         self.on_update_button_clicked()
@@ -228,6 +342,20 @@ class SampleFromId(ipw.VBox):
             lambda arg: self.on_validate_button_clicked(validate_callback_f))
 
     @property
+    def current_specs(self):
+        """
+        A dictionary representing the current specs set by the user, that can be used in a query
+        to filter the available samples.
+        """
+        return {
+            'manufacturer': self.w_specs_manufacturer.value,
+            'composition.description': self.w_specs_composition.value,
+            'capacity.nominal': self.w_specs_capacity.value,
+            'form_factor': self.w_specs_form_factor.value,
+            # 'metadata.creation_datetime': self.w_specs_metadata_creation_date.value
+        }
+
+    @property
     def selected_sample_ids(self):
         return self.w_sample_list.value
 
@@ -253,6 +381,36 @@ class SampleFromId(ipw.VBox):
             for sample in self.selected_sample_dict
         ]
 
+    def update_spec_options(self):
+        """Update the specs' options."""
+        self._unset_specs_observers()
+        self._update_options()
+        self._set_specs_observers()
+
+    def update_sample_options(self):
+        """docstring"""
+        self.experiment_model.update_available_samples()
+        self.w_sample_list.options = self._build_sample_id_options()
+
+    def on_update_filters_button_clicked(self, _=None):
+        self.experiment_model.update_available_specs()
+        self.experiment_model.update_available_samples()
+        self.update_spec_options()
+        # self.display_query_result()
+        # notice: if the old value is not available anymore, an error might be raised!
+
+    def on_reset_filters_button_clicked(self, _=None):
+        self.w_specs_manufacturer.value = None
+        self.w_specs_composition.value = None
+        self.w_specs_form_factor.value = None
+        self.w_specs_capacity.value = None
+        # self.w_specs_metadata_creation_date.value = None
+        # self.w_specs_metadata_creation_process.value = None
+
+    def on_specs_value_change(self, _=None):
+        self.update_spec_options()
+        self.update_sample_options()
+
     def display_samples_preview(self):
         self.w_selection_preview.clear_output()
         with self.w_selection_preview:
@@ -269,8 +427,8 @@ class SampleFromId(ipw.VBox):
         self.display_samples_preview()
 
     def on_update_button_clicked(self, _=None):
-        self.experiment_model.update_available_samples()
-        self.w_sample_list.options = self._build_sample_id_options()
+        """docstring"""
+        self.update_sample_options()
 
     def on_select_button_clicked(self, _=None):
         if sample_ids := self.w_sample_list.value:
@@ -310,11 +468,61 @@ class SampleFromId(ipw.VBox):
     # This should go to control
     ############################################################
 
+    def _build_sample_specs_options(self, spec_field):
+        """
+        Returns a `(option_string, battery_id)` list.
+        The specs currently set are used to filter the sample list.
+        The current `spec_field` is removed from the query, as we want to count how many samples correspond to each
+        available value of the `spec_field`.
+        """
+        spec_field_options_list = self.experiment_model.query_available_specs(
+            spec_field)
+
+        # setup sample query filter from current specs and remove current field from query
+        sample_query_filter_dict = self.current_specs.copy()
+        sample_query_filter_dict[spec_field] = None
+
+        # perform query of samples
+        qres = self.experiment_model.query_available_samples(
+            self.experiment_model.write_pd_query_from_dict(
+                sample_query_filter_dict),
+            project=[spec_field, 'battery_id']).sort_values('battery_id')
+
+        # count values
+        value_counts = qres[spec_field].value_counts()
+        options_pairs = [(f"(no filter)  [{value_counts.sum()}]", None)]
+        options_pairs.extend([(f"{value}  [{value_counts.get(value, 0)}]",
+                               value) for value in spec_field_options_list])
+        return options_pairs
+
+    def _update_options(self):
+        # first save current values to preserve them
+        w_specs_manufacturer_value = self.w_specs_manufacturer.value
+        w_specs_composition_value = self.w_specs_composition.value
+        w_specs_capacity_value = self.w_specs_capacity.value
+        w_specs_form_factor_value = self.w_specs_form_factor.value
+        self.w_specs_manufacturer.options = self._build_sample_specs_options(
+            'manufacturer')
+        self.w_specs_manufacturer.value = w_specs_manufacturer_value
+        self.w_specs_composition.options = self._build_sample_specs_options(
+            'composition.description')
+        self.w_specs_composition.value = w_specs_composition_value
+        self.w_specs_capacity.options = self._build_sample_specs_options(
+            'capacity.nominal')
+        self.w_specs_capacity.value = w_specs_capacity_value
+        self.w_specs_form_factor.options = self._build_sample_specs_options(
+            'form_factor')
+        self.w_specs_form_factor.value = w_specs_form_factor_value
+        # self.w_select_sample_id.options = self._build_sample_id_options()
+        # self.w_select_sample_id.value = None
+
     # @staticmethod
     def _build_sample_id_options(self):
         """Returns a (option_string, battery_id) list."""
-        table = self.experiment_model.query_available_samples().sort_values(
-            'battery_id')
+        dict_query = self.current_specs
+        pd_query = self.experiment_model.write_pd_query_from_dict(dict_query)
+        unsorted = self.experiment_model.query_available_samples(pd_query)
+        table = unsorted.sort_values('battery_id')
 
         return [(row_label(r), r['battery_id']) for _, r in table.iterrows()]
 
@@ -322,6 +530,28 @@ class SampleFromId(ipw.VBox):
         """Returns a (option_string, battery_id) list."""
         table = self.experiment_model.selected_samples
         return [(row_label(r), r['battery_id']) for _, r in table.iterrows()]
+
+    def _set_specs_observers(self):
+        self.w_specs_manufacturer.observe(handler=self.on_specs_value_change,
+                                          names='value')
+        self.w_specs_composition.observe(handler=self.on_specs_value_change,
+                                         names='value')
+        self.w_specs_capacity.observe(handler=self.on_specs_value_change,
+                                      names='value')
+        self.w_specs_form_factor.observe(handler=self.on_specs_value_change,
+                                         names='value')
+        # self.w_specs_metadata_creation_date.observe(handler=self.update_options, names='value')
+
+    def _unset_specs_observers(self):
+        self.w_specs_manufacturer.unobserve(handler=self.on_specs_value_change,
+                                            names='value')
+        self.w_specs_composition.unobserve(handler=self.on_specs_value_change,
+                                           names='value')
+        self.w_specs_capacity.unobserve(handler=self.on_specs_value_change,
+                                        names='value')
+        self.w_specs_form_factor.unobserve(handler=self.on_specs_value_change,
+                                           names='value')
+        # self.w_specs_metadata_creation_date.unobserve(handler=self.update_options, names='value')
 
 
 def row_label(row):
