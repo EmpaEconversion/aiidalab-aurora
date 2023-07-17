@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import pandas as pd
 from aiida_aurora.schemas.battery import (BatterySampleJsonTypes,
@@ -98,7 +98,7 @@ class BatteryExperimentModel():
         # Not implemented yet...
         return None
 
-    def add_selected_samples(self, sample_ids: Tuple[int]) -> None:
+    def add_selected_samples(self, sample_ids: List[int]) -> None:
         """Add selected samples to list.
 
         Parameters
@@ -133,7 +133,7 @@ class BatteryExperimentModel():
         observators_chain += ' -> add_selected_sample'
         self.update_observers(observators_chain)
 
-    def remove_selected_samples(self, sample_ids: Tuple[int]) -> None:
+    def remove_selected_samples(self, sample_ids: List[int]) -> None:
         """Remove selected samples from list.
 
         Parameters
@@ -192,14 +192,35 @@ class BatteryExperimentModel():
         observators_chain += ' -> update_available_samples'
         self.update_observers(observators_chain)
 
-    def update_available_specs(self, observators_chain=None):
-        STD_SPECS = pd.read_csv('example_specs.csv',
-                                dtype=BatterySpecsJsonTypes)
+    def update_available_specs(
+        self,
+        observer_chain: Optional[str] = None,
+    ) -> None:
+        """Fetch available specs from local CSV file and store in a
+        `pandas.DataFrame`. Update observers with the current state
+        of the observer chain.
+
+        NOTE: specs should be stored in and fetched from a database.
+
+        Parameters
+        ----------
+        observer_chain : `Optional[str]`
+            A string representation of a chain of observers,
+            `None` by default.
+        """
+
+        STD_SPECS = pd.read_csv(
+            'example_specs.csv',
+            dtype=BatterySpecsJsonTypes,
+        )
         self.available_specs = STD_SPECS
-        if observators_chain is None:
-            observators_chain = ''
-        observators_chain += ' -> update_available_specs'
-        self.update_observers(observators_chain)
+
+        if observer_chain is None:
+            observer_chain = ''
+
+        observer_chain += ' -> update_available_specs'
+
+        self.update_observers(observer_chain)
 
     def update_available_recipies(self, observators_chain=None):
         global STD_RECIPIES
@@ -217,25 +238,53 @@ class BatteryExperimentModel():
         observators_chain += ' -> update_available_protocols'
         self.update_observers(observators_chain)
 
-    def query_available_specs(self, field: Optional[str] = None):
+    def query_available_specs(
+        self,
+        field: Optional[str] = None,
+    ) -> pd.DataFrame:
+        """Fetch available specs. If given, filter results for a
+        specific spec.
+
+        Parameters
+        ----------
+        `field` : `Optional[str]`
+            A spec name, `None` by default. If present, filter query
+            result for this spec.
+
+        Returns
+        -------
+        `pandas.DataFrame`
+            A dataframe of allowed specs, optionally filtered.
         """
-        This mock function returns a pandas.DataFrame of allowed specs.
-            field (optional): name of a field to query [manufacturer, composition, capacity, form_factor]
-        """
+
         if field:
             return self.available_specs.get(field).unique().tolist()
-        else:
-            return self.available_specs
 
-    def query_available_samples(self, query=None, project=None):
-        """
-        This mock function returns the available samples.
-            query: a pandas query
-            project (optional): list of the columns to return (if None, return all)
+        return self.available_specs
 
-        Returns a pandas.DataFrame or Series
+    def query_available_samples(
+        self,
+        query: Optional[str] = None,
+        project: Optional[Union[str, List[str]]] = None,
+    ) -> pd.DataFrame:
+        """Fetch available samples, optionally filtered by a set of
+        conditions. Return specific columns if requested.
+
+        Parameters
+        ----------
+        `query` : `Optional[str]`
+            A `pandas` query, `None` by default. If present, filter
+            available samples by these conditions.
+        `project` : `Optional[Union[str, List[str]]]`
+            A list of the columns to return, `None` by default, which
+            returns all columns.
+
+        Returns
+        -------
+        `pandas.DataFrame`
+            A dataframe of available samples, optionally filtered.
         """
-        # perform query
+
         if query is not None:
             results = self.available_samples.query(query)
         else:
@@ -256,11 +305,25 @@ class BatteryExperimentModel():
         return self.available_protocols
 
     def write_pd_query_from_dict(self, query_dict: dict) -> Optional[str]:
-        """
-        Write a pandas query from a dictionary {field: value}.
-        Example:
-            write_pandas_query({'manufacturer': 'BIG-MAP', 'battery_id': 98})
-        returns "(`manufacturer` == 'BIG-MAP') and (`battery_id` == 98)"
+        """Convert a dictionary of query conditions to a string of
+        'and'-separated `pandas.DataFrame`-compatible conditions.
+
+        Parameters
+        ----------
+        `query_dict` : `dict`
+            A dictionary of query conditions.
+
+        Returns
+        -------
+        `Optional[str]`
+            An 'and'-separated string representation of the query
+            required for querying a `pandas.DataFrame` object.
+
+        Example
+        -------
+        >>> query_dict = {'manufacturer': 'BIG-MAP', 'battery_id': 98}
+        >>> write_pandas_query(query_dict)
+        >>> "(`manufacturer` == 'BIG-MAP') and (`battery_id` == 98)"
         """
 
         query = " and ".join(
@@ -356,7 +419,7 @@ class BatteryExperimentModel():
 
 
 def _process_dict(query_dict: dict) -> dict:
-    """Process query dictionary, wrapping any strings in quotes.
+    """Process query dictionary, wrapping all strings in quotes.
 
     Parameters
     ----------
@@ -379,12 +442,12 @@ def _cast(v: Union[int, float, str]) -> Union[int, float, str]:
 
     Parameters
     ----------
-    v : Union[int, float, str]
+    `v` : `Union[int, float, str]`
         The value to cast.
 
     Returns
     -------
-    Union[int, float, str]
+    `Union[int, float, str]`
         The casted value.
     """
     return f"'{v}'" if isinstance(v, str) else v
