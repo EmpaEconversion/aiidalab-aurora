@@ -46,16 +46,14 @@ class MainPanel(ipw.VBox):
     ]
 
     _SAMPLE_BOX_LAYOUT = {
-        'width': '100%',
-        'border': 'solid blue 2px',
+        'border': 'solid darkgrey 1px',
         'align_content': 'center',
         'margin': '5px 0',
         'padding': '5px',
     }
 
     _SUBMISSION_INPUT_LAYOUT = {
-        'width': '90%',
-        'border': 'solid blue 1px',
+        'border': 'solid darkgrey 1px',
         'margin': '5px',
         'padding': '5px',
         'max_height': '500px',
@@ -63,17 +61,11 @@ class MainPanel(ipw.VBox):
     }
 
     _SUBMISSION_OUTPUT_LAYOUT = {
-        'width': '90%',
-        'border': 'solid red 1px',
-        'margin': '5px',
+        'border': 'solid darkgrey 1px',
         'padding': '5px',
         'max_height': '500px',
         'overflow': 'scroll',
     }
-
-    _BOX_LAYOUT = {'width': '100%'}
-
-    _BOX_STYLE = {'description_width': '25%'}
 
     _BUTTON_LAYOUT = {'margin': '5px'}
 

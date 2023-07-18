@@ -19,22 +19,12 @@ class CyclingCustom(ipw.VBox):
     BOX_STYLE = {'description_width': '25%'}
     BOX_STYLE_2 = {'description_width': 'initial'}
     BOX_LAYOUT = {'width': '95%'}
-    BOX_LAYOUT_2 = {
-        'width': '95%',
-        'border': 'solid blue 1px',
-        'padding': '5px'
-    }
     BOX_LAYOUT_3 = {'width': '95%', 'padding': '5px', 'margin': '10px'}
     BUTTON_STYLE = {'description_width': '30%'}
     BUTTON_LAYOUT = {'margin': '5px'}
     BUTTON_LAYOUT_2 = {'width': '20%', 'margin': '5px'}
     # BUTTON_LAYOUT_3 = {'width': '43.5%', 'margin': '5px'}
     BUTTON_LAYOUT_3 = {'width': '10%', 'margin': '5px'}
-    GRID_LAYOUT = {
-        "grid_template_columns": "30% 65%",
-        'width': '100%',
-        'margin': '5px'
-    }  # 'padding': '10px', 'border': 'solid 2px', 'max_height': '500px'
     DEFAULT_PROTOCOL = aiida_aurora.schemas.cycling.OpenCircuitVoltage
     _TECHNIQUES_OPTIONS = {
         f"{Technique.schema()['properties']['short_name']['default']}  ({Technique.schema()['properties']['technique']['default']})":
@@ -59,7 +49,7 @@ class CyclingCustom(ipw.VBox):
         self.w_protocol_steps_list = ipw.Select(rows=10,
                                                 value=None,
                                                 description="",
-                                                layout=self.BOX_LAYOUT)
+                                                layout={})
 
         self._update_protocol_steps_list_widget_options()
 
@@ -104,7 +94,7 @@ class CyclingCustom(ipw.VBox):
         self.w_filepath_explorer = FileChooser(
             home_directory,
             layout={
-                'width': '70%',
+                "flex": "1",
                 'margin': '5px'
             },
         )
@@ -125,14 +115,14 @@ class CyclingCustom(ipw.VBox):
             style=self.BOX_STYLE)
         self.w_selected_step_parameters = TechniqueParametersWidget(
             self.selected_step_technique, layout=self.BOX_LAYOUT_3)
-        self.w_selected_step_parameters_save_button = ipw.Button(
+        self.w_selected_step_params_save_button = ipw.Button(
             description="Save",
             button_style='info',
             tooltip="Save current parameters",
             icon='check',
             style=self.BUTTON_STYLE,
             layout=self.BUTTON_LAYOUT_2)
-        self.w_selected_step_parameters_discard_button = ipw.Button(
+        self.w_selected_step_params_discard_button = ipw.Button(
             description="Discard",
             button_style='',
             tooltip="Discard current parameters",
@@ -143,8 +133,13 @@ class CyclingCustom(ipw.VBox):
         self.w_method_node_label = ipw.Text(
             description="AiiDA Method node label:",
             placeholder="Enter a name for the CyclingSpecsData node",
-            layout=self.BOX_LAYOUT,
-            style=self.BOX_STYLE_2)
+            layout={
+                'width': 'auto',
+                "margin": "5px 0",
+            },
+            style=self.BOX_STYLE_2,
+        )
+
         self.w_validate = ipw.Button(description="Validate",
                                      button_style='success',
                                      tooltip="Validate the selected test",
@@ -157,35 +152,58 @@ class CyclingCustom(ipw.VBox):
         super().__init__()
         self.children = [
             self.w_header,
-            ipw.HBox([
-                self.w_filepath_explorer, self.w_button_load,
-                self.w_button_save
-            ]),
-            self.w_protocol_label,
-            ipw.GridBox(
-                [
-                    ipw.VBox([
-                        self.w_protocol_steps_list,
-                        ipw.HBox([
-                            self.w_button_add, self.w_button_remove,
-                            self.w_button_up, self.w_button_down
-                        ]),
-                        # ipw.HBox([self.w_button_load, self.w_button_save]),
-                        # ipw.HBox([self.w_filepath_explorer]),
-                    ]),
-                    ipw.VBox(
-                        [
-                            self.w_selected_step_technique_name,
-                            # self.w_selected_step_label,
-                            self.w_selected_step_parameters,
-                            ipw.HBox([
-                                self.w_selected_step_parameters_save_button,
-                                self.w_selected_step_parameters_discard_button
-                            ]),
-                        ],
-                        layout=self.BOX_LAYOUT_2)
+            ipw.HBox(
+                layout={},
+                children=[
+                    self.w_filepath_explorer,
+                    self.w_button_load,
+                    self.w_button_save,
                 ],
-                layout=self.GRID_LAYOUT),
+            ),
+            self.w_protocol_label,
+            ipw.HBox(
+                layout={
+                    'width': 'auto',
+                },
+                children=[
+                    ipw.VBox(
+                        layout={
+                            "width": "30%",
+                            "margin": "0 5px 0 0",
+                        },
+                        children=[
+                            self.w_protocol_steps_list,
+                            ipw.HBox(
+                                layout={"justify_content": "space-between"},
+                                children=[
+                                    self.w_button_add,
+                                    self.w_button_remove,
+                                    self.w_button_up,
+                                    self.w_button_down,
+                                ],
+                            ),
+                        ],
+                    ),
+                    ipw.VBox(
+                        layout={
+                            "width": "70%",
+                            'border': 'solid darkgrey 1px',
+                            'padding': '5px',
+                        },
+                        children=[
+                            self.w_selected_step_technique_name,
+                            self.w_selected_step_parameters,
+                            ipw.HBox(
+                                layout={},
+                                children=[
+                                    self.w_selected_step_params_save_button,
+                                    self.w_selected_step_params_discard_button,
+                                ],
+                            ),
+                        ],
+                    )
+                ],
+            ),
             self.w_method_node_label,
             self.w_validate,
         ]
@@ -215,9 +233,9 @@ class CyclingCustom(ipw.VBox):
         self.w_selected_step_technique_name.observe(
             self._build_technique_parameters_widgets, names='value')
         # save or discard current step's parameters
-        self.w_selected_step_parameters_save_button.on_click(
+        self.w_selected_step_params_save_button.on_click(
             self.save_current_step_properties)
-        self.w_selected_step_parameters_discard_button.on_click(
+        self.w_selected_step_params_discard_button.on_click(
             self.discard_current_step_properties)
         # validate protocol
         self.w_validate.on_click(
