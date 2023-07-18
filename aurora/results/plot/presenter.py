@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Dict, Tuple
 
 import ipywidgets as ipw
 import numpy as np
@@ -43,6 +43,24 @@ class PlotPresenter(HasTraits):
         """docstring"""
         self.closing_message = message
         self.view.close()
+
+    def add_controls(self, controls: Dict[str, ipw.ValueWidget]) -> None:
+        """docstring"""
+        for name, control in controls.items():
+            setattr(self.view, name, control)
+            self.view.controls.children += (control, )
+
+    def remove_controls(self, controls: Tuple[ipw.ValueWidget, ...]) -> None:
+        """docstring"""
+
+        current = self.view.current_controls
+
+        control: ipw.ValueWidget
+        for control in controls:
+            control.unobserve_all()
+            current.remove(control)
+
+        self.view.controls.children = tuple(current)
 
     def extract_data(self, dataset: dict) -> Tuple:
         """docstring"""
