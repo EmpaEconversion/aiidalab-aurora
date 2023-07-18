@@ -3,6 +3,10 @@ from typing import Dict, Tuple
 import ipywidgets as ipw
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.artist import Artist
+from matplotlib.collections import Collection
+from matplotlib.lines import Line2D
+from matplotlib.patches import PathPatch
 from traitlets import HasTraits, Unicode
 
 from .model import PlotModel
@@ -80,6 +84,13 @@ class PlotPresenter(HasTraits):
     def draw(self) -> None:
         """docstring"""
         raise NotImplementedError
+
+    def refresh(self, _=None, skip_x=False) -> None:
+        """docstring"""
+        self._reset_plot()
+        self.draw()
+        self._update_plot_axes(axis='y' if skip_x else 'both')
+        self._show_legend()
 
     ###################
     # PRIVATE METHODS #
@@ -216,14 +227,18 @@ class PlotPresenter(HasTraits):
 
         self.add_controls({'y2lim': y2lim})
 
-    def _set_axes_controls(self) -> None:
+    def _set_axes_controls(self, axis='both') -> None:
         """docstring"""
 
-        self._set_xaxis_control()
-        self._set_yaxis_control()
+        if axis in ('x', 'both'):
+            self._set_xaxis_control()
 
-        if self.model.has_ax2:
-            self._set_y2axis_control()
+        if axis in ('y', 'both'):
+
+            self._set_yaxis_control()
+
+            if self.model.has_ax2:
+                self._set_y2axis_control()
 
     def _set_xaxis_control(self) -> None:
         """docstring"""
@@ -256,6 +271,12 @@ class PlotPresenter(HasTraits):
         control.min = min
         control.value = (min, max)
         control.step = (max - min) / 100
+
+    def _update_plot_axes(self, axis='both') -> None:
+        """docstring"""
+        self._set_plot_labels()
+        self._reset_plot_limits(axis)
+        self._set_axes_controls(axis)
 
     def _show_legend(self) -> None:
         """docstring"""
@@ -292,3 +313,31 @@ class PlotPresenter(HasTraits):
         """docstring"""
         for control in self.view.current_controls:
             control.value = self.control_defaults[control]
+
+    def _reset_plot(self) -> None:
+        """docstring"""
+
+        axes = [self.model.ax]
+
+        if self.model.has_ax2:
+            axes.append(self.model.ax2)
+
+        for ax in axes:
+
+            artist: Artist
+            for artist in ax.get_children():
+                classes = (Line2D, PathPatch, Collection)
+                if any(isinstance(artist, art_class) for art_class in classes):
+                    artist.remove()
+
+            ax.legend('', frameon=False)
+
+    def _reset_plot_limits(self, axis='both') -> None:
+        """docstring"""
+
+        self.model.ax.relim()
+        self.model.ax.autoscale(axis=axis)
+
+        if self.model.has_ax2:
+            self.model.ax2.relim()
+            self.model.ax2.autoscale(axis=axis)
