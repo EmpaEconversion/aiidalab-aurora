@@ -18,11 +18,7 @@ class PlotPresenter(HasTraits):
 
     closing_message = Unicode('')
 
-    def __init__(
-        self,
-        model: PlotModel,
-        view: PlotView
-    ) -> None:
+    def __init__(self, model: PlotModel, view: PlotView) -> None:
         """docstring"""
 
         self.model = model
@@ -66,7 +62,18 @@ class PlotPresenter(HasTraits):
 
     def _set_event_handlers(self) -> None:
         """docstring"""
+
         self.view.delete_button.on_click(self.close_view)
+
+        self.view.xlim.observe(
+            names='value',
+            handler=self._update_xlim,
+        )
+
+        self.view.ylim.observe(
+            names='value',
+            handler=self._update_ylim,
+        )
 
     def _fetch_data(self) -> None:
         """docstring"""
@@ -93,3 +100,15 @@ class PlotPresenter(HasTraits):
         self.view.eid_tab_mapping[eid] = tab_index
 
         return info_tab
+
+    def _update_xlim(self, _=None) -> None:
+        """docstring"""
+        with self.view.plot:
+            xmin, xmax = self.view.xlim.value
+            self.model.ax.set_xlim(xmin, xmax)
+
+    def _update_ylim(self, _=None) -> None:
+        """docstring"""
+        with self.view.plot:
+            ymin, ymax = self.view.ylim.value
+            self.model.ax.set_ylim(ymin, ymax)

@@ -135,9 +135,28 @@ class PlotView(ipw.Accordion):
     def _build_controls(self) -> ipw.VBox:
         """docstring"""
 
+        self.xlim = ipw.FloatRangeSlider(
+            layout={
+                "width": "90%",
+            },
+            description="x-limit",
+        )
+
+        self.ylim = ipw.FloatRangeSlider(
+            layout={
+                "width": "90%",
+            },
+            description="y-limit",
+        )
+
+        self.y2lim: ipw.FloatRangeSlider
+
         return ipw.VBox(
             layout={
                 "flex": "4",
             },
-            children=[],
+            children=[
+                self.xlim,
+                self.ylim,
+            ],
         )
