@@ -1,4 +1,5 @@
 import ipywidgets as ipw
+import numpy as np
 from matplotlib import pyplot as plt
 from traitlets import HasTraits, Unicode
 
@@ -30,6 +31,7 @@ class PlotPresenter(HasTraits):
         """docstring"""
         self._set_event_handlers()
         self._fetch_data()
+        self._store_defaults()
 
     def close_view(self, _=None, message='closed') -> None:
         """docstring"""
@@ -112,3 +114,44 @@ class PlotPresenter(HasTraits):
         with self.view.plot:
             ymin, ymax = self.view.ylim.value
             self.model.ax.set_ylim(ymin, ymax)
+
+    def _store_defaults(self) -> None:
+        """docstring"""
+
+        self._set_axes_controls()
+
+        self.control_defaults = {
+            control: control.value
+            for control in self.view.current_controls
+        }
+
+    def _set_axes_controls(self) -> None:
+        """docstring"""
+        self._set_xaxis_control()
+        self._set_yaxis_control()
+
+    def _set_xaxis_control(self) -> None:
+        """docstring"""
+        min, max = self.model.ax.get_xlim()
+        min, max = (min, max) if min < max else (max, min)
+        self._set_axis_limit_control_params('xlim', min, max)
+
+    def _set_yaxis_control(self) -> None:
+        """docstring"""
+        min, max = self.model.ax.get_ylim()
+        min, max = (min, max) if min < max else (max, min)
+        self._set_axis_limit_control_params('ylim', min, max)
+
+    def _set_axis_limit_control_params(
+        self,
+        name: str,
+        min: float,
+        max: float,
+    ) -> None:
+        """docstring"""
+        control: ipw.ValueWidget = getattr(self.view, name)
+        control.min = -np.inf
+        control.max = max
+        control.min = min
+        control.value = (min, max)
+        control.step = (max - min) / 100
