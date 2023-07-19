@@ -3,7 +3,6 @@ import os
 import ipywidgets as ipw
 from ipyfilechooser import FileChooser
 
-from aurora import __version__
 from aurora.interface.sample.sample_filter import SampleFilterWidget
 from aurora.models import AvailableSamplesModel, BatteryExperimentModel
 
@@ -14,22 +13,6 @@ class ManageSamplesMenu(ipw.VBox):
         """Constructs the `Manage Samples` menu from components"""
         self.available_samples_model = AvailableSamplesModel()
         self.experiment_model = BatteryExperimentModel()
-
-        # ------------------------------------------------------------ #
-        # HEADER BOX
-        # ------------------------------------------------------------ #
-        self.w_header_box = ipw.VBox(
-            [
-                ipw.HTML(value="<h1>Aurora - Manage Samples</h1>"),
-                ipw.HTML(value=f"Aurora app version {__version__}"),
-            ],
-            layout={
-                'width': '100%',
-                'border': 'solid black 4px',
-                'padding': '10px'
-            },
-        )
-        # ------------------------------------------------------------ #
 
         self.w_sample_filter = SampleFilterWidget(self.available_samples_model)
 
@@ -89,7 +72,6 @@ class ManageSamplesMenu(ipw.VBox):
 
         super().__init__()
         self.children = [
-            self.w_header_box,
             ipw.VBox([
                 ipw.HTML(value="<h3>Available Samples</h3>"),
                 self.w_sample_filter,

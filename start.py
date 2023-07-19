@@ -1,16 +1,18 @@
 import ipywidgets as ipw
 
-template = """
-<h1> Aurora app </h1>
-<h2>&clubs; <a title="Submit experiment" href="{appbase}/notebook_experiments.ipynb" target="_blank">Submit Experiment</a></h1>
-<h2>&clubs; <a title="Manage Samples" href="{appbase}/notebook_samples.ipynb" target="_blank">Manage Samples</a></h2>
-<h2>&clubs; <a title="Visualize Results" href="{appbase}/notebook_results.ipynb" target="_blank">Results visualizer</a></h2>
+TEMPLATE = """
+<h1 style="text-align: center;">
+    <a
+        title="Aurora"
+        href="{appbase}/aurora.ipynb"
+        target="_blank"
+    >
+        &clubs; Aurora &clubs;
+    </a>
+</h1>
 """
 
 
 def get_start_widget(appbase, jupbase, notebase):
-    html = template.format(appbase=appbase, jupbase=jupbase, notebase=notebase)
+    html = TEMPLATE.format(appbase=appbase)
     return ipw.HTML(html)
-
-
-# EOF
