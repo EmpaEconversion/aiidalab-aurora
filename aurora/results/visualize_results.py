@@ -1,7 +1,6 @@
 import ipywidgets as ipw
 
-from aurora.interface.analyze import (OutputExplorerComponent,
-                                      ResultsPlotterComponent)
+from .analyze import OutputExplorerComponent, ResultsPlotterComponent
 
 
 class CyclingResultsWidget(ipw.VBox):
