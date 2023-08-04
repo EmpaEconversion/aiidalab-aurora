@@ -1,9 +1,9 @@
 from time import sleep
 
 import aiida
-from aiida import load_profile
 from aiida.common.exceptions import NotExistent
 from aiida.engine import submit
+from aiida.manage.configuration import load_profile
 from aiida.orm import load_code, load_group
 
 load_profile()
