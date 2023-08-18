@@ -1,4 +1,3 @@
-from json import load
 from re import search
 from typing import Dict, Tuple, Union
 
@@ -39,10 +38,6 @@ class PlotPresenter(HasTraits):
 
         self.model = model
         self.view = view
-
-        with open('weights.json') as weights_file:
-            weights: dict = load(weights_file)
-            self.weights = {int(k): v for k, v in weights.items()}
 
         self._initialize_figure()
 
@@ -153,7 +148,9 @@ class PlotPresenter(HasTraits):
 
         electrode = getattr(self.view, 'electrode', None)
 
-        if electrode and electrode.value != 'none':
+        weights_present = self.model.has_weights()
+
+        if electrode and electrode.value != 'none' and weights_present:
             label = self.Y_LABEL.replace(']', '/g]')
         else:
             label = self.Y_LABEL

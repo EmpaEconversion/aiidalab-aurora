@@ -44,6 +44,10 @@ class ResultsPresenter():
         no_plot_type = not bool(self.view.plot_type_selector.value)
         self.view.plot_button.disabled = no_experiments or no_plot_type
 
+    def update_weights_file_reference(self) -> None:
+        """docstring"""
+        self.model.weights_file = self.view.weights_filechooser.value
+
     def on_plot_button_clicked(self, _=None) -> None:
         """docstring"""
         self.view.info.clear_output()
@@ -132,6 +136,9 @@ class ResultsPresenter():
             names="value",
             handler=self.update_plot_button_state,
         )
+
+        self.view.weights_filechooser.register_callback(
+            self.update_weights_file_reference)
 
     def _build_experiment_selector_options(self) -> List[Tuple]:
         """Returns a (option_string, battery_id) list."""

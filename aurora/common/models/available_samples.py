@@ -104,13 +104,14 @@ class AvailableSamplesModel():
         # These units are all wanky...
         # Both cathode and anode should be around 30 miligrams
         weight_ag = float(datadict['Anode Weight'])
-        weight_cg = float(datadict['Cathode Weight (mg)']) / (1000 * 1000)
+        weight_cg = float(datadict['Cathode Weight (mg)'])
+        weight_cc_ag = float(datadict['Anode Current Collector Weight (mg)'])
+        weight_cc_cg = float(datadict['Cathode Current Collector Weight (mg)'])
         rate_amahg = float(datadict['Anode Practical Capacity (mAh/g)'])
         rate_cmahg = float(datadict['Cathode Practical Capacity (mAh/g)'])
-        capacity_a = weight_ag * rate_amahg
-        capacity_c = weight_cg * rate_cmahg
+        capacity_a = weight_ag / 1000 * rate_amahg
+        capacity_c = weight_cg / 1000 * rate_cmahg
         capacity = min(capacity_a, capacity_c)
-        capacity = float(int(capacity * 10)) / 10
 
         metadata_name = basedict['basename'] + '-' + datadict['Battery_Number']
 
@@ -124,6 +125,16 @@ class AvailableSamplesModel():
                 "nominal": capacity,
                 "actual": None,
                 "units": "mAh"
+            },
+            "anode_weight": {
+                "total": weight_ag,
+                "collector": weight_cc_ag,
+                "net": weight_ag - weight_cc_ag,
+            },
+            "cathode_weight": {
+                "total": weight_cg,
+                "collector": weight_cc_cg,
+                "net": weight_cg - weight_cc_cg,
             },
             "battery_id": basedict['battery_id'],
             "metadata": {

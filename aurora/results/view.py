@@ -1,6 +1,8 @@
+import os
 from typing import List
 
 import ipywidgets as ipw
+from ipyfilechooser import FileChooser
 
 
 class ResultsView(ipw.VBox):
@@ -22,6 +24,20 @@ class ResultsView(ipw.VBox):
 
     def __init__(self) -> None:
         """docstring"""
+
+        self.weights_label = ipw.HTML(
+            layout={
+                "margin": "2px 4px 2px 20px",
+            },
+            value="Weights file:",
+        )
+
+        self.weights_filechooser = FileChooser(
+            layout={
+                "flex": "1",
+            },
+            path=os.path.expanduser('~'),
+        )
 
         self.group_selector = ipw.Dropdown(
             layout={},
@@ -106,6 +122,8 @@ class ResultsView(ipw.VBox):
                     children=[
                         self.group_selector,
                         self.last_days,
+                        self.weights_label,
+                        self.weights_filechooser,
                     ],
                 ),
                 self.experiment_selector,

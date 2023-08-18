@@ -73,7 +73,7 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, y = (np.array(a) for a in self.extract_data(dataset))
-        y *= self.weights[eid].get(self.view.electrode.value, 1)
+        y *= self.model.get_weights(eid).get(self.view.electrode.value, 1)
         x, y = self._down_select(x, y)
         color = self.model.colors.get(eid)
         self.model.ax.plot(x, y, '.', label=eid, color=color)

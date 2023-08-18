@@ -1,20 +1,40 @@
 from datetime import datetime, timedelta
+from json import load
 from typing import Dict, List
 
 import pandas as pd
 from aiida.orm import Group, QueryBuilder
 from aiida_aurora.calculations import BatteryCyclerExperiment
+from aiida_aurora.data.battery import BatterySampleData
+from traitlets import HasTraits, Unicode
 
 
-class ResultsModel:
+class ResultsModel(HasTraits):
     """
     docstring
     """
+
+    weights_file = Unicode("")
 
     def __init__(self) -> None:
         """docstring"""
         self.experiments = pd.DataFrame()
         self.results: Dict[int, dict] = {}
+
+    def get_weights(self, eid: int) -> Dict[str, float]:
+        """docstring"""
+        sample_node = get_experiment_sample_node(eid)
+        try:
+            return get_weights_from_node(sample_node)
+        except Exception:
+            try:
+                sample_name = sample_node['metadata']['name']
+                return get_weights_from_file(sample_name, self.weights_file)
+            except Exception:
+                return {
+                    "anode_mass": 1.,
+                    "cathode_mass": 1.,
+                }
 
     def update_experiments(self, group: str, last_days=999) -> None:
         """docstring"""
@@ -75,3 +95,28 @@ def query_jobs(
     qb.order_by({'jobs': {'ctime': 'desc'}})
 
     return [query['jobs'] for query in qb.dict()]
+
+
+def get_experiment_sample_node(eid: int) -> BatterySampleData:
+    """docstring"""
+    qb = QueryBuilder()
+    qb.append(BatteryCyclerExperiment, filters={"id": eid}, tag="exp")
+    qb.append(BatterySampleData, with_outgoing="exp")
+    sample_node, = qb.first()
+    return sample_node
+
+
+def get_weights_from_node(sample_node: BatterySampleData) -> Dict[str, float]:
+    """docstring"""
+    raw = sample_node.attributes
+    return {
+        "anode_mass": raw['anode_weight']['net'],
+        "cathode_mass": raw['cathode_weight']['net'],
+    }
+
+
+def get_weights_from_file(sample_name: str, filename: str) -> Dict[str, float]:
+    """docstring"""
+    with open(filename) as weights_file:
+        weights = load(weights_file)
+        return weights[sample_name]

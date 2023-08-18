@@ -134,7 +134,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         }
 
         for eid, data in dataset.items():
-            weights: dict = self.weights[eid]
+            weights: dict = self.model.get_weights(eid)
             factor = weights.get(self.view.electrode.value, 1) / 3.6
             for cycle, capacity in enumerate(data['Qd'][:num_cycles]):
                 df_dict['eid'].append(eid)
