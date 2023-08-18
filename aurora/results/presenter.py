@@ -23,11 +23,18 @@ class ResultsPresenter():
         self.model = model
         self.view = view
 
+        self.view.group_selector.options = self.model.get_groups()
+
         self._set_event_handlers()
 
     def update_view_experiments(self, _=None) -> None:
         """docstring"""
-        self.model.update_experiments()
+
+        self.model.update_experiments(
+            group=self.view.group_selector.value,
+            last_days=self.view.last_days.value,
+        )
+
         options = self._build_experiment_selector_options()
         self.view.experiment_selector.options = options
 
@@ -109,6 +116,12 @@ class ResultsPresenter():
         self.view.on_displayed(self.update_view_experiments)
         self.view.plot_button.on_click(self.on_plot_button_clicked)
         self.view.update_button.on_click(self.update_view_experiments)
+
+        self.view.group_selector.observe(names="value",
+                                         handler=self.update_view_experiments)
+
+        self.view.last_days.observe(names="value",
+                                    handler=self.update_view_experiments)
 
         self.view.experiment_selector.observe(
             names="value",

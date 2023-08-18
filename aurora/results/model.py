@@ -6,7 +6,7 @@ from aiida.orm import Group, QueryBuilder
 from aiida_aurora.calculations import BatteryCyclerExperiment
 
 
-class ResultsModel():
+class ResultsModel:
     """
     docstring
     """
@@ -16,16 +16,32 @@ class ResultsModel():
         self.experiments = pd.DataFrame()
         self.results: Dict[int, dict] = {}
 
-    def update_experiments(self, last_days=0, group='pre_update') -> None:
+    def update_experiments(self, group: str, last_days=999) -> None:
         """docstring"""
-        query = query_jobs(last_days, group)
-        self.experiments = pd.DataFrame(query).sort_values('id')
-        ctime = self.experiments['ctime'].dt.strftime('%Y-%m-%d %H:%m:%S')
-        self.experiments['ctime'] = ctime
+
+        if experiments := query_jobs(group, last_days):
+            df = pd.DataFrame(experiments).sort_values('id')
+            ctime = df['ctime'].dt.strftime('%Y-%m-%d %H:%m:%S')
+            df['ctime'] = ctime
+        else:
+            df = pd.DataFrame()
+
+        self.experiments = df
+
+    @staticmethod
+    def get_groups() -> List[str]:
+        """docstring"""
+        qb = QueryBuilder()
+        qb.append(Group, filters={'label': {'like': '%Jobs'}})
+        return [group.label for group in qb.all(flat=True)]
 
 
-def query_jobs(last_days: int, group: Group) -> List[BatteryCyclerExperiment]:
+def query_jobs(
+    group: str,
+    last_days: int,
+) -> List[BatteryCyclerExperiment]:
     """docstring"""
+
     qb = QueryBuilder()
 
     qb.append(Group, filters={'label': group}, tag='g')
@@ -45,15 +61,14 @@ def query_jobs(last_days: int, group: Group) -> List[BatteryCyclerExperiment]:
         ],
     )
 
-    if last_days:
-        qb.add_filter(
-            'jobs',
-            {
-                'ctime': {
-                    '>=': datetime.now() - timedelta(days=last_days)
-                },
+    qb.add_filter(
+        'jobs',
+        {
+            'ctime': {
+                '>=': datetime.now() - timedelta(days=last_days)
             },
-        )
+        },
+    )
 
     qb.add_filter('jobs', {'attributes.process_state': 'finished'})
 

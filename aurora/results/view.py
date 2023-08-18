@@ -23,6 +23,24 @@ class ResultsView(ipw.VBox):
     def __init__(self) -> None:
         """docstring"""
 
+        self.group_selector = ipw.Dropdown(
+            layout={},
+            style={
+                'description_width': '95px',
+            },
+            description="Select group:",
+        )
+
+        self.last_days = ipw.BoundedIntText(
+            layout={
+                "width": "auto",
+            },
+            min=0,
+            max=999,
+            value=999,
+            description="Last days:",
+        )
+
         self.experiment_selector = ipw.SelectMultiple(
             layout={
                 "width": "auto",
@@ -67,9 +85,7 @@ class ResultsView(ipw.VBox):
         self.info = ipw.Output()
 
         selection_controls = ipw.HBox(
-            layout={
-                "margin": "4px 0 2px 0",
-            },
+            layout={},
             children=[
                 self.plot_type_selector,
                 self.plot_button,
@@ -81,14 +97,23 @@ class ResultsView(ipw.VBox):
         experiment_selection_container = ipw.VBox(
             layout={
                 "margin": "0 2px",
+                "padding": "15px",
+                "border": "1px solid grey",
             },
             children=[
+                ipw.HBox(
+                    layout={},
+                    children=[
+                        self.group_selector,
+                        self.last_days,
+                    ],
+                ),
                 self.experiment_selector,
                 selection_controls,
             ],
         )
 
-        self.plots_container = ipw.VBox()
+        self.plots_container = ipw.VBox(layout={"margin": "10px 0 0 0"})
 
         super().__init__(
             layout={},
