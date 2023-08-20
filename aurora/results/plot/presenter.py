@@ -176,13 +176,24 @@ class PlotPresenter(HasTraits):
     def _fetch_data(self) -> None:
         """docstring"""
 
-        for eid in self.model.experiment_ids:
-            info_tab = self._add_info_tab(eid)
+        number_of_pages = int(np.ceil(len(self.model.experiment_ids) / 8))
+
+        for i in range(number_of_pages):
+            self._add_info_page(i)
+
+        for i, eid in enumerate(self.model.experiment_ids):
+            page_index = i // 8
+            info_tab = self._add_info_tab(page_index, eid)
 
             with info_tab:
                 self.model.fetch_data(eid)
 
-    def _add_info_tab(self, eid: int) -> ipw.Output:
+    def _add_info_page(self, index: int) -> None:
+        """docstring"""
+        self.view.info.children += (ipw.Tab(), )
+        self.view.info.set_title(index, f"Page {index + 1}")
+
+    def _add_info_tab(self, page_index: int, eid: int) -> ipw.Output:
         """docstring"""
 
         info_tab = ipw.Output(layout={
@@ -190,10 +201,11 @@ class PlotPresenter(HasTraits):
             "max_height": "260px",
         })
 
-        self.view.info.children += (info_tab, )
+        page = self.view.info.children[page_index]
+        page.children += (info_tab, )
 
-        tab_index = len(self.view.info.children) - 1
-        self.view.info.set_title(tab_index, str(eid))
+        tab_index = len(page.children) - 1
+        page.set_title(tab_index, str(eid))
 
         self.view.eid_tab_mapping[eid] = tab_index
 
