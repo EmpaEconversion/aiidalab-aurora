@@ -289,9 +289,9 @@ class ExperimentBuilder(ipw.VBox):
         return self._selected_tomato_settings
 
     @property
-    def selected_monitor_job_settings(self):
-        "The Tomato Monitor Settings selected. Used by a TomatoMonitorCalcjob."
-        return self._selected_monitor_job_settings
+    def selected_monitor_settings(self):
+        "The Tomato Monitor Settings selected. Used by a job monitor."
+        return self._selected_monitor_settings
 
     @property
     def calcjob_node_label(self):
@@ -367,7 +367,7 @@ class ExperimentBuilder(ipw.VBox):
     #######################################################################################
     def return_selected_settings(self, settings_widget_obj):
         self._selected_tomato_settings = settings_widget_obj.selected_tomato_settings
-        self._selected_monitor_job_settings = settings_widget_obj.selected_monitor_job_settings
+        self._selected_monitor_settings = settings_widget_obj.selected_monitor_settings
         self._calcjob_node_label = settings_widget_obj.calcjob_node_label
         self.post_settings_selection()
 
@@ -402,7 +402,7 @@ class ExperimentBuilder(ipw.VBox):
 
             output_tomato_settings = f'{self.selected_tomato_settings}'
 
-            output_monitor_job_settings = f'{self.selected_monitor_job_settings}'
+            output_monitor_settings = f'{self.selected_monitor_settings}'
 
             if not self.selected_battery_samples:
                 return
@@ -421,7 +421,7 @@ class ExperimentBuilder(ipw.VBox):
 
             print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
             print(f"Tomato Settings:\n{output_tomato_settings}\n")
-            print(f"Monitor Job Settings:{output_monitor_job_settings}\n")
+            print(f"Monitor Settings:{output_monitor_settings}\n")
 
             print("✅ All good!")
 
@@ -440,7 +440,7 @@ class ExperimentBuilder(ipw.VBox):
                 sample=current_battery,
                 method=self.selected_cycling_protocol,
                 tomato_settings=self.selected_tomato_settings,
-                monitor_job_settings=self.selected_monitor_job_settings,
+                monitor_settings=self.selected_monitor_settings,
                 code_name=self.w_code.value,
                 sample_node_label="",
                 method_node_label="",
@@ -465,7 +465,7 @@ class ExperimentBuilder(ipw.VBox):
             if self.selected_cycling_protocol is None:
                 raise ValueError("A Cycling protocol was not selected!")
 
-            if self.selected_tomato_settings is None or self.selected_monitor_job_settings is None:
+            if self.selected_tomato_settings is None or self.selected_monitor_settings is None:
                 raise ValueError("Tomato settings were not selected!")
 
             return True
@@ -493,7 +493,7 @@ class ExperimentBuilder(ipw.VBox):
         self._selected_recipe = None
         self._selected_cycling_protocol = None
         self._selected_tomato_settings = None
-        self._selected_monitor_job_settings = None
+        self._selected_monitor_settings = None
         self._calcjob_node_label = None
 
     def reset(self, dummy=None):
