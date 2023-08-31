@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import aiida
 import aiida_aurora.utils
-from aiida import load_profile
+from aiida.manage.configuration import load_profile
 from aiida.orm import Group, QueryBuilder, load_node
 
 load_profile()

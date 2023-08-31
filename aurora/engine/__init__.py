@@ -1,4 +1,4 @@
-from aiida import load_profile
+from aiida.manage.configuration import load_profile
 
 from .submit import submit_experiment
 

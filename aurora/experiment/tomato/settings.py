@@ -38,37 +38,36 @@ class TomatoSettings(ipw.VBox):
         )
         # layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
 
-        self.w_job_monitor_header = ipw.HTML(
-            "<h2>Job Monitor configuration:</h2>")
+        self.w_monitor_header = ipw.HTML("<h2>Job Monitor configuration:</h2>")
         self.w_job_monitored = ipw.Checkbox(
             value=False, description="Monitored job?")  # indent=True)
 
-        self.w_job_monitor_refresh_rate = ipw.BoundedIntText(
+        self.w_monitor_refresh_rate = ipw.BoundedIntText(
             description="Refresh rate (s):",
             min=10,
             max=1e99,
             step=1,
             value=600,
             style=self.BOX_STYLE)
-        self.w_job_monitor_check_type = ipw.Dropdown(
+        self.w_monitor_check_type = ipw.Dropdown(
             description="Check type:",
             value="discharge_capacity",
             options=["discharge_capacity", "charge_capacity"],
         )
-        self.w_job_monitor_threshold = ipw.BoundedFloatText(
+        self.w_monitor_threshold = ipw.BoundedFloatText(
             description="Threshold:",
             min=1e-6,
             max=1.0,
             value=0.80,
             style=self.BOX_STYLE)
-        self.w_job_monitor_consecutive_cycles = ipw.BoundedIntText(
+        self.w_monitor_consecutive_cycles = ipw.BoundedIntText(
             description="Number of consecutive cycles:",
             min=2,
             max=1e6,
             step=1,
             value=2,
             style=self.BOX_STYLE)
-        self.w_job_monitor_parameters = ipw.VBox()
+        self.w_monitor_parameters = ipw.VBox()
 
         self.w_job_calcjob_node_label = ipw.Text(
             description="AiiDA CalcJob node label:",
@@ -91,8 +90,8 @@ class TomatoSettings(ipw.VBox):
             self.w_job_header,
             ipw.VBox([self.w_job_unlock_when_done, self.w_job_verbosity],
                      layout=self.BOX_LAYOUT_2),
-            self.w_job_monitor_header,
-            ipw.VBox([self.w_job_monitored, self.w_job_monitor_parameters],
+            self.w_monitor_header,
+            ipw.VBox([self.w_job_monitored, self.w_monitor_parameters],
                      layout=self.BOX_LAYOUT_2),
             self.w_job_calcjob_node_label,
             self.w_validate,
@@ -110,13 +109,13 @@ class TomatoSettings(ipw.VBox):
 
     @property
     @remove_empties_from_dict_decorator
-    def selected_monitor_job_settings(self):
+    def selected_monitor_settings(self):
         if self.w_job_monitored.value:
             return dict(
-                refresh_rate=self.w_job_monitor_refresh_rate.value,
-                check_type=self.w_job_monitor_check_type.value,
-                threshold=self.w_job_monitor_threshold.value,
-                consecutive_cycles=self.w_job_monitor_consecutive_cycles.value,
+                refresh_rate=self.w_monitor_refresh_rate.value,
+                check_type=self.w_monitor_check_type.value,
+                threshold=self.w_monitor_threshold.value,
+                consecutive_cycles=self.w_monitor_consecutive_cycles.value,
             )
         else:
             return {}
@@ -130,7 +129,7 @@ class TomatoSettings(ipw.VBox):
         }
         if self.w_job_monitored.value:
             d['snapshot'] = {
-                'frequency': self.w_job_monitor_refresh_rate.value,
+                'frequency': self.w_monitor_refresh_rate.value,
                 'prefix': 'snapshot'
             }
         return d
@@ -146,14 +145,14 @@ class TomatoSettings(ipw.VBox):
 
     def _build_job_monitor_parameters(self, dummy=None):
         if self.w_job_monitored.value:
-            self.w_job_monitor_parameters.children = [
-                self.w_job_monitor_refresh_rate,
-                self.w_job_monitor_check_type,
-                self.w_job_monitor_threshold,
-                self.w_job_monitor_consecutive_cycles,
+            self.w_monitor_parameters.children = [
+                self.w_monitor_refresh_rate,
+                self.w_monitor_check_type,
+                self.w_monitor_threshold,
+                self.w_monitor_consecutive_cycles,
             ]
         else:
-            self.w_job_monitor_parameters.children = []
+            self.w_monitor_parameters.children = []
 
     def set_default_calcjob_node_label(self, sample_label, method_label):
         self.w_job_calcjob_node_label.value = f"{sample_label}-{method_label}"
