@@ -52,7 +52,7 @@ def submit_experiment(sample,
     builder = BatteryCyclerExperiment.get_builder()
     builder.battery_sample = sample_node
     builder.code = code
-    builder.technique = method_node
+    builder.protocol = method_node
     builder.control_settings = tomato_settings_node
 
     if monitor_settings:
