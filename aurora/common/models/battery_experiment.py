@@ -266,8 +266,26 @@ class BatteryExperimentModel():
         """A mock function that returns the available synthesis recipies."""
         return self.available_recipies
 
-    def query_available_protocols(self):
-        """A mock function that returns the available synthesis recipies."""
+    def query_available_protocols(
+        self,
+        ids: Optional[List[int]] = None,
+    ) -> List[ElectroChemSequence]:
+        """Return protocols from local cache.
+
+        Optionally filtered by protocol `ids`.
+
+        Parameters
+        ----------
+        `ids` : `Optional[List[int]]`
+            A list of protocol ids, `None` by default.
+
+        Returns
+        -------
+        `List[ElectroChemSequence]`
+            A list of protocols.
+        """
+        if ids is not None:
+            return [self.available_protocols[i] for i in ids]
         return self.available_protocols
 
     def write_pd_query_from_dict(self, query_dict: dict) -> Optional[str]:
