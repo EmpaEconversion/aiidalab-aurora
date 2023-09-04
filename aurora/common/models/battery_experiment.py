@@ -10,43 +10,13 @@ from aiida_aurora.schemas.cycling import (ElectroChemSequence,
 from IPython.display import display
 
 AVAILABLE_SAMPLES_FILE = 'available_samples.json'
+AVAILABLE_PROTOCOLS_FILE = 'available_protocols.json'
 
 STD_RECIPIES = {
     'Load fresh battery into cycler':
     ['Request the user to load a battery with the desired specs.'],
     'Synthesize - Recipe 1': ['step 1', 'step 2', 'step 3'],
     'Synthesize - Recipe 2': ['step 1', 'step 2', 'step 3'],
-}
-
-STD_PROTOCOLS = {
-    "Formation cycles": {
-        "Procedure": [
-            "6h rest", "CCCV Charge, C/10 (CV condition: i<C/50)",
-            "CC Discharge, D/10", "Repeat 3 times"
-        ],
-        "Cutoff conditions":
-        "2.5 to 4.2 V, upper voltage to be changed depending on the chemistry",
-    },
-    "Power test Charge focus": {
-        "Procedure": [
-            "6h rest", "CC Charge (CV condition: i<C/50)", "(C/20 + D/20) x 5",
-            "(C/10 + D/20) x 5", "(C/5 + D/20) x 5", "(C/2 + D/20) x 5",
-            "(1C + D/20) x 5", "(2C + D/20) x 5", "(5C + D/20) x 5",
-            "(C/20 + D/20) x 5"
-        ],
-        "Cutoff conditions":
-        "2.5 to 4.2 V, upper voltage to be changed depending on the chemistry",
-    },
-    "Power test Discharge focus": {
-        "Procedure": [
-            "6h rest", "CCCV Charge (CV condition: i<C/50)",
-            "(C/20 + D/20) x 5", "(C/20 + D/10) x 5", "(C/20 + D/50) x 5",
-            "(C/20 + D/2) x 5", "(C/20 + 1D) x 5", "(C/20 + 2D) x 5",
-            "(C/20 + 5D) x 5", "(C/20 + D/20) x 5"
-        ],
-        "Cutoff conditions":
-        "2.5 to 4.2 V, upper voltage to be changed depending on the chemistry",
-    },
 }
 
 
@@ -62,7 +32,7 @@ class BatteryExperimentModel():
         self.available_samples = pd.DataFrame()
         self.available_specs = None
         self.available_recipies = None
-        self.available_protocols = None
+        self.available_protocols = []
 
         self.update_available_samples()
         self.update_available_specs()
@@ -232,14 +202,6 @@ class BatteryExperimentModel():
         if observators_chain is None:
             observators_chain = ''
         observators_chain += ' -> update_available_recipies'
-        self.update_observers(observators_chain)
-
-    def update_available_protocols(self, observators_chain=None):
-        global STD_PROTOCOLS
-        self.available_protocols = STD_PROTOCOLS.copy()
-        if observators_chain is None:
-            observators_chain = ''
-        observators_chain += ' -> update_available_protocols'
         self.update_observers(observators_chain)
 
     def query_available_specs(
@@ -428,18 +390,50 @@ class BatteryExperimentModel():
         self.selected_protocol = ElectroChemSequence(**json_data)
         self.update_observers()
 
-    def save_protocol(self, filepath):
-        """Saves the protocol from a file."""
-        if filepath is None:
-            return
+    def save_protocol(self):
+        """Save the protocol to a file."""
+
+        self.available_protocols.append(self.selected_protocol)
+
+        protocols = [p.dict() for p in self.available_protocols]
 
         try:
-            json_data = json.dumps(self.selected_protocol.dict(), indent=2)
-        except Exception as err:
-            json_data = str(err)
 
-        with open(filepath, 'w') as fileobj:
-            fileobj.write(str(json_data))
+            try:
+                json_data = json.dumps(protocols, indent=2)
+            except Exception as err:
+                json_data = str(err)
+
+            with open(AVAILABLE_PROTOCOLS_FILE, 'w+') as fileobj:
+                fileobj.write(json_data)
+
+        except OSError as err:
+            print(f"Failed to save protocols => '{str(err)}'")
+
+    def update_available_protocols(
+        self,
+        source_file=AVAILABLE_PROTOCOLS_FILE,
+    ) -> None:
+        """Update available protocols cache from local file.
+
+        Considered empty if failure to find/load file.
+
+        Parameters
+        ----------
+        `source_file` : `str`
+            The path to the local protocols file,
+            `AVAILABLE_PROTOCOLS_FILE` by default.
+        """
+
+        try:
+            with open(source_file) as f:
+                data = json.load(f)
+        except OSError:
+            data = {}
+
+        self.available_protocols = [
+            ElectroChemSequence(**protocol) for protocol in data
+        ]
 
 
 def _process_dict(query_dict: dict) -> dict:
