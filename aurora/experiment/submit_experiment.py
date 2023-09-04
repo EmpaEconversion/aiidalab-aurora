@@ -352,6 +352,7 @@ class ExperimentBuilder(ipw.VBox):
         self._selected_tomato_settings = settings_widget_obj.selected_tomato_settings
         self._selected_monitor_settings = settings_widget_obj.selected_monitor_settings
         self._calcjob_node_label = settings_widget_obj.calcjob_node_label
+        settings_widget_obj.reset_controls()
         self.post_settings_selection()
 
     def post_settings_selection(self):
@@ -484,5 +485,6 @@ class ExperimentBuilder(ipw.VBox):
         # TODO: properly reinitialize each widget
         self.reset_all_inputs()
         self.w_sample_from_id.reset()
+        self.w_settings_tab.reset()
         self.w_submission_output.clear_output()
         self.w_main_accordion.selected_index = 0

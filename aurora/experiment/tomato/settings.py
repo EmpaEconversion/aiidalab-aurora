@@ -106,6 +106,15 @@ class TomatoSettings(ipw.VBox):
                                      style=self.BUTTON_STYLE,
                                      layout=self.BUTTON_LAYOUT)
 
+        self.reset_button = ipw.Button(
+            layout={},
+            style={},
+            description="Reset",
+            button_style='danger',
+            tooltip="Clear selection",
+            icon='times',
+        )
+
         # initialize widgets
         super().__init__()
         self.children = [
@@ -116,7 +125,15 @@ class TomatoSettings(ipw.VBox):
             ipw.VBox([self.is_monitored, self.w_monitor_parameters],
                      layout=self.BOX_LAYOUT_2),
             self.w_job_calcjob_node_label,
-            self.w_validate,
+            ipw.HBox(
+                layout={
+                    "align_items": "center",
+                },
+                children=[
+                    self.w_validate,
+                    self.reset_button,
+                ],
+            ),
         ]
         self._build_job_monitor_parameters()
 
@@ -128,6 +145,8 @@ class TomatoSettings(ipw.VBox):
         # validate protocol
         self.w_validate.on_click(
             lambda arg: self.callback_call(validate_callback_f))
+
+        self.reset_button.on_click(self.reset)
 
     @property
     @remove_empties_from_dict_decorator
@@ -175,6 +194,15 @@ class TomatoSettings(ipw.VBox):
             ]
         else:
             self.w_monitor_parameters.children = []
+
+    def reset_controls(self) -> None:
+        """Reset controls and notices."""
+        for control, value in self.defaults.items():
+            control.value = value
+
+    def reset(self, _=None) -> None:
+        """Reset widget and registers."""
+        self.reset_controls()
 
     def set_default_calcjob_node_label(self, sample_label, method_label):
         self.w_job_calcjob_node_label.value = f"{sample_label}-{method_label}"
