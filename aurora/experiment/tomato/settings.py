@@ -2,6 +2,8 @@
 Widget to setup tomato's settings
 """
 
+from typing import Any, Dict
+
 import ipywidgets as ipw
 from aiida_aurora.schemas.dgbowl import Tomato_0p2
 from aiida_aurora.schemas.utils import remove_empties_from_dict_decorator
@@ -27,24 +29,30 @@ class TomatoSettings(ipw.VBox):
                 "validate_callback_f should be a callable function")
 
         # initialize job settings
+
+        self.defaults: Dict[ipw.ValueWidget, Any] = {}
+
         self.w_job_header = ipw.HTML("<h2>Tomato Job configuration:</h2>")
 
         self.unlock_when_done = ipw.Checkbox(
             value=False,
             description="Unlock when done?",
         )
+        self.defaults[self.unlock_when_done] = self.unlock_when_done.value
+
         self.verbosity = ipw.Dropdown(
             description="Verbosity:",
             value="INFO",
             options=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         )
-        # layout=self.BOX_LAYOUT, style=self.BOX_STYLE)
+        self.defaults[self.verbosity] = self.verbosity.value
 
         self.w_monitor_header = ipw.HTML("<h2>Job Monitor configuration:</h2>")
         self.is_monitored = ipw.Checkbox(
             value=False,
             description="Monitored job?",
         )
+        self.defaults[self.is_monitored] = self.is_monitored.value
 
         self.refresh_rate = ipw.BoundedIntText(
             description="Refresh rate (s):",
@@ -54,11 +62,15 @@ class TomatoSettings(ipw.VBox):
             value=600,
             style=self.BOX_STYLE,
         )
+        self.defaults[self.refresh_rate] = self.refresh_rate.value
+
         self.check_type = ipw.Dropdown(
             description="Check type:",
             value="discharge_capacity",
             options=["discharge_capacity", "charge_capacity"],
         )
+        self.defaults[self.check_type] = self.check_type.value
+
         self.threshold = ipw.BoundedFloatText(
             description="Threshold:",
             min=1e-6,
@@ -66,6 +78,8 @@ class TomatoSettings(ipw.VBox):
             value=0.80,
             style=self.BOX_STYLE,
         )
+        self.defaults[self.threshold] = self.threshold.value
+
         self.consecutive = ipw.BoundedIntText(
             description="Number of consecutive cycles:",
             min=2,
@@ -73,6 +87,8 @@ class TomatoSettings(ipw.VBox):
             step=1,
             value=2,
             style=self.BOX_STYLE)
+        self.defaults[self.consecutive] = self.consecutive.value
+
         self.w_monitor_parameters = ipw.VBox()
 
         self.w_job_calcjob_node_label = ipw.Text(
