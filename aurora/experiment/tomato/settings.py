@@ -135,7 +135,6 @@ class TomatoSettings(ipw.VBox):
                 ],
             ),
         ]
-        self._build_job_monitor_parameters()
 
         # setup automations
         # job monitored checkbox
@@ -147,6 +146,12 @@ class TomatoSettings(ipw.VBox):
             lambda arg: self.callback_call(validate_callback_f))
 
         self.reset_button.on_click(self.reset)
+
+        self.init()
+
+    def init(self) -> None:
+        """Initialize widget."""
+        self._build_job_monitor_parameters()
 
     @property
     @remove_empties_from_dict_decorator
