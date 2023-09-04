@@ -94,7 +94,7 @@ class SampleFromId(ipw.VBox):
 
         self.experiment_model = experiment_model
 
-        filters_container = self._build_filter_container()
+        self.filters_container = self._build_filter_container()
 
         selection_container = self._build_selection_container()
 
@@ -108,12 +108,29 @@ class SampleFromId(ipw.VBox):
             layout=self.VALIDATE_BUTTON_LAYOUT,
         )
 
+        self.reset_button = ipw.Button(
+            layout={},
+            style={},
+            description="Reset",
+            button_style='danger',
+            tooltip="Clear selection",
+            icon='times',
+        )
+
         super().__init__(
             layout={},
             children=[
-                filters_container,
+                self.filters_container,
                 selection_container,
-                self.w_validate,
+                ipw.HBox(
+                    layout={
+                        "align_items": "center",
+                    },
+                    children=[
+                        self.w_validate,
+                        self.reset_button,
+                    ],
+                ),
             ],
         )
 
@@ -526,18 +543,22 @@ class SampleFromId(ipw.VBox):
 
     def on_reset_filters_button_click(self, _=None) -> None:
         """Reset current spec selections."""
-        self.w_specs_manufacturer.value = None
-        self.w_specs_composition.value = None
-        self.w_specs_form_factor.value = None
-        self.w_specs_capacity.value = None
-        # self.w_specs_metadata_creation_date.value = None
-        # self.w_specs_metadata_creation_process.value = None
+        self.reset_filters()
 
     def on_spec_value_change(self, _=None):
         """Update spec and sample options."""
         # TODO this does a lot per value change. Consider decoupling!
         self.update_spec_options()
         self.update_sample_options()
+
+    def reset_filters(self) -> None:
+        """docstring"""
+        self.w_specs_manufacturer.value = None
+        self.w_specs_composition.value = None
+        self.w_specs_form_factor.value = None
+        self.w_specs_capacity.value = None
+        # self.w_specs_metadata_creation_date.value = None
+        # self.w_specs_metadata_creation_process.value = None
 
     def update_sample_options(self) -> None:
         """Fetch and update current sample options."""
@@ -614,6 +635,14 @@ class SampleFromId(ipw.VBox):
         """Update selected list options."""
         # TODO discard redundant method!
         self.w_selected_list.options = self._update_selected_list()
+
+    def reset(self, _=None) -> None:
+        """docstring"""
+        self.filters_container.selected_index = None
+        self.w_sample_list.value = []
+        self.w_selected_list.options = []
+        self.reset_filters()
+        self.experiment_model.reset_selected_samples()
 
     def _build_single_spec_options(
         self,
@@ -747,6 +776,8 @@ class SampleFromId(ipw.VBox):
 
         self.w_validate.on_click(
             lambda arg: self.on_validate_button_click(validate_callback_f))
+
+        self.reset_button.on_click(self.reset)
 
     def _set_specs_observers(self) -> None:
         """Set up event listeners for spec filters."""

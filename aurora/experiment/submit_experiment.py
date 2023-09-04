@@ -483,5 +483,6 @@ class ExperimentBuilder(ipw.VBox):
         "Reset the interface."
         # TODO: properly reinitialize each widget
         self.reset_all_inputs()
+        self.w_sample_from_id.reset()
         self.w_submission_output.clear_output()
         self.w_main_accordion.selected_index = 0

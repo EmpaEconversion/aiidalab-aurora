@@ -73,6 +73,11 @@ class BatteryExperimentModel():
         self.selected_protocol = ElectroChemSequence(method=[])
         self.add_protocol_step()  # initialize sequence with first default step
 
+    def reset_inputs(self):
+        """Resets all inputs."""
+        # Not implemented yet...
+        return None
+
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO OBSERVABLES
     # ----------------------------------------------------------------------#
@@ -93,10 +98,9 @@ class BatteryExperimentModel():
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO SAMPLES
     # ----------------------------------------------------------------------#
-    def reset_inputs(self):
+    def reset_selected_samples(self):
         """Resets all inputs."""
-        # Not implemented yet...
-        return None
+        self.selected_samples = self.available_samples[:0]
 
     def add_selected_samples(self, sample_ids: List[int]) -> None:
         """Add selected samples to list.
