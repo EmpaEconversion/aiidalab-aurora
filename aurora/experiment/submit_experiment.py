@@ -1,8 +1,10 @@
 import json
-from typing import Optional
+from copy import deepcopy
+from typing import Dict, Optional
 
 import ipywidgets as ipw
 from aiida_aurora.schemas.battery import BatterySample
+from aiida_aurora.schemas.dgbowl import Tomato_0p2
 from aiida_aurora.schemas.utils import dict_to_formatted_json
 
 from aurora.common.models import AvailableSamplesModel, BatteryExperimentModel
@@ -155,7 +157,9 @@ class ExperimentBuilder(ipw.VBox):
     def _build_job_settings_section(self) -> None:
         """Build the job settings section."""
         self.w_settings_tab = TomatoSettings(
-            validate_callback_f=self.return_selected_settings)
+            experiment_model=self.experiment_model,
+            validate_callback_f=self.return_selected_settings,
+        )
 
     def _build_job_submission_section(self) -> None:
         """Build the job submission section."""
@@ -274,23 +278,25 @@ class ExperimentBuilder(ipw.VBox):
     @property
     def selected_cycling_protocols(self):
         "The Cycling Specs selected. Used by a BatteryCyclerExperiment."
-        return self.experiment_model.selected_protocols.values()
+        return list(self.experiment_model.selected_protocols.values())
         # return self._selected_cycling_protocol
 
     @property
-    def selected_tomato_settings(self):
+    def selected_tomato_settings(self) -> Dict[str, Tomato_0p2]:
         "The Tomato Settings selected. Used by a BatteryCyclerExperiment."
-        return self._selected_tomato_settings
+        return deepcopy(self._selected_tomato_settings)
 
     @property
-    def selected_monitor_settings(self):
+    def selected_monitor_settings(self) -> Dict[str, dict]:
         "The Tomato Monitor Settings selected. Used by a job monitor."
-        return self._selected_monitor_settings
+        return deepcopy(self._selected_monitor_settings)
 
     @property
-    def calcjob_node_label(self):
-        "The label assigned the submitted BatteryCyclerExperiment CalcJob."
-        return self._calcjob_node_label
+    def workchain_node_label(self):
+        """The label assigned to the submitted workchain node. The
+        label used in the workflow as a prefix for each submitted
+        protocol calculation node."""
+        return self._workchain_node_label
 
     #######################################################################################
     # SAMPLE SELECTION
@@ -340,11 +346,11 @@ class ExperimentBuilder(ipw.VBox):
     #######################################################################################
     # TOMATO SETTINGS SELECTION
     #######################################################################################
-    def return_selected_settings(self, settings_widget_obj):
-        self._selected_tomato_settings = settings_widget_obj.selected_tomato_settings
-        self._selected_monitor_settings = settings_widget_obj.selected_monitor_settings
-        self._calcjob_node_label = settings_widget_obj.calcjob_node_label
-        settings_widget_obj.reset_controls()
+    def return_selected_settings(self, settings_widget: TomatoSettings):
+        self._selected_tomato_settings = deepcopy(settings_widget.settings)
+        self._selected_monitor_settings = deepcopy(settings_widget.monitors)
+        self._workchain_node_label = settings_widget.workchain_node_label
+        settings_widget.reset_controls()
         self.post_settings_selection()
 
     def post_settings_selection(self):
@@ -415,13 +421,13 @@ class ExperimentBuilder(ipw.VBox):
 
             self.process = submit_experiment(
                 sample=current_battery,
-                method=self.selected_cycling_protocol,
-                tomato_settings=self.selected_tomato_settings,
-                monitor_settings=self.selected_monitor_settings,
+                protocols=self.selected_cycling_protocols,
+                settings=self.selected_tomato_settings.values(),
+                monitors=self.selected_monitor_settings.values(),
                 code_name=self.w_code.value,
                 sample_node_label="",
-                method_node_label="",
-                calcjob_node_label="")
+                protocol_node_label="",
+                workchain_node_label="")
 
         self.w_main_accordion.selected_index = None
 
@@ -469,9 +475,9 @@ class ExperimentBuilder(ipw.VBox):
         self._selected_battery_specs = None
         self._selected_recipe = None
         self._selected_cycling_protocol = None
-        self._selected_tomato_settings = None
-        self._selected_monitor_settings = None
-        self._calcjob_node_label = None
+        self._selected_tomato_settings = {}
+        self._selected_monitor_settings = {}
+        self._workchain_node_label = None
 
     def reset(self, dummy=None):
         "Reset the interface."
