@@ -422,8 +422,8 @@ class ExperimentBuilder(ipw.VBox):
             self.process = submit_experiment(
                 sample=current_battery,
                 protocols=self.selected_cycling_protocols,
-                settings=self.selected_tomato_settings.values(),
-                monitors=self.selected_monitor_settings.values(),
+                settings=list(self.selected_tomato_settings.values()),
+                monitors=list(self.selected_monitor_settings.values()),
                 code_name=self.w_code.value,
                 sample_node_label="",
                 protocol_node_label="",
