@@ -1,4 +1,5 @@
 import json
+import re
 from copy import deepcopy
 from typing import Dict, Optional
 
@@ -140,7 +141,7 @@ class ExperimentBuilder(ipw.VBox):
 
         self.protocol_creator = CyclingCustom(
             experiment_model=self.experiment_model,
-            validate_callback_f=self.return_selected_protocol,
+            validate_callback_f=self.save_protocol_and_refresh_selector,
         )
 
         self.w_protocols_tab = ipw.Tab(
@@ -333,10 +334,29 @@ class ExperimentBuilder(ipw.VBox):
     #######################################################################################
     # METHOD SELECTION
     #######################################################################################
-    def return_selected_protocol(self, cycling_widget_obj):
-        self.experiment_model.selected_protocol = cycling_widget_obj.protocol_steps_list
-        self._selected_cycling_protocol = cycling_widget_obj.protocol_steps_list
-        self.post_protocol_selection()
+    def save_protocol_and_refresh_selector(self, custom: CyclingCustom):
+        custom.reset_info_messages()
+        name: str = custom.protocol_name.value
+
+        # invalid name check
+        if not re.match(r"^[\w_]+$", name):
+            with custom.protocol_name_warning:
+                print("Only alphanumeric characters and underscores allowed")
+            return
+
+        # existing name check
+        available_protocols = self.experiment_model.available_protocols
+        if any(protocol.name == name for protocol in available_protocols):
+            with custom.protocol_name_warning:
+                print("Protocol name already exists.\nPlease choose another.")
+            return
+
+        new_protocol = self.experiment_model.selected_protocol
+        new_protocol.set_name(name)
+        self.experiment_model.save_protocol()
+        custom.w_save_info.value = "Saved!"
+
+        self.protocol_selector.update_protocol_options()
 
     def confirm_protocols_selection(self, _=None):
         "Switch to Tomato settings accordion tab."

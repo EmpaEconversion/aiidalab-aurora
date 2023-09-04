@@ -3,13 +3,11 @@ Cycling protocol customizable by the user.
 TODO: Enable the user to save a customized protocol.
 """
 import logging
-import os
 from typing import get_args
 
 import aiida_aurora.schemas.cycling
 import ipywidgets as ipw
 from aiida_aurora.schemas.cycling import ElectroChemPayloads
-from ipyfilechooser import FileChooser
 
 from .technique_widget import TechniqueParametersWidget
 
@@ -21,7 +19,9 @@ class CyclingCustom(ipw.VBox):
     BOX_LAYOUT = {'width': '95%'}
     BOX_LAYOUT_3 = {'width': '95%', 'padding': '5px', 'margin': '10px'}
     BUTTON_STYLE = {'description_width': '30%'}
-    BUTTON_LAYOUT = {'margin': '5px'}
+    BUTTON_LAYOUT = {'margin': '5px', 'width': '40%'}
+    SAVE_BUTTON_STYLE = {'description_width': '30%'}
+    SAVE_BUTTON_LAYOUT = {'margin': '5px', 'width': '135px'}
     BUTTON_LAYOUT_2 = {'width': '20%', 'margin': '5px'}
     # BUTTON_LAYOUT_3 = {'width': '43.5%', 'margin': '5px'}
     BUTTON_LAYOUT_3 = {'width': '10%', 'margin': '5px'}
@@ -45,11 +45,45 @@ class CyclingCustom(ipw.VBox):
 
         # initialize widgets
         self.w_header = ipw.HTML(value="<h2>Custom Protocol</h2>")
-        self.w_protocol_label = ipw.HTML(value="Sequence:")
-        self.w_protocol_steps_list = ipw.Select(rows=10,
-                                                value=None,
-                                                description="",
-                                                layout={})
+
+        self.protocol_name_label = ipw.HTML(value="Protocol name:")
+
+        self.protocol_name = ipw.Text(
+            layout={
+                "width": "auto",
+                "margin": "0 2px",
+            },
+            placeholder="Enter protocol name",
+        )
+
+        self.protocol_name_warning = ipw.Output()
+
+        self.protocol_node_name_label = ipw.HTML(
+            value="Protocol node label (optional):")
+
+        self.protocol_node_name = ipw.Text(
+            placeholder="Enter a name for the CyclingSpecsData node",
+            layout={
+                "width": "auto",
+                "margin": "0 2px",
+            },
+            style=self.BOX_STYLE_2,
+        )
+
+        self.w_protocol_sequence_label = ipw.HTML(value="Sequence:")
+
+        self.w_protocol_steps_list = ipw.Select(
+            layout={
+                "width": "auto",
+                "margin": "0 2px",
+            },
+            rows=10,
+            value=None,
+            description="",
+        )
+
+        self.w_selected_step_params_action_info = ipw.HTML()
+        self.w_save_info = ipw.HTML()
 
         self._update_protocol_steps_list_widget_options()
 
@@ -78,29 +112,13 @@ class CyclingCustom(ipw.VBox):
                                         style=self.BUTTON_STYLE,
                                         layout=self.BUTTON_LAYOUT_2)
 
-        self.w_button_load = ipw.Button(description="Load",
-                                        button_style='',
-                                        tooltip="Load protocol",
-                                        icon='',
-                                        style=self.BUTTON_STYLE,
-                                        layout=self.BUTTON_LAYOUT_3)
         self.w_button_save = ipw.Button(description="Save",
-                                        button_style='',
+                                        button_style='success',
                                         tooltip="Save protocol",
                                         icon='',
-                                        style=self.BUTTON_STYLE,
-                                        layout=self.BUTTON_LAYOUT_3)
-        home_directory = os.path.expanduser('~')
-        self.w_filepath_explorer = FileChooser(
-            home_directory,
-            layout={
-                "flex": "1",
-                'margin': '5px'
-            },
-        )
-        self.w_filepath_explorer.default_path = home_directory
-        self.w_filepath_explorer.default_filename = 'saved_protocol.json'
-        self.w_filepath_explorer.reset()
+                                        disabled=True,
+                                        style=self.SAVE_BUTTON_STYLE,
+                                        layout=self.SAVE_BUTTON_LAYOUT)
 
         # initialize protocol steps list
         # self._protocol_steps_list = ElectroChemSequence(method=[])
@@ -130,37 +148,10 @@ class CyclingCustom(ipw.VBox):
             style=self.BUTTON_STYLE,
             layout=self.BUTTON_LAYOUT_2)
 
-        self.w_method_node_label = ipw.Text(
-            description="AiiDA Method node label:",
-            placeholder="Enter a name for the CyclingSpecsData node",
-            layout={
-                'width': 'auto',
-                "margin": "5px 0",
-            },
-            style=self.BOX_STYLE_2,
-        )
-
-        self.w_validate = ipw.Button(description="Validate",
-                                     button_style='success',
-                                     tooltip="Validate the selected test",
-                                     icon='check',
-                                     disabled=False,
-                                     style=self.BUTTON_STYLE,
-                                     layout=self.BUTTON_LAYOUT)
-
         # initialize widgets
         super().__init__()
         self.children = [
             self.w_header,
-            ipw.HBox(
-                layout={},
-                children=[
-                    self.w_filepath_explorer,
-                    self.w_button_load,
-                    self.w_button_save,
-                ],
-            ),
-            self.w_protocol_label,
             ipw.HBox(
                 layout={
                     'width': 'auto',
@@ -172,6 +163,11 @@ class CyclingCustom(ipw.VBox):
                             "margin": "0 5px 0 0",
                         },
                         children=[
+                            self.protocol_name_label, self.protocol_name,
+                            self.protocol_name_warning,
+                            self.protocol_node_name_label,
+                            self.protocol_node_name,
+                            self.w_protocol_sequence_label,
                             self.w_protocol_steps_list,
                             ipw.HBox(
                                 layout={"justify_content": "space-between"},
@@ -182,6 +178,13 @@ class CyclingCustom(ipw.VBox):
                                     self.w_button_down,
                                 ],
                             ),
+                            ipw.HBox(
+                                layout={"align_items": "center"},
+                                children=[
+                                    self.w_button_save,
+                                    self.w_save_info,
+                                ],
+                            )
                         ],
                     ),
                     ipw.VBox(
@@ -194,21 +197,26 @@ class CyclingCustom(ipw.VBox):
                             self.w_selected_step_technique_name,
                             self.w_selected_step_parameters,
                             ipw.HBox(
-                                layout={},
+                                layout={"align_items": "center"},
                                 children=[
                                     self.w_selected_step_params_save_button,
                                     self.w_selected_step_params_discard_button,
+                                    self.w_selected_step_params_action_info,
                                 ],
                             ),
                         ],
                     )
                 ],
             ),
-            self.w_method_node_label,
-            self.w_validate,
         ]
 
         # setup automations
+
+        self.protocol_name.observe(
+            names='value',
+            handler=self.on_protocol_name_change,
+        )
+
         # steps list
         self.w_protocol_steps_list.observe(
             self._build_current_step_properties_widget, names='index')
@@ -223,9 +231,6 @@ class CyclingCustom(ipw.VBox):
         self.w_button_up.on_click(self.w_button_up_click)
         self.w_button_down.on_click(self.w_button_down_click)
 
-        self.w_button_load.on_click(self.button_load_protocol_click)
-        self.w_button_save.on_click(self.button_save_protocol_click)
-
         # current step's properties:
         #   if technique type changes, we need to initialize a new technique from scratch the widget observer may detect a change
         #   even when a new step is selected therefore we check whether the new technique is the same as the one stored in
@@ -237,9 +242,15 @@ class CyclingCustom(ipw.VBox):
             self.save_current_step_properties)
         self.w_selected_step_params_discard_button.on_click(
             self.discard_current_step_properties)
-        # validate protocol
-        self.w_validate.on_click(
+
+        # save protocol
+        self.w_button_save.on_click(
             lambda arg: self.callback_call(validate_callback_f))
+
+    def on_protocol_name_change(self, change: dict) -> None:
+        """docstring"""
+        self.w_button_save.disabled = not change["new"]
+        self.reset_info_messages()
 
     def update(self):
         """Receive updates from the model"""
@@ -275,6 +286,7 @@ class CyclingCustom(ipw.VBox):
         # return [type(step) for step in self.protocol_steps_list.method].count(technique)
 
     def _update_protocol_steps_list_widget_options(self, new_index=None):
+        self.reset_info_messages()
         old_selected_index = self.w_protocol_steps_list.index
         self.w_protocol_steps_list.options = [
             f"[{idx + 1}] - {step.name}" for idx, step in enumerate(
@@ -338,6 +350,7 @@ class CyclingCustom(ipw.VBox):
 
     def _build_technique_parameters_widgets(self, dummy=None):
         """Build widget of parameters for the given technique."""
+        self.reset_info_messages()
         logging.debug("Building technique parameters")
         # check if the technique is the same as the one stored in the selected step
         if isinstance(
@@ -372,12 +385,20 @@ class CyclingCustom(ipw.VBox):
             f"  Parameters saved: {self.w_selected_step_parameters.selected_tech_parameters.items()}"
         )
         self._update_protocol_steps_list_widget_options()
+        self.w_selected_step_params_action_info.value = "Saved step!"
 
     def discard_current_step_properties(self, dummy=None):
         "Discard parameters of the selected step and reload them from the technique object"
         logging.debug("Discarding current step properties")
         # i.e. just rebuild the parameters widget
         self._build_current_step_properties_widget()
+        self.w_selected_step_params_action_info.value = "Discarded step!"
+
+    def reset_info_messages(self) -> None:
+        """docstring"""
+        self.w_selected_step_params_action_info.value = ""
+        self.w_save_info.value = ""
+        self.protocol_name_warning.clear_output()
 
     def callback_call(self, callback_function):
         "Call a callback function and this class instance to it."
