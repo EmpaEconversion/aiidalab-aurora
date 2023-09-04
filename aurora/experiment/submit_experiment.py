@@ -8,7 +8,7 @@ from aiida_aurora.schemas.utils import dict_to_formatted_json
 from aurora.common.models import AvailableSamplesModel, BatteryExperimentModel
 from aurora.engine import submit_experiment
 
-from .protocols import CyclingCustom, CyclingStandard
+from .protocols import CyclingCustom, ProtocolSelector
 from .samples import SampleFromId, SampleFromRecipe, SampleFromSpecs
 from .tomato import TomatoSettings
 
@@ -39,9 +39,9 @@ class ExperimentBuilder(ipw.VBox):
         'recipe',
     ]
 
-    _METHOD_LABELS = [
-        'Standardized',
-        'Customized',
+    _PROTOCOL_TAB_LABELS = [
+        'Select',
+        'Create',
     ]
 
     _SAMPLE_BOX_LAYOUT = {
@@ -131,32 +131,26 @@ class ExperimentBuilder(ipw.VBox):
     def _build_cycling_protocol_section(self) -> None:
         """Build the cycling protocol section."""
 
-        self.w_test_sample_label = ipw.HTML("Selected samples:")
-        self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
+        self.protocol_selector = ProtocolSelector(
+            experiment_model=self.experiment_model,
+            validate_callback_f=self.confirm_protocols_selection,
+        )
 
-        self.w_test_standard = CyclingStandard(lambda x: x)
-
-        self.w_test_custom = CyclingCustom(
+        self.protocol_creator = CyclingCustom(
             experiment_model=self.experiment_model,
             validate_callback_f=self.return_selected_protocol,
         )
 
-        self.w_test_method_tab = ipw.Tab(
+        self.w_protocols_tab = ipw.Tab(
             children=[
-                self.w_test_standard,
-                self.w_test_custom,
+                self.protocol_selector,
+                self.protocol_creator,
             ],
-            selected_index=1,
+            selected_index=0,
         )
 
-        for i, title in enumerate(self._METHOD_LABELS):
-            self.w_test_method_tab.set_title(i, title)
-
-        self.w_test_tab = ipw.VBox([
-            self.w_test_sample_label,
-            self.w_test_sample_preview,
-            self.w_test_method_tab,
-        ])
+        for i, title in enumerate(self._PROTOCOL_TAB_LABELS):
+            self.w_protocols_tab.set_title(i, title)
 
     def _build_job_settings_section(self) -> None:
         """Build the job settings section."""
@@ -278,9 +272,9 @@ class ExperimentBuilder(ipw.VBox):
         return self._selected_battery_recipe
 
     @property
-    def selected_cycling_protocol(self):
+    def selected_cycling_protocols(self):
         "The Cycling Specs selected. Used by a BatteryCyclerExperiment."
-        return self.experiment_model.selected_protocol
+        return self.experiment_model.selected_protocols.values()
         # return self._selected_cycling_protocol
 
     @property
@@ -338,11 +332,9 @@ class ExperimentBuilder(ipw.VBox):
         self._selected_cycling_protocol = cycling_widget_obj.protocol_steps_list
         self.post_protocol_selection()
 
-    def post_protocol_selection(self):
+    def confirm_protocols_selection(self, _=None):
         "Switch to Tomato settings accordion tab."
-        if self.selected_battery_samples is None:
-            raise ValueError("A Battery sample was not selected!")
-        # self.w_settings_tab.set_default_calcjob_node_label(self.selected_battery_sample_node.label, self.selected_cycling_protocol_node.label)  # TODO: uncomment this
+        self.w_settings_tab.update_protocol_options()
         self.w_main_accordion.selected_index = 2
 
     #######################################################################################
@@ -414,6 +406,7 @@ class ExperimentBuilder(ipw.VBox):
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
         self.w_submit_button.disabled = True
+
         for index, battery_sample in self.experiment_model.selected_samples.iterrows(
         ):
             json_stuff = dict_to_formatted_json(battery_sample)
@@ -485,6 +478,7 @@ class ExperimentBuilder(ipw.VBox):
         # TODO: properly reinitialize each widget
         self.reset_all_inputs()
         self.w_sample_from_id.reset()
+        self.protocol_selector.reset()
         self.w_settings_tab.reset()
         self.w_submission_output.clear_output()
         self.w_main_accordion.selected_index = 0
