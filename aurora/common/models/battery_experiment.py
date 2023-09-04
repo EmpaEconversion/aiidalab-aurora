@@ -47,8 +47,8 @@ class BatteryExperimentModel():
 
     def reset_inputs(self):
         """Resets all inputs."""
-        # Not implemented yet...
-        return None
+        self.reset_selected_samples()
+        self.reset_selected_protocols()
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO OBSERVABLES

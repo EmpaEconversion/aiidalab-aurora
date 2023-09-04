@@ -470,10 +470,7 @@ class ExperimentBuilder(ipw.VBox):
 
     def reset_all_inputs(self, dummy=None):
         "Reset all the selected inputs."
-        self.experiment_model.reset_inputs()
-        self._selected_battery_samples = None
-        self._selected_battery_specs = None
-        self._selected_recipe = None
+        self.reset_sample_selection()
         self._selected_cycling_protocol = None
         self._selected_tomato_settings = {}
         self._selected_monitor_settings = {}
@@ -487,4 +484,4 @@ class ExperimentBuilder(ipw.VBox):
         self.protocol_selector.reset()
         self.w_settings_tab.reset()
         self.w_submission_output.clear_output()
-        self.w_main_accordion.selected_index = 0
+        self.w_main_accordion.selected_index = None
