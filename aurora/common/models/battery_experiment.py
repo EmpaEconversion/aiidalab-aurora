@@ -59,7 +59,7 @@ class BatteryExperimentModel():
         self.list_of_observers = []
         self.list_of_observations = []
 
-        self.available_samples = None
+        self.available_samples = pd.DataFrame()
         self.available_specs = None
         self.available_recipies = None
         self.available_protocols = None
@@ -69,7 +69,7 @@ class BatteryExperimentModel():
         self.update_available_recipies()
         self.update_available_protocols()
 
-        self.selected_samples = []
+        self.selected_samples = pd.DataFrame()
         self.selected_protocol = ElectroChemSequence(method=[])
         self.add_protocol_step()  # initialize sequence with first default step
 
@@ -343,34 +343,43 @@ class BatteryExperimentModel():
         col = df.pop("battery_id")
         df.insert(0, col.name, col)
 
-        display(
-            df.rename(
-                columns={
-                    "battery_id": 'id',
-                    "form_factor": 'form factor',
-                    "composition.description": 'composition',
-                    "capacity.nominal": 'C nominal',
-                    "capacity.actual": 'C actual',
-                    "capacity.units": 'C units',
-                    "metadata.name": 'name',
-                    "metadata.creation_datetime": 'creation date',
-                    "metadata.creation_process": 'creation process',
-                }).style.set_table_styles([
-                    dict(
-                        selector='th',
-                        props=[
-                            ('text-align', 'center'),
-                            ("width", "100vw"),
-                        ],
-                    ),
-                    dict(
-                        selector='td',
-                        props=[
-                            ('text-align', 'center'),
-                            ("width", "100vw"),
-                        ],
-                    )
-                ]).hide_index())
+        df = df.rename(
+            columns={
+                "battery_id": 'id',
+                "form_factor": 'form factor',
+                "composition.description": 'composition',
+                "capacity.nominal": 'C nominal',
+                "capacity.actual": 'C actual',
+                "capacity.units": 'C units',
+                "metadata.name": 'name',
+                "metadata.creation_datetime": 'creation date',
+                "metadata.creation_process": 'creation process',
+            })
+
+        styler = df.style
+
+        styler = styler.set_table_attributes('style="margin-top: 0"')
+
+        styler = styler.set_table_styles([
+            dict(
+                selector='th',
+                props=[
+                    ('text-align', 'center'),
+                    ("width", "100vw"),
+                ],
+            ),
+            dict(
+                selector='td',
+                props=[
+                    ('text-align', 'center'),
+                    ("width", "100vw"),
+                ],
+            )
+        ])
+
+        styler = styler.hide(axis="index")
+
+        display(styler)
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS

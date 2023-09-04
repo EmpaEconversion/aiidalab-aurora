@@ -61,10 +61,9 @@ class SampleFromId(ipw.VBox):
     }
 
     PREVIEW_LAYOUT = {
-        "margin": "0 auto 10px auto",
-        "height": "150px",
-        "max_height": "150px",
-        "overflow": "auto",
+        "margin": "0 2px 20px",
+        "max_height": "300px",
+        "overflow_y": "scroll",
         "align_items": "center",
     }
 
@@ -188,7 +187,7 @@ class SampleFromId(ipw.VBox):
     # widgets
     #########
 
-    def _build_filter_container(self) -> ipw.VBox:
+    def _build_filter_container(self) -> ipw.Accordion:
         """Build the filters section. Includes filter widgets and
         controls.
 
