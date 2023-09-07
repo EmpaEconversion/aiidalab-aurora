@@ -1,14 +1,17 @@
-import json
-from typing import Optional
+import re
+from copy import deepcopy
+from typing import Dict, Optional
 
 import ipywidgets as ipw
 from aiida_aurora.schemas.battery import BatterySample
+from aiida_aurora.schemas.dgbowl import Tomato_0p2
 from aiida_aurora.schemas.utils import dict_to_formatted_json
+from IPython.display import display
 
 from aurora.common.models import AvailableSamplesModel, BatteryExperimentModel
 from aurora.engine import submit_experiment
 
-from .protocols import CyclingCustom, CyclingStandard
+from .protocols import CyclingCustom, ProtocolSelector
 from .samples import SampleFromId, SampleFromRecipe, SampleFromSpecs
 from .tomato import TomatoSettings
 
@@ -21,10 +24,10 @@ class ExperimentBuilder(ipw.VBox):
     _SECTION_TITLE = "Submit Experiment"
 
     _ACCORDION_STEPS = [
-        'Sample Selection',
-        'Cycling Protocol',
-        'Job Settings',
-        'Submit Job',
+        'Select samples',
+        'Select protocols',
+        'Configure tomato/monitoring',
+        'Review input',
     ]
 
     _SAMPLE_INPUT_LABELS = [
@@ -39,9 +42,9 @@ class ExperimentBuilder(ipw.VBox):
         'recipe',
     ]
 
-    _METHOD_LABELS = [
-        'Standardized',
-        'Customized',
+    _PROTOCOL_TAB_LABELS = [
+        'Select',
+        'Create',
     ]
 
     _SAMPLE_BOX_LAYOUT = {
@@ -52,11 +55,8 @@ class ExperimentBuilder(ipw.VBox):
     }
 
     _SUBMISSION_INPUT_LAYOUT = {
-        'border': 'solid darkgrey 1px',
         'margin': '5px',
         'padding': '5px',
-        'max_height': '500px',
-        'overflow': 'scroll',
     }
 
     _SUBMISSION_OUTPUT_LAYOUT = {
@@ -131,52 +131,99 @@ class ExperimentBuilder(ipw.VBox):
     def _build_cycling_protocol_section(self) -> None:
         """Build the cycling protocol section."""
 
-        self.w_test_sample_label = ipw.HTML("Selected samples:")
-        self.w_test_sample_preview = ipw.Output(layout=self._SAMPLE_BOX_LAYOUT)
-
-        self.w_test_standard = CyclingStandard(lambda x: x)
-
-        self.w_test_custom = CyclingCustom(
+        self.protocol_selector = ProtocolSelector(
             experiment_model=self.experiment_model,
-            validate_callback_f=self.return_selected_protocol,
+            validate_callback_f=self.confirm_protocols_selection,
         )
 
-        self.w_test_method_tab = ipw.Tab(
+        self.protocol_creator = CyclingCustom(
+            experiment_model=self.experiment_model,
+            validate_callback_f=self.save_protocol_and_refresh_selector,
+        )
+
+        self.w_protocols_tab = ipw.Tab(
             children=[
-                self.w_test_standard,
-                self.w_test_custom,
+                self.protocol_selector,
+                self.protocol_creator,
             ],
-            selected_index=1,
+            selected_index=0,
         )
 
-        for i, title in enumerate(self._METHOD_LABELS):
-            self.w_test_method_tab.set_title(i, title)
-
-        self.w_test_tab = ipw.VBox([
-            self.w_test_sample_label,
-            self.w_test_sample_preview,
-            self.w_test_method_tab,
-        ])
+        for i, title in enumerate(self._PROTOCOL_TAB_LABELS):
+            self.w_protocols_tab.set_title(i, title)
 
     def _build_job_settings_section(self) -> None:
         """Build the job settings section."""
         self.w_settings_tab = TomatoSettings(
-            validate_callback_f=self.return_selected_settings)
+            experiment_model=self.experiment_model,
+            validate_callback_f=self.return_selected_settings,
+        )
 
-    def _build_job_submission_section(self) -> None:
+    def _build_input_preview_section(self) -> None:
         """Build the job submission section."""
 
-        # TODO: write better preview of the job inputs
-        self.w_job_preview = ipw.Output(layout=self._SUBMISSION_INPUT_LAYOUT)
+        self.input_preview = ipw.Output(layout={"margin": "0 0 10px"})
+
+        self.protocols_preview = ipw.Tab(layout={
+            "min_height": "350px",
+            "max_height": "350px",
+        })
+
+        self.settings_preview = ipw.Output(
+            layout={
+                "flex": "1",
+                "margin": "2px",
+                "border": "solid darkgrey 1px",
+                "overflow_y": "auto",
+            })
+
+        self.monitors_preview = ipw.Output(
+            layout={
+                "flex": "1",
+                "margin": "2px",
+                "border": "solid darkgrey 1px",
+                "overflow_y": "auto",
+            })
+
+        self.valid_input_confirmation = ipw.HTML()
+
+        self.input_preview_section = ipw.VBox(
+            layout={},
+            children=[
+                self.input_preview,
+                self.valid_input_confirmation,
+            ],
+        )
+
+    def _build_accordion(self) -> None:
+        """Combine the sections in the main accordion widget."""
+
+        self.w_main_accordion = ipw.Accordion(
+            layout={},
+            children=[
+                self.w_sample_selection_tab,
+                self.w_protocols_tab,
+                self.w_settings_tab,
+                self.input_preview_section,
+            ],
+            selected_index=None,
+        )
+
+        for i, title in enumerate(self._ACCORDION_STEPS):
+            self.w_main_accordion.set_title(i, title)
+
+    def _build_submission_section(self) -> ipw.HBox:
+        """Build submission controls widgets."""
 
         self.w_code = ipw.Dropdown(
+            layout={},
             description="Select code:",
             options=[CODE_NAME],  # TODO: get codes
             value=CODE_NAME,
         )
 
         self.w_submit_button = ipw.Button(
-            description="SUBMIT",
+            description="Submit",
             button_style="success",
             tooltip="Submit the experiment",
             icon="play",
@@ -185,16 +232,8 @@ class ExperimentBuilder(ipw.VBox):
             layout=self._BUTTON_LAYOUT,
         )
 
-        self.w_submit_tab = ipw.VBox([
-            self.w_job_preview,
-            self.w_code,
-            self.w_submit_button,
-        ])
-
-    def _build_reset_button(self) -> None:
-        """Build the reset button."""
         self.w_reset_button = ipw.Button(
-            description="RESET",
+            description="Reset",
             button_style="danger",
             tooltip="Start over",
             icon="times",
@@ -202,18 +241,16 @@ class ExperimentBuilder(ipw.VBox):
             layout=self._BUTTON_LAYOUT,
         )
 
-    def _build_accordion(self) -> None:
-        """Combine the sections in the main accordion widget."""
-
-        self.w_main_accordion = ipw.Accordion(children=[
-            self.w_sample_selection_tab,
-            self.w_test_tab,
-            self.w_settings_tab,
-            self.w_submit_tab,
-        ])
-
-        for i, title in enumerate(self._ACCORDION_STEPS):
-            self.w_main_accordion.set_title(i, title)
+        self.submission_controls = ipw.HBox(
+            layout={
+                "align_items": "center",
+            },
+            children=[
+                self.w_code,
+                self.w_submit_button,
+                self.w_reset_button,
+            ],
+        )
 
     def _build_widgets(self) -> None:
         """Build panel widgets."""
@@ -224,19 +261,20 @@ class ExperimentBuilder(ipw.VBox):
 
         self._build_job_settings_section()
 
-        self._build_job_submission_section()
-
-        self._build_reset_button()
+        self._build_input_preview_section()
 
         self._build_accordion()
 
-        super().__init__()
+        self._build_submission_section()
 
-        self.children = [
-            self.w_main_accordion,
-            self.w_reset_button,
-            self.w_submission_output,
-        ]
+        super().__init__(
+            layout={},
+            children=[
+                self.w_main_accordion,
+                self.submission_controls,
+                self.w_submission_output,
+            ],
+        )
 
     def _subscribe_observables(self) -> None:
         """Set up observables."""
@@ -245,6 +283,11 @@ class ExperimentBuilder(ipw.VBox):
         self.w_sample_selection_tab.observe(
             self.reset_sample_selection,
             names='selected_index',
+        )
+
+        self.protocols_preview.observe(
+            names="selected_index",
+            handler=self.display_settings_and_monitors,
         )
 
         # trigger presubmission checks when we are in the "Submit Job" accordion tab
@@ -278,25 +321,27 @@ class ExperimentBuilder(ipw.VBox):
         return self._selected_battery_recipe
 
     @property
-    def selected_cycling_protocol(self):
+    def selected_cycling_protocols(self):
         "The Cycling Specs selected. Used by a BatteryCyclerExperiment."
-        return self.experiment_model.selected_protocol
+        return list(self.experiment_model.selected_protocols.values())
         # return self._selected_cycling_protocol
 
     @property
-    def selected_tomato_settings(self):
+    def selected_tomato_settings(self) -> Dict[str, Tomato_0p2]:
         "The Tomato Settings selected. Used by a BatteryCyclerExperiment."
-        return self._selected_tomato_settings
+        return deepcopy(self._selected_tomato_settings)
 
     @property
-    def selected_monitor_settings(self):
+    def selected_monitor_settings(self) -> Dict[str, dict]:
         "The Tomato Monitor Settings selected. Used by a job monitor."
-        return self._selected_monitor_settings
+        return deepcopy(self._selected_monitor_settings)
 
     @property
-    def calcjob_node_label(self):
-        "The label assigned the submitted BatteryCyclerExperiment CalcJob."
-        return self._calcjob_node_label
+    def workchain_node_label(self):
+        """The label assigned to the submitted workchain node. The
+        label used in the workflow as a prefix for each submitted
+        protocol calculation node."""
+        return self._workchain_node_label
 
     #######################################################################################
     # SAMPLE SELECTION
@@ -333,26 +378,43 @@ class ExperimentBuilder(ipw.VBox):
     #######################################################################################
     # METHOD SELECTION
     #######################################################################################
-    def return_selected_protocol(self, cycling_widget_obj):
-        self.experiment_model.selected_protocol = cycling_widget_obj.protocol_steps_list
-        self._selected_cycling_protocol = cycling_widget_obj.protocol_steps_list
-        self.post_protocol_selection()
+    def save_protocol_and_refresh_selector(self, custom: CyclingCustom):
+        custom.reset_info_messages()
+        name: str = custom.protocol_name.value
 
-    def post_protocol_selection(self):
+        # invalid name check
+        if not re.match(r"^[\w_]+$", name):
+            with custom.protocol_name_warning:
+                print("Only alphanumeric characters and underscores allowed")
+            return
+
+        # existing name check
+        available_protocols = self.experiment_model.available_protocols
+        if any(protocol.name == name for protocol in available_protocols):
+            with custom.protocol_name_warning:
+                print("Protocol name already exists.\nPlease choose another.")
+            return
+
+        new_protocol = self.experiment_model.selected_protocol
+        new_protocol.set_name(name)
+        self.experiment_model.save_protocol()
+        custom.w_save_info.value = "Saved!"
+
+        self.protocol_selector.update_protocol_options()
+
+    def confirm_protocols_selection(self, _=None):
         "Switch to Tomato settings accordion tab."
-        if self.selected_battery_samples is None:
-            raise ValueError("A Battery sample was not selected!")
-        # self.w_settings_tab.set_default_calcjob_node_label(self.selected_battery_sample_node.label, self.selected_cycling_protocol_node.label)  # TODO: uncomment this
+        self.w_settings_tab.update_protocol_options()
         self.w_main_accordion.selected_index = 2
 
     #######################################################################################
     # TOMATO SETTINGS SELECTION
     #######################################################################################
-    def return_selected_settings(self, settings_widget_obj):
-        self._selected_tomato_settings = settings_widget_obj.selected_tomato_settings
-        self._selected_monitor_settings = settings_widget_obj.selected_monitor_settings
-        self._calcjob_node_label = settings_widget_obj.calcjob_node_label
-        settings_widget_obj.reset_controls()
+    def return_selected_settings(self, settings_widget: TomatoSettings):
+        self._selected_tomato_settings = deepcopy(settings_widget.settings)
+        self._selected_monitor_settings = deepcopy(settings_widget.monitors)
+        self._workchain_node_label = settings_widget.workchain_node_label
+        settings_widget.reset_controls()
         self.post_settings_selection()
 
     def post_settings_selection(self):
@@ -363,6 +425,137 @@ class ExperimentBuilder(ipw.VBox):
     # SUBMIT JOB
     #######################################################################################
 
+    def display_samples_preview(self) -> None:
+        """docstring"""
+
+        samples = ipw.Output(
+            layout={
+                "max_height": "300px",
+                "overflow_y": "scroll",
+                "align_items": "center",
+            })
+
+        display(
+            ipw.VBox(
+                layout={},
+                children=[
+                    ipw.HTML("<h3 style='margin: 0'>Samples</h3>"),
+                    samples,
+                ],
+            ))
+
+        with samples:
+            self.experiment_model.display_query_results({
+                'battery_id': [
+                    sample.battery_id
+                    for sample in self.selected_battery_samples
+                ]
+            })
+
+    def display_protocols_preview(self) -> None:
+        """docstring"""
+
+        self.protocols_preview.children = []
+        self.protocols_preview.selected_index = None
+
+        self.settings_preview.clear_output()
+        self.monitors_preview.clear_output()
+
+        display(
+            ipw.HBox(
+                layout={
+                    "margin": "0 0 10px",
+                    "grid_gap": "5px",
+                },
+                children=[
+                    ipw.VBox(
+                        layout={
+                            "width": "50%",
+                        },
+                        children=[
+                            ipw.HTML("<h3>Protocols</h3>"),
+                            self.protocols_preview,
+                        ],
+                    ),
+                    ipw.VBox(
+                        layout={
+                            "width": "50%",
+                            "grid_gap": "5px",
+                        },
+                        children=[
+                            ipw.VBox(
+                                layout={
+                                    "flex": "1",
+                                },
+                                children=[
+                                    ipw.HTML("<h3>Settings</h3>"),
+                                    self.settings_preview,
+                                ],
+                            ),
+                            ipw.VBox(
+                                layout={
+                                    "flex": "1",
+                                },
+                                children=[
+                                    ipw.HTML("<h3>Monitors</h3>"),
+                                    self.monitors_preview,
+                                ],
+                            ),
+                        ],
+                    )
+                ],
+            ))
+
+        for protocol in self.selected_cycling_protocols:
+
+            output = ipw.Output()
+
+            self.protocols_preview.children += (output, )
+            index = len(self.protocols_preview.children) - 1
+            self.protocols_preview.set_title(index, protocol.name)
+
+            with output:
+                for step in protocol.method:
+                    print(f"{step.name} ({step.technique})")
+                    for label, param in step.parameters:
+                        default = param.default_value
+                        value = default if param.value is None else param.value
+                        units = "" if value is None else param.units
+                        print(f"{label} = {value} {units}")
+                    print()
+
+        self.protocols_preview.selected_index = 0
+
+    def display_settings_and_monitors(self, change: dict) -> None:
+        """docstring"""
+
+        if (index := change["new"]) is None:
+            return
+
+        protocol = list(self.selected_cycling_protocols)[index]
+        settings = self.selected_tomato_settings.get(protocol.name)
+        monitors = self.selected_monitor_settings.get(protocol.name)
+
+        if settings is None or monitors is None:
+            return
+
+        self.settings_preview.clear_output()
+        with self.settings_preview:
+            for key, value in settings.dict().items():
+                if isinstance(value, dict):
+                    for k, v in value.items():
+                        print(f"{k}: {v}")
+                else:
+                    print(f"{key}: {value}")
+
+        self.monitors_preview.clear_output()
+        with self.monitors_preview:
+            for monitor, monitor_settings in monitors.items():
+                print(f"name: {monitor}")
+                for key, value in monitor_settings.items():
+                    print(f"{key} = {value}")
+            print()
+
     def presubmission_checks_preview(self, _=None) -> None:
         """
         Verify that all the input is there and display preview.
@@ -372,48 +565,37 @@ class ExperimentBuilder(ipw.VBox):
         if self.w_main_accordion.selected_index != 3:
             return
 
-        self.w_job_preview.clear_output()
+        self.input_preview.clear_output()
 
-        with self.w_job_preview:
-
-            if not self._has_valid_settings():
-                return
-
-            output_cycling_protocol = json.dumps(
-                self.selected_cycling_protocol.dict(),
-                indent=2,
-            )
-
-            output_tomato_settings = f'{self.selected_tomato_settings}'
-
-            output_monitor_settings = f'{self.selected_monitor_settings}'
+        with self.input_preview:
 
             if not self.selected_battery_samples:
-                return
+                notice = "No battery samples selected!"
+                return self.signal_missing_input(notice)
 
-            print("Battery Samples:")
+            self.display_samples_preview()
 
-            query = {
-                'battery_id': [
-                    sample.battery_id
-                    for sample in self.selected_battery_samples
-                ]
-            }
-            self.experiment_model.display_query_results(query)
+            if not self.selected_cycling_protocols:
+                notice = "No cycling protocols selected!"
+                return self.signal_missing_input(notice)
 
-            print()
+            self.display_protocols_preview()
 
-            print(f"Cycling Protocol:\n{output_cycling_protocol}\n")
-            print(f"Tomato Settings:\n{output_tomato_settings}\n")
-            print(f"Monitor Settings:{output_monitor_settings}\n")
+            if not self.selected_tomato_settings or \
+               not self.selected_monitor_settings:
+                notice = "No protocol settings selected!"
+                return self.signal_missing_input(notice)
 
-            print("✅ All good!")
-
+        self.valid_input_confirmation.value = "✅ All good!"
         self.w_submit_button.disabled = False
+
+    def signal_missing_input(self, message: str) -> None:
+        """docstring"""
+        self.valid_input_confirmation.value = f"❌ {message}"
 
     @w_submission_output.capture()
     def submit_job(self, dummy=None):
-        self.w_submit_button.disabled = True
+
         for index, battery_sample in self.experiment_model.selected_samples.iterrows(
         ):
             json_stuff = dict_to_formatted_json(battery_sample)
@@ -422,42 +604,15 @@ class ExperimentBuilder(ipw.VBox):
 
             self.process = submit_experiment(
                 sample=current_battery,
-                method=self.selected_cycling_protocol,
-                tomato_settings=self.selected_tomato_settings,
-                monitor_settings=self.selected_monitor_settings,
+                protocols=self.selected_cycling_protocols,
+                settings=list(self.selected_tomato_settings.values()),
+                monitors=list(self.selected_monitor_settings.values()),
                 code_name=self.w_code.value,
                 sample_node_label="",
-                method_node_label="",
-                calcjob_node_label="")
+                protocol_node_label="",
+                workchain_node_label="")
 
         self.w_main_accordion.selected_index = None
-
-    def _has_valid_settings(self) -> bool:
-        """Validate job settings.
-
-        Returns
-        -------
-        `bool`
-            `True` if job settings are valid, `False` otherwise.
-        """
-
-        try:
-
-            if self.selected_battery_samples is None:
-                raise ValueError("A Battery sample was not selected!")
-
-            if self.selected_cycling_protocol is None:
-                raise ValueError("A Cycling protocol was not selected!")
-
-            if self.selected_tomato_settings is None or self.selected_monitor_settings is None:
-                raise ValueError("Tomato settings were not selected!")
-
-            return True
-
-        except ValueError as err:
-            self.w_submit_button.disabled = True
-            print(f"❌ {err}")
-            return False
 
     #######################################################################################
     # RESET
@@ -471,20 +626,18 @@ class ExperimentBuilder(ipw.VBox):
 
     def reset_all_inputs(self, dummy=None):
         "Reset all the selected inputs."
-        self.experiment_model.reset_inputs()
-        self._selected_battery_samples = None
-        self._selected_battery_specs = None
-        self._selected_recipe = None
+        self.reset_sample_selection()
         self._selected_cycling_protocol = None
-        self._selected_tomato_settings = None
-        self._selected_monitor_settings = None
-        self._calcjob_node_label = None
+        self._selected_tomato_settings = {}
+        self._selected_monitor_settings = {}
+        self._workchain_node_label = None
 
     def reset(self, dummy=None):
         "Reset the interface."
         # TODO: properly reinitialize each widget
         self.reset_all_inputs()
         self.w_sample_from_id.reset()
+        self.protocol_selector.reset()
         self.w_settings_tab.reset()
         self.w_submission_output.clear_output()
-        self.w_main_accordion.selected_index = 0
+        self.w_main_accordion.selected_index = None

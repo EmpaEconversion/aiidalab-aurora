@@ -234,8 +234,7 @@
   ```
   verdi group create BatterySamples
   verdi group create CyclingSpecs
-  verdi group create CalcJobs
-  verdi group create MonitorJobs
+  verdi group create WorkChains
   ```
 
 ## 4. Aurora app installation

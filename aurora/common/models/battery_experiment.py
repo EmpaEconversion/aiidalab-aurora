@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 from aiida_aurora.schemas.battery import (BatterySampleJsonTypes,
@@ -41,12 +41,14 @@ class BatteryExperimentModel():
 
         self.selected_samples = pd.DataFrame()
         self.selected_protocol = ElectroChemSequence(method=[])
+        self.selected_protocols: Dict[int, ElectroChemSequence] = {}
+
         self.add_protocol_step()  # initialize sequence with first default step
 
     def reset_inputs(self):
         """Resets all inputs."""
-        # Not implemented yet...
-        return None
+        self.reset_selected_samples()
+        self.reset_selected_protocols()
 
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO OBSERVABLES
@@ -368,6 +370,10 @@ class BatteryExperimentModel():
     # ----------------------------------------------------------------------#
     # METHODS RELATED TO PROTOCOLS
     # ----------------------------------------------------------------------#
+    def reset_selected_protocols(self):
+        """Resets all inputs."""
+        self.selected_protocols = {}
+
     def _count_technique_occurencies(self, technique):
         return [type(step)
                 for step in self.selected_protocol.method].count(technique)
@@ -427,6 +433,50 @@ class BatteryExperimentModel():
 
         except OSError as err:
             print(f"Failed to save protocols => '{str(err)}'")
+
+    def add_selected_protocols(self, indices: List[int]) -> None:
+        """Add selected protocols to local cache.
+
+        Parameters
+        ----------
+        `indices` : `List[int]`
+            The `SelectMultiple` indices of the selected protocols.
+        """
+        for index in indices:
+            self.add_selected_protocol(index)
+
+    def add_selected_protocol(self, index: int) -> None:
+        """Add selected protocol to local cache.
+
+        Parameters
+        ----------
+        `index` : `int`
+             The `SelectMultiple` index of the selected protocol.
+        """
+        if index not in self.selected_protocols:
+            self.selected_protocols[index] = self.available_protocols[index]
+
+    def remove_selected_protocols(self, indices: List[int]) -> None:
+        """Remove selected protocol from local cache.
+
+        Parameters
+        ----------
+        `index` : `int`
+             The `SelectMultiple` index of the selected protocol.
+        """
+        for index in indices:
+            self.remove_selected_protocol(index)
+
+    def remove_selected_protocol(self, index: int) -> None:
+        """Remove selected protocol from local cache.
+
+        Parameters
+        ----------
+        `index` : `int`
+             The `SelectMultiple` index of the selected protocol.
+        """
+        if index in self.selected_protocols:
+            del self.selected_protocols[index]
 
     def update_available_protocols(
         self,
