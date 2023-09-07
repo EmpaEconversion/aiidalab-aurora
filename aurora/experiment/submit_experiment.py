@@ -320,26 +320,9 @@ class ExperimentBuilder(ipw.VBox):
         self.w_sample_from_recipe.w_specs_form_factor.value = specs_widget_obj.w_specs_form_factor.value
         self.w_sample_from_recipe.w_specs_capacity.value = specs_widget_obj.w_specs_capacity.value
 
-    def display_tested_sample_preview(self):
-        "Display sample properties in the Method tab."
-        self.w_test_sample_preview.clear_output()
-
-        if self.selected_battery_samples is None:
-            return
-
-        with self.w_test_sample_preview:
-            query = {
-                'battery_id': [
-                    sample.battery_id
-                    for sample in self.selected_battery_samples
-                ]
-            }
-            self.experiment_model.display_query_results(query)
-
     def post_sample_selection(self):
         "Switch to method accordion tab"
         self.w_main_accordion.selected_index = 1
-        self.display_tested_sample_preview()
 
     @property
     def sample_selection_method(self):
@@ -369,6 +352,7 @@ class ExperimentBuilder(ipw.VBox):
         self._selected_tomato_settings = settings_widget_obj.selected_tomato_settings
         self._selected_monitor_settings = settings_widget_obj.selected_monitor_settings
         self._calcjob_node_label = settings_widget_obj.calcjob_node_label
+        settings_widget_obj.reset_controls()
         self.post_settings_selection()
 
     def post_settings_selection(self):
@@ -481,7 +465,7 @@ class ExperimentBuilder(ipw.VBox):
 
     def reset_sample_selection(self, dummy=None):
         "Reset sample data."
-        self._selected_battery_samples = None
+        self._selected_battery_samples = []
         self._selected_battery_specs = None
         self._selected_recipe = None
 
@@ -500,5 +484,7 @@ class ExperimentBuilder(ipw.VBox):
         "Reset the interface."
         # TODO: properly reinitialize each widget
         self.reset_all_inputs()
+        self.w_sample_from_id.reset()
+        self.w_settings_tab.reset()
         self.w_submission_output.clear_output()
         self.w_main_accordion.selected_index = 0
