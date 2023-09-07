@@ -32,4 +32,7 @@ This project has received funding from the European Union’s Horizon 2020 resea
 
 ## Contact
 
-loris.ercole@epfl.ch
+- Edan Bainglass (edan.bainglass@psi.ch)
+- Francisco F. Ramirez (ramirezfranciscof@gmail.com)
+- Loris Ercole (loris.ercole@gmail.com)
+- Giovanni Pizzi (giovanni.pizzi@psi.ch)
