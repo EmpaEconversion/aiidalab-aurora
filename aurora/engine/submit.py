@@ -1,10 +1,10 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from aiida.engine import submit
 from aiida.manage.configuration import load_profile
 from aiida.orm import Dict as AiiDADict
 from aiida.orm import List as AiiDAList
-from aiida.orm import load_code, load_group
+from aiida.orm import QueryBuilder, load_code, load_group
 from aiida_aurora.data import (BatterySampleData, CyclingSpecsData,
                                TomatoSettingsData)
 from aiida_aurora.schemas.battery import BatterySample
@@ -104,11 +104,21 @@ def build_sample_node(
     sample_node_label: str,
 ) -> BatterySampleData:
     """Construct an AiiDA data node from battery sample data."""
+    if existing := fetch_sample_if_existing(sample.battery_id):
+        return existing
     sample_node = BatterySampleData(sample.dict())
-    sample_node.label = sample_node_label
+    label = f"{sample.metadata.name} <{sample.battery_id}>"
+    sample_node.label = sample_node_label or label
     sample_node.store()
     SAMPLES_GROUP.add_nodes(sample_node)
     return sample_node
+
+
+def fetch_sample_if_existing(bid: int) -> Optional[BatterySampleData]:
+    """Return protocol if already exists."""
+    qb = QueryBuilder()
+    qb.append(BatterySampleData, filters={"attributes.battery_id": bid})
+    return qb.first(flat=True)
 
 
 def build_protocol_node(
@@ -116,17 +126,25 @@ def build_protocol_node(
     protocol_node_label: str,
 ) -> CyclingSpecsData:
     """Construct an AiiDA data node from cycling protocol data."""
+    if existing := fetch_protocol_if_existing(protocol.name):
+        return existing
     protocol_node = CyclingSpecsData(protocol.dict())
-    protocol_node.label = protocol_node_label
+    protocol_node.label = protocol_node_label or protocol.name
     protocol_node.store()
     PROTOCOLS_GROUP.add_nodes(protocol_node)
     return protocol_node
 
 
+def fetch_protocol_if_existing(name: str) -> Optional[CyclingSpecsData]:
+    """Return protocol if already exists."""
+    qb = QueryBuilder()
+    qb.append(CyclingSpecsData, filters={"attributes.name": name})
+    return qb.first(flat=True)
+
+
 def build_settings_node(settings: Tomato_0p2) -> TomatoSettingsData:
     """Construct an AiiDA data node from tomato settings data."""
     settings_node = TomatoSettingsData(settings.dict())
-    settings_node.label = ""
     settings_node.store()
     return settings_node
 
@@ -161,7 +179,9 @@ def submit_job(
 ) -> CyclingSequenceWorkChain:
     """docstring"""
     workchain = submit(CyclingSequenceWorkChain, **inputs)
-    workchain.label = workchain_node_label
+    sample_name = inputs["battery_sample"].label
+    label = f"Experiment run on {sample_name}"
+    workchain.label = workchain_node_label or label
     print(f"Workflow <{workchain.pk}> submitted to AiiDA...")
     WORKFLOWS_GROUP.add_nodes(workchain)
     return workchain
