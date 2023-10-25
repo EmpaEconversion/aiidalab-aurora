@@ -7,7 +7,11 @@ from aiida.orm import Group, QueryBuilder
 from aiida_aurora.calculations import BatteryCyclerExperiment
 from traitlets import HasTraits, Unicode
 
+from aurora.time import TZ
+
 from .utils import get_experiment_sample_id, get_experiment_sample_node
+
+EXPERIMENTS_GROUP_PREFIX = "aurora/experiments"
 
 
 class ResultsModel(HasTraits):
@@ -84,10 +88,11 @@ class ResultsModel(HasTraits):
         self.weights.clear()
         self.weights_file = ""
 
-    def update_experiments(self, group: str, last_days=999) -> None:
+    def update_experiments(self, group: str, last_days: int) -> None:
         """docstring"""
 
-        if experiments := query_jobs(group, last_days):
+        group_label = f"{EXPERIMENTS_GROUP_PREFIX}/{group}"
+        if experiments := query_jobs(group_label, last_days):
             df = pd.DataFrame(experiments).sort_values('id')
             ctime = df['ctime'].dt.strftime('%Y-%m-%d %H:%m:%S')
             df['ctime'] = ctime
@@ -99,9 +104,42 @@ class ResultsModel(HasTraits):
     @staticmethod
     def get_groups() -> list[str]:
         """docstring"""
-        qb = QueryBuilder()
-        qb.append(Group, filters={'label': {'like': '%Jobs'}})
-        return [group.label for group in qb.all(flat=True)]
+        return [
+            "all-experiments",
+            *[
+                group.label.removeprefix(f"{EXPERIMENTS_GROUP_PREFIX}/")
+                for group in Group.collection.find({
+                    "label": {
+                        "and": [
+                            {
+                                "like": f"{EXPERIMENTS_GROUP_PREFIX}/%"
+                            },
+                            {
+                                "!like": r"%all-experiments"
+                            },
+                        ],
+                    },
+                })
+            ],
+        ]
+
+    # TODO move to AiiDA service
+    @staticmethod
+    def create_new_group(label: str, members: list[int]) -> None:
+        """docstring"""
+
+        nodes = QueryBuilder().append(
+            BatteryCyclerExperiment,
+            filters={
+                "id": {
+                    "in": members,
+                },
+            },
+        ).all(flat=True)
+
+        label = f"{EXPERIMENTS_GROUP_PREFIX}/{label}"
+        group = Group.collection.get_or_create(label)[0]
+        group.add_nodes(nodes)
 
 
 def query_jobs(
@@ -133,7 +171,7 @@ def query_jobs(
         'jobs',
         {
             'ctime': {
-                '>=': datetime.now() - timedelta(days=last_days)
+                '>=': datetime.now(TZ).date() - timedelta(days=last_days)
             },
         },
     )

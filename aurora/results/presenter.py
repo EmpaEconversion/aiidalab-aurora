@@ -25,12 +25,14 @@ class ResultsPresenter():
         self.model = model
         self.view = view
 
-        self.view.group_selector.options = self.model.get_groups()
-
         self._set_event_handlers()
+
+        self.update_view_experiments()
 
     def update_view_experiments(self, _=None) -> None:
         """docstring"""
+
+        self.view.group_selector.options = self.model.get_groups()
 
         self.model.update_experiments(
             group=self.view.group_selector.value,
@@ -40,10 +42,10 @@ class ResultsPresenter():
         options = self._build_experiment_selector_options()
         self.view.experiment_selector.options = options
 
-    def update_plot_button_state(self, _=None) -> None:
+    def toggle_plot_button(self, _=None) -> None:
         """docstring"""
-        no_experiments = not bool(self.view.experiment_selector.value)
-        no_plot_type = not bool(self.view.plot_type_selector.value)
+        no_experiments = not self.view.experiment_selector.value
+        no_plot_type = not self.view.plot_type_selector.value
         self.view.plot_button.disabled = no_experiments or no_plot_type
 
     def update_group_name_state(self, _=None) -> None:
@@ -67,6 +69,14 @@ class ResultsPresenter():
         self.view.info.clear_output()
         if self._has_valid_selection():
             self.add_plot_view()
+
+    def on_group_add_button_click(self, _=None) -> None:
+        """docstring"""
+        label = self.view.group_name.value
+        experiments = self.view.experiment_selector.value
+        self.model.create_new_group(label, experiments)
+        self.update_view_experiments()
+        self.view.group_name.value = ""
 
     def add_plot_view(self) -> None:
         """docstring"""
@@ -128,29 +138,23 @@ class ResultsPresenter():
         with self.view.info:
             print(message)
 
+    def toggle_widgets(self, _=None) -> None:
+        """docstring"""
+        self.toggle_plot_button()
+        self.update_group_name_state()
+
     def _set_event_handlers(self) -> None:
         """docstring"""
-
         self.view.on_displayed(self.update_view_experiments)
         self.view.plot_button.on_click(self.on_plot_button_clicked)
         self.view.update_button.on_click(self.update_view_experiments)
-
-        self.view.group_selector.observe(names="value",
-                                         handler=self.update_view_experiments)
-
-        self.view.last_days.observe(names="value",
-                                    handler=self.update_view_experiments)
-
-        self.view.experiment_selector.observe(
-            names="value",
-            handler=self.update_plot_button_state,
-        )
-
-        self.view.plot_type_selector.observe(
-            names="value",
-            handler=self.update_plot_button_state,
-        )
-
+        self.view.group_selector.observe(self.update_view_experiments, "value")
+        self.view.last_days.observe(self.update_view_experiments, "value")
+        self.view.experiment_selector.observe(self.toggle_widgets, "value")
+        self.view.plot_type_selector.observe(self.toggle_plot_button, "value")
+        self.view.weights_reset_button.on_click(self.reset_weights_file)
+        self.view.group_name.observe(self.toggle_group_name_button, "value")
+        self.view.group_add_button.on_click(self.on_group_add_button_click)
         self.view.weights_filechooser.register_callback(
             self.on_weights_file_change)
 

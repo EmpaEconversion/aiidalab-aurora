@@ -97,9 +97,7 @@ class ResultsView(ipw.VBox):
         )
 
         self.plot_button = ipw.Button(
-            layout={
-                "width": "fit-content",
-            },
+            layout=BUTTON_LAYOUT,
             button_style='primary',
             tooltip="Generate plot for selected experiments",
             icon='line-chart',
@@ -107,21 +105,52 @@ class ResultsView(ipw.VBox):
         )
 
         self.update_button = ipw.Button(
-            layout={
-                "width": "fit-content",
-            },
+            layout=BUTTON_LAYOUT,
             tooltip="Update experiments",
             icon='refresh',
         )
 
+        self.group_name = ipw.Text(
+            layout={},
+            placeholder="Enter group name",
+            disabled=True,
+        )
+
+        self.group_add_button = ipw.Button(
+            layout=BUTTON_LAYOUT,
+            button_style="success",
+            icon="check",
+            tooltip="Add experiments to group",
+            disabled=True,
+        )
+
         self.info = ipw.Output()
 
-        selection_controls = ipw.HBox(
+        selection_controls = ipw.VBox(
             layout={},
             children=[
-                self.plot_type_selector,
-                self.plot_button,
-                self.update_button,
+                ipw.HBox(
+                    layout={
+                        "justify_content": "space-between",
+                    },
+                    children=[
+                        ipw.HBox(
+                            layout={},
+                            children=[
+                                self.plot_type_selector,
+                                self.plot_button,
+                                self.update_button,
+                            ],
+                        ),
+                        ipw.HBox(
+                            layout={},
+                            children=[
+                                self.group_name,
+                                self.group_add_button,
+                            ],
+                        ),
+                    ],
+                ),
                 self.info,
             ],
         )
