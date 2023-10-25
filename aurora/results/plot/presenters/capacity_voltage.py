@@ -15,7 +15,7 @@ class CapacityVoltagePlotPresenter(MultiSeriesPlotPresenter):
 
     X_LABEL = 'Ewe [V]'
 
-    Y_LABEL = 'Q [mAh]'
+    NORM_AX = "x"
 
     def __init__(
         self,

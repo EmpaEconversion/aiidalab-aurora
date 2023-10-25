@@ -50,7 +50,7 @@ class PlotModel():
 
         self.__results_model.observe(
             names="weights_file",
-            handler=self._reset_weights,
+            handler=self.__reset_weights,
         )
 
     def fetch_data(self, eid: int) -> None:
@@ -71,11 +71,11 @@ class PlotModel():
         self.data[eid] = self.__results_model.results[eid]['data']
         print(log)
 
-    def get_weights(self, eid: int) -> dict[str, float]:
+    def get_weight(self, eid: int, electrode: str) -> int:
         """docstring"""
         if 'weights' not in self.data[eid]:
             self.data[eid]['weights'] = self.__results_model.get_weights(eid)
-        return self.data[eid]['weights']
+        return self.data[eid]['weights'].get(electrode.replace(" ", "_"), 1)
 
     def has_weights(self) -> bool:
         """docstring"""
@@ -103,7 +103,7 @@ class PlotModel():
     # PRIVATE #
     ###########
 
-    def _reset_weights(self, _=None) -> None:
+    def __reset_weights(self, _=None) -> None:
         """docstring"""
         for eid in self.experiment_ids:
             if eid in self.data and 'weights' in self.data[eid]:

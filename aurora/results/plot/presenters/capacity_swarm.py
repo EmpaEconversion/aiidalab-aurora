@@ -23,7 +23,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
     Y_LABEL = "Qd [mAh]"
 
-    max_cycle = -1
+    NORM_AX = "y"
 
     BOX_PROPS = {
         'boxprops': {
@@ -130,21 +130,22 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
         df_dict: dict[str, list] = {
             self.X_LABEL: [],
-            'eid': [],
+            "hue": [],
             self.Y_LABEL: [],
         }
 
         for eid, data in dataset.items():
-            weights: dict = self.model.get_weights(eid)
-            factor = weights.get(self.view.electrode.value, 1) / 3.6
-            for cycle, capacity in enumerate(data['Qd'][:num_cycles]):
-                df_dict['eid'].append(eid)
+            label, _ = self.get_series_properties(eid)
+            weight = self.model.get_weight(eid, self.view.electrode.value)
+            factor = 1 / weight
+            for cycle, capacity in enumerate(data["Qd"][:num_cycles]):
+                df_dict["hue"].append(label)
                 df_dict[self.X_LABEL].append(cycle)
                 df_dict[self.Y_LABEL].append(capacity * factor)
 
         data = pd.DataFrame(df_dict)
-        data = data.sort_values([self.X_LABEL, 'eid'])
-        data = data.astype({'eid': 'str'})
+        data = data.sort_values([self.X_LABEL, "hue"])
+        data = data.astype({"hue": "str"})
 
         return data
 
@@ -179,7 +180,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
                 x=self.X_LABEL,
                 y=self.Y_LABEL,
                 orient="v",
-                hue='eid',
+                hue="hue",
             )
 
     def _get_swarm_copy(self, data: pd.DataFrame) -> pd.DataFrame:

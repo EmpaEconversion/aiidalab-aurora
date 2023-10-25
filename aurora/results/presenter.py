@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+
 from .model import ResultsModel
 from .plot.factory import PlotPresenterFactory
 from .plot.model import PlotModel
@@ -44,9 +46,21 @@ class ResultsPresenter():
         no_plot_type = not bool(self.view.plot_type_selector.value)
         self.view.plot_button.disabled = no_experiments or no_plot_type
 
-    def update_weights_file_reference(self) -> None:
+    def update_group_name_state(self, _=None) -> None:
         """docstring"""
-        self.model.weights_file = self.view.weights_filechooser.value
+        no_experiments = not self.view.experiment_selector.value
+        self.view.group_name.disabled = no_experiments
+
+    def toggle_group_name_button(self, _=None) -> None:
+        """docstring"""
+        self.view.group_add_button.disabled = not self.view.group_name.value
+
+    def on_weights_file_change(self) -> None:
+        """docstring"""
+        with contextlib.suppress(Exception):
+            filename = self.view.weights_filechooser.value
+            self.model.fetch_weights(filename)
+            self.view.weights_reset_button.disabled = not filename
 
     def on_plot_button_clicked(self, _=None) -> None:
         """docstring"""
@@ -138,7 +152,13 @@ class ResultsPresenter():
         )
 
         self.view.weights_filechooser.register_callback(
-            self.update_weights_file_reference)
+            self.on_weights_file_change)
+
+    def reset_weights_file(self, _=None) -> None:
+        """docstring"""
+        self.model.reset_weights()
+        self.view.weights_filechooser.reset()
+        self.view.weights_reset_button.disabled = True
 
     def _build_experiment_selector_options(self) -> list[tuple]:
         """Returns a (option_string, battery_id) list."""

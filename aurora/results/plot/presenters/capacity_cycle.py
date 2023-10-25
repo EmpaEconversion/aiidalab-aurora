@@ -19,7 +19,7 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
 
     X_LABEL = 'Cycle'
 
-    Y_LABEL = 'Qd [mAh]'
+    NORM_AX = "y"
 
     def __init__(
         self,
@@ -67,14 +67,14 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
 
     def extract_data(self, dataset: dict) -> tuple:
         """docstring"""
-        x = [*range(len(dataset['Qd']))]
-        y = dataset['Qd'] / 3.6
+        y = dataset["Qd"]
+        x = np.arange(len(y))
         return (x, y)
 
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, y = (np.array(a) for a in self.extract_data(dataset))
-        y *= self.model.get_weights(eid).get(self.view.electrode.value, 1)
+        y /= self.model.get_weight(eid, self.view.electrode.value)
         x, y = self._down_select(x, y)
         label, color = self.get_series_properties(eid)
         line, = self.model.ax.plot(x, y, '.', label=label, color=color)

@@ -29,7 +29,7 @@ class PlotPresenter(HasTraits):
 
     HAS_LEGEND = True
 
-    legend_pad = 0.04
+    NORM_AX = ""
 
     closing_message = Unicode('')
 
@@ -148,25 +148,43 @@ class PlotPresenter(HasTraits):
     def _set_plot_labels(self) -> None:
         """docstring"""
         self.model.ax.set_title(self.TITLE, pad=10)
-        self.model.ax.set_xlabel(self.X_LABEL)
-        self._set_yaxis_label()
+        self.__set_axis_label("ax", "x")
+        self.__set_axis_label("ax", "y")
 
         if self.model.has_ax2:
-            self.model.ax2.set_ylabel(self.Y2_LABEL)
+            self.__set_axis_label("ax2", "y")
 
-    def _set_yaxis_label(self) -> None:
+    def __set_axis_label(self, ax: str, axis: str) -> None:
         """docstring"""
+        label = self.__get_axis_label(ax, axis)
+        getattr(getattr(self.model, ax), f"set_{axis}label")(label)
 
-        electrode = getattr(self.view, 'electrode', None)
+    def __get_axis_label(self, ax: str, axis: str) -> str:
+        """docstring"""
+        ax_label = self.__get_default_axis_label(ax, axis)
+        return ax_label if axis != self.NORM_AX else self.__normalize(ax_label)
 
-        weights_present = self.model.has_weights()
-
-        if electrode and electrode.value != 'none' and weights_present:
-            label = self.Y_LABEL.replace(']', '/g]')
+    def __get_default_axis_label(self, ax: str, axis: str) -> str:
+        """docstring"""
+        if ax == "ax" and axis == "x":
+            ax_label = self.X_LABEL
+        elif ax == "ax" and axis == "y":
+            ax_label = self.Y_LABEL
+        elif ax == "ax2" and axis == "x":
+            raise ValueError("secondary x-axis not yet supported")
+        elif ax == "ax2" and axis == "y":
+            ax_label = self.Y2_LABEL
         else:
-            label = self.Y_LABEL
+            raise ValueError(f"{axis} is not a valid axis")
+        return ax_label
 
-        self.model.ax.set_ylabel(label)
+    def __normalize(self, ax_label: str) -> str:
+        """docstring"""
+        electrode = getattr(self.view, 'electrode', None)
+        weights_present = self.model.has_weights()
+        if electrode and electrode.value != 'none' and weights_present:
+            return ax_label.replace(']', '/g]')
+        return ax_label
 
     def _set_event_handlers(self) -> None:
         """docstring"""

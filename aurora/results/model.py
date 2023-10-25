@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from json import load
 
 import pandas as pd
 from aiida.orm import Group, QueryBuilder
 from aiida_aurora.calculations import BatteryCyclerExperiment
-from aiida_aurora.data.battery import BatterySampleData
 from traitlets import HasTraits, Unicode
+
+from .utils import get_experiment_sample_id, get_experiment_sample_node
 
 
 class ResultsModel(HasTraits):
@@ -21,21 +21,68 @@ class ResultsModel(HasTraits):
         """docstring"""
         self.experiments = pd.DataFrame()
         self.results: dict[int, dict] = {}
+        self.weights: dict[int, dict[str, float]] = {}
 
     def get_weights(self, eid: int) -> dict[str, float]:
         """docstring"""
-        sample_node = get_experiment_sample_node(eid)
-        try:
-            return get_weights_from_node(sample_node)
-        except Exception:
+
+        defaults = {
+            "anode_mass": 1.,
+            "cathode_mass": 1.,
+        }
+
+        if self.weights:
             try:
-                sample_name = sample_node['metadata']['name']
-                return get_weights_from_file(sample_name, self.weights_file)
+                return self.fetch_weights_from_file(eid)
             except Exception:
-                return {
-                    "anode_mass": 1.,
-                    "cathode_mass": 1.,
-                }
+                return defaults
+
+        try:
+            return fetch_weights_from_node(eid)
+        except Exception:
+            return defaults
+
+    def fetch_weights(self, filename: str) -> None:
+        """docstring"""
+
+        self.weights_file = filename
+
+        with open(self.weights_file) as robot_output_csv:
+            robot_output = pd.read_csv(robot_output_csv, sep=";")
+
+        sample_id = robot_output["Battery_Number"].rename("sample_id")
+
+        anode_net_weight = extract_weights_from_robot_output(
+            robot_output,
+            "anode_mass",
+            "Anode Weight",
+            "Anode Current Collector Weight (mg)",
+        )
+
+        cathode_net_weight = extract_weights_from_robot_output(
+            robot_output,
+            "cathode_mass",
+            "Cathode Weight (mg)",
+            "Cathode Current Collector Weight (mg)",
+        )
+
+        self.weights = pd.concat(
+            [
+                anode_net_weight,
+                cathode_net_weight,
+            ],
+            axis=1,
+        ).reindex(sample_id).to_dict("index")
+
+    def fetch_weights_from_file(self, eid: int) -> dict[str, float]:
+        """docstring"""
+        sample_id = get_experiment_sample_id(eid)
+        return self.weights[sample_id]
+
+    def reset_weights(self) -> None:
+        """docstring"""
+        self.weights.clear()
+        self.weights_file = ""
 
     def update_experiments(self, group: str, last_days=999) -> None:
         """docstring"""
@@ -98,26 +145,24 @@ def query_jobs(
     return [query['jobs'] for query in qb.dict()]
 
 
-def get_experiment_sample_node(eid: int) -> BatterySampleData:
+def fetch_weights_from_node(eid: int) -> dict[str, float]:
     """docstring"""
-    qb = QueryBuilder()
-    qb.append(BatteryCyclerExperiment, filters={"id": eid}, tag="exp")
-    qb.append(BatterySampleData, with_outgoing="exp")
-    sample_node, = qb.first()
-    return sample_node
-
-
-def get_weights_from_node(sample_node: BatterySampleData) -> dict[str, float]:
-    """docstring"""
-    raw = sample_node.attributes
+    node = get_experiment_sample_node(eid)
+    composition = node.attributes["specs"]["composition"]
     return {
-        "anode_mass": raw['anode_weight']['net'],
-        "cathode_mass": raw['cathode_weight']['net'],
+        "anode_mass": composition["anode"]["weight"]["net"],
+        "cathode_mass": composition["cathode"]["weight"]["net"],
     }
 
 
-def get_weights_from_file(sample_name: str, filename: str) -> dict[str, float]:
+def extract_weights_from_robot_output(
+    robot_output: pd.DataFrame,
+    series_name: str,
+    weight_field: str,
+    cc_weight_field: str,
+) -> pd.Series:
     """docstring"""
-    with open(filename) as weights_file:
-        weights = load(weights_file)
-        return weights[sample_name]
+    weight = robot_output[weight_field]
+    cc_weight = robot_output[cc_weight_field]
+    net_weight = (weight - cc_weight) / 1000  # in grams
+    return pd.Series(name=series_name, data=net_weight)

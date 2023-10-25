@@ -5,6 +5,10 @@ import os
 import ipywidgets as ipw
 from ipyfilechooser import FileChooser
 
+BUTTON_LAYOUT = {
+    "width": "fit-content",
+}
+
 
 class ResultsView(ipw.VBox):
     """
@@ -26,11 +30,21 @@ class ResultsView(ipw.VBox):
     def __init__(self) -> None:
         """docstring"""
 
-        self.weights_label = ipw.HTML(
+        self.weights_label = ipw.Label(
             layout={
-                "margin": "2px 4px 2px 20px",
+                "width": "95px",
+                "margin": "0 6px 0 2px",
+                "padding": "0 0 0 24px",
             },
             value="Weights file:",
+        )
+
+        self.weights_reset_button = ipw.Button(
+            layout=BUTTON_LAYOUT,
+            button_style="warning",
+            icon="refresh",
+            tooltip="Reset weights file",
+            disabled=True,
         )
 
         self.weights_filechooser = FileChooser(
@@ -41,7 +55,9 @@ class ResultsView(ipw.VBox):
         )
 
         self.group_selector = ipw.Dropdown(
-            layout={},
+            layout={
+                "width": "50%",
+            },
             style={
                 'description_width': '95px',
             },
@@ -53,8 +69,7 @@ class ResultsView(ipw.VBox):
                 "width": "auto",
             },
             min=0,
-            max=999,
-            value=999,
+            value=10,
             description="Last days:",
         )
 
@@ -123,7 +138,16 @@ class ResultsView(ipw.VBox):
                     children=[
                         self.group_selector,
                         self.last_days,
+                    ],
+                ),
+                ipw.HBox(
+                    layout={
+                        "margin": "5px 0",
+                        "align_items": "center",
+                    },
+                    children=[
                         self.weights_label,
+                        self.weights_reset_button,
                         self.weights_filechooser,
                     ],
                 ),
