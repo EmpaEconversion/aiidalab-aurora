@@ -131,3 +131,5 @@ dmypy.json
 # Project-specific
 .aurora-*.ipynb
 *.json
+data/plots/*.csv
+data/plots/*.pkl

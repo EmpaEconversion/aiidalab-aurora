@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 import ipywidgets as ipw
 import numpy as np
 import pandas as pd
@@ -9,6 +11,8 @@ from matplotlib.collections import Collection
 from matplotlib.lines import Line2D
 from matplotlib.patches import PathPatch
 from traitlets import HasTraits, Unicode
+
+from aurora.time import TZ
 
 from ..utils import get_experiment_sample_node
 from .model import PlotModel
@@ -99,6 +103,24 @@ class PlotPresenter(HasTraits):
         self.draw()
         self._update_plot_axes(axis='y' if skip_x else 'both')
         self._show_legend()
+
+    def download_data(self, _=None) -> None:
+        """docstring"""
+        raise NotImplementedError
+
+    def get_destination_components(self) -> tuple[str, ...]:
+        """docstring"""
+
+        directory = self.view.file_explorer.selected_path
+
+        if filename := self.view.file_explorer.selected_filename:
+            prefix = ".".join(filename.split(".")[:-1])
+        else:
+            timestamp = datetime.now(TZ).strftime(r"%y%m%d-%H%M%S")
+            title = self.TITLE.replace(" ", "_")
+            prefix = f"{timestamp}_{title}"
+
+        return directory, prefix
 
     def get_series_properties(self, eid: int) -> tuple[str, str | None]:
         """docstring"""
@@ -191,6 +213,7 @@ class PlotPresenter(HasTraits):
     def _set_event_handlers(self) -> None:
         """docstring"""
 
+        self.view.download_button.on_click(self.download_data)
         self.view.delete_button.on_click(self.close_view)
         self.view.reset_button.on_click(self._reset_controls)
 

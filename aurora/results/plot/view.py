@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import ipywidgets as ipw
+from ipyfilechooser import FileChooser
 
 
 class PlotView(ipw.Accordion):
@@ -36,9 +39,14 @@ class PlotView(ipw.Accordion):
 
         buttons = self._build_buttons()
 
-        self.warning = ipw.HTML(layout={
-            "margin": "auto 10px",
-        }, )
+        self.file_explorer = FileChooser(
+            layout={
+                'width': 'auto',
+                'margin': '5px 0'
+            },
+            path=Path.home() / "apps/aurora/data/plots",
+            select_default=True,
+        )
 
         self.plot = ipw.Output(layout={
             "align_items": "center",
@@ -54,8 +62,21 @@ class PlotView(ipw.Accordion):
                 ipw.HBox(
                     layout={},
                     children=[
-                        self.warning,
-                        buttons,
+                        ipw.VBox(
+                            layout={
+                                "flex": "1",
+                                "width": "auto",
+                            },
+                            children=[
+                                self.file_explorer,
+                            ],
+                        ),
+                        ipw.VBox(
+                            layout={},
+                            children=[
+                                buttons,
+                            ],
+                        ),
                     ],
                 ),
                 self.plot,
@@ -95,7 +116,6 @@ class PlotView(ipw.Accordion):
         return ipw.HBox(
             layout={
                 "padding": "5px",
-                "margin": "0 0 0 auto"
             },
             children=[
                 self.download_button,
