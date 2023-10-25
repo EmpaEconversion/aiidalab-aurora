@@ -14,7 +14,7 @@ class VoltageCurrentTimePlotPresenter(MultiSeriesPlotPresenter):
 
     Y_LABEL = 'Ewe [V]'
 
-    Y2_LABEL = 'I [mA]'
+    bbox_to_anchor = (1.4, 1)
 
     def extract_data(self, dataset: dict) -> tuple:
         """docstring"""

@@ -29,6 +29,10 @@ class PlotPresenter(HasTraits):
 
     HAS_LEGEND = True
 
+    bbox_to_anchor = (1.3, 1)
+
+    loc = "upper right"
+
     NORM_AX = ""
 
     closing_message = Unicode('')
@@ -140,8 +144,6 @@ class PlotPresenter(HasTraits):
             self.model.ax2 = self.model.ax.twinx()
 
         self._add_y2axis_controls()
-
-        self.legend_pad = 0.14
 
         self.model.has_ax2 = True
 
@@ -372,8 +374,8 @@ class PlotPresenter(HasTraits):
                     handles,
                     labels,
                     framealpha=1.,
-                    loc='upper left',
-                    bbox_to_anchor=(1 + self.legend_pad, 1),
+                    bbox_to_anchor=self.bbox_to_anchor,
+                    loc=self.loc,
                 )
 
     def _get_unique_legend(
