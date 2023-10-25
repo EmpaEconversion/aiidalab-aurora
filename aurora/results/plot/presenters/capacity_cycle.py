@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from contextlib import suppress
-from typing import List, Tuple
 
 import ipywidgets as ipw
 import numpy as np
@@ -64,7 +65,7 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
 
         self.add_controls(controls)
 
-    def extract_data(self, dataset: dict) -> Tuple:
+    def extract_data(self, dataset: dict) -> tuple:
         """docstring"""
         x = [*range(len(dataset['Qd']))]
         y = dataset['Qd'] / 3.6
@@ -140,17 +141,17 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         """docstring"""
         self.refresh(skip_x=True)
 
-    def _down_select(self, x: np.ndarray, y: np.ndarray) -> Tuple:
+    def _down_select(self, x: np.ndarray, y: np.ndarray) -> tuple:
         """docstring"""
         x, y = self._filter_range(x, y)
         x, y = self._filter_points(x, y)
         return (x, y)
 
-    def _filter_range(self, x: np.ndarray, y: np.ndarray) -> Tuple:
+    def _filter_range(self, x: np.ndarray, y: np.ndarray) -> tuple:
         """docstring"""
 
         start, end, step = None, None, None
-        args: List[str] = self.view.range.value.split(':')
+        args: list[str] = self.view.range.value.split(':')
 
         if args:
             with suppress(Exception):
@@ -166,9 +167,9 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
 
         return (x[start:end:step], y[start:end:step])
 
-    def _filter_points(self, x: np.ndarray, y: np.ndarray) -> Tuple:
+    def _filter_points(self, x: np.ndarray, y: np.ndarray) -> tuple:
         """docstring"""
-        raw_list: List[str] = self.view.points.value.strip().split()
+        raw_list: list[str] = self.view.points.value.strip().split()
         points = [int(p) for p in raw_list if p.strip('-').isnumeric()]
         valid = [p for p in set(points) if -len(x) - 1 <= p < len(x)]
         return (x[valid], y[valid]) if valid else (x, y)

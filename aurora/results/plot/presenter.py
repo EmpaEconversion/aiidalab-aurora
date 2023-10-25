@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from re import search
-from typing import Dict, Tuple, Union
 
 import ipywidgets as ipw
 import numpy as np
@@ -56,13 +57,13 @@ class PlotPresenter(HasTraits):
         self.closing_message = message
         self.view.close()
 
-    def add_controls(self, controls: Dict[str, ipw.ValueWidget]) -> None:
+    def add_controls(self, controls: dict[str, ipw.ValueWidget]) -> None:
         """docstring"""
         for name, control in controls.items():
             setattr(self.view, name, control)
             self.view.controls.children += (control, )
 
-    def remove_controls(self, controls: Tuple[ipw.ValueWidget, ...]) -> None:
+    def remove_controls(self, controls: tuple[ipw.ValueWidget, ...]) -> None:
         """docstring"""
 
         current = self.view.current_controls
@@ -74,7 +75,7 @@ class PlotPresenter(HasTraits):
 
         self.view.controls.children = tuple(current)
 
-    def extract_data(self, dataset: dict) -> Union[Tuple, pd.DataFrame]:
+    def extract_data(self, dataset: dict) -> tuple | pd.DataFrame:
         """docstring"""
         raise NotImplementedError
 

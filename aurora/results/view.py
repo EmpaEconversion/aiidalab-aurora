@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import os
-from typing import List
 
 import ipywidgets as ipw
 from ipyfilechooser import FileChooser
@@ -142,5 +143,5 @@ class ResultsView(ipw.VBox):
         )
 
     @property
-    def plot_views(self) -> List:
+    def plot_views(self) -> list:
         return list(self.plots_container.children)

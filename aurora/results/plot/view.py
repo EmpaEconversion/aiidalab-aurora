@@ -1,4 +1,4 @@
-from typing import Dict, List
+from __future__ import annotations
 
 import ipywidgets as ipw
 
@@ -28,7 +28,7 @@ class PlotView(ipw.Accordion):
         ])
 
     @property
-    def current_controls(self) -> List[ipw.ValueWidget]:
+    def current_controls(self) -> list[ipw.ValueWidget]:
         return list(self.controls.children)
 
     def _build_plot_area(self):
@@ -112,7 +112,7 @@ class PlotView(ipw.Accordion):
         self.info = ipw.Tab(layout={
             "flex": "5",
         })
-        self.eid_tab_mapping: Dict[int, int] = {}
+        self.eid_tab_mapping: dict[int, int] = {}
 
         controls_container = ipw.Accordion(
             layout={},

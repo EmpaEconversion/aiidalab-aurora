@@ -1,4 +1,4 @@
-from typing import Dict, List
+from __future__ import annotations
 
 from aiida.orm import load_node
 from aiida_aurora.utils.cycling_analysis import cycling_analysis
@@ -17,19 +17,19 @@ class PlotModel():
     def __init__(
         self,
         results_model: ResultsModel,
-        experiment_ids: List[int],
+        experiment_ids: list[int],
     ) -> None:
         """docstring"""
 
         self.__results_model = results_model
         self.experiment_ids = experiment_ids
-        self.data: Dict[int, dict] = {}
+        self.data: dict[int, dict] = {}
 
         self.fig: Figure
         self.ax: Axes
         self.ax2: Axes
 
-        self.colors: Dict[int, str] = {}
+        self.colors: dict[int, str] = {}
 
         self.__results_model.observe(
             names="weights_file",
@@ -54,7 +54,7 @@ class PlotModel():
         self.data[eid] = self.__results_model.results[eid]['data']
         print(log)
 
-    def get_weights(self, eid: int) -> Dict[str, float]:
+    def get_weights(self, eid: int) -> dict[str, float]:
         """docstring"""
         if 'weights' not in self.data[eid]:
             self.data[eid]['weights'] = self.__results_model.get_weights(eid)

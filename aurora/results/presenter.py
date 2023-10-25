@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from __future__ import annotations
 
 from .model import ResultsModel
 from .plot.factory import PlotPresenterFactory
@@ -140,7 +140,7 @@ class ResultsPresenter():
         self.view.weights_filechooser.register_callback(
             self.update_weights_file_reference)
 
-    def _build_experiment_selector_options(self) -> List[Tuple]:
+    def _build_experiment_selector_options(self) -> list[tuple]:
         """Returns a (option_string, battery_id) list."""
         return [(as_option(row), row['id'])
                 for _, row in self.model.experiments.iterrows()]

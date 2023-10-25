@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from json import load
-from typing import Dict, List
 
 import pandas as pd
 from aiida.orm import Group, QueryBuilder
@@ -19,9 +20,9 @@ class ResultsModel(HasTraits):
     def __init__(self) -> None:
         """docstring"""
         self.experiments = pd.DataFrame()
-        self.results: Dict[int, dict] = {}
+        self.results: dict[int, dict] = {}
 
-    def get_weights(self, eid: int) -> Dict[str, float]:
+    def get_weights(self, eid: int) -> dict[str, float]:
         """docstring"""
         sample_node = get_experiment_sample_node(eid)
         try:
@@ -49,7 +50,7 @@ class ResultsModel(HasTraits):
         self.experiments = df
 
     @staticmethod
-    def get_groups() -> List[str]:
+    def get_groups() -> list[str]:
         """docstring"""
         qb = QueryBuilder()
         qb.append(Group, filters={'label': {'like': '%Jobs'}})
@@ -59,7 +60,7 @@ class ResultsModel(HasTraits):
 def query_jobs(
     group: str,
     last_days: int,
-) -> List[BatteryCyclerExperiment]:
+) -> list[BatteryCyclerExperiment]:
     """docstring"""
 
     qb = QueryBuilder()
@@ -106,7 +107,7 @@ def get_experiment_sample_node(eid: int) -> BatterySampleData:
     return sample_node
 
 
-def get_weights_from_node(sample_node: BatterySampleData) -> Dict[str, float]:
+def get_weights_from_node(sample_node: BatterySampleData) -> dict[str, float]:
     """docstring"""
     raw = sample_node.attributes
     return {
@@ -115,7 +116,7 @@ def get_weights_from_node(sample_node: BatterySampleData) -> Dict[str, float]:
     }
 
 
-def get_weights_from_file(sample_name: str, filename: str) -> Dict[str, float]:
+def get_weights_from_file(sample_name: str, filename: str) -> dict[str, float]:
     """docstring"""
     with open(filename) as weights_file:
         weights = load(weights_file)

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import contextlib
-from typing import Dict, List
 
 import ipywidgets as ipw
 import numpy as np
@@ -127,7 +128,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         self.view.num_cycles.max = self.max_cycle
         num_cycles = self.view.num_cycles.value
 
-        df_dict: Dict[str, list] = {
+        df_dict: dict[str, list] = {
             self.X_LABEL: [],
             'eid': [],
             self.Y_LABEL: [],
@@ -296,7 +297,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         """docstring"""
 
         start, end, step = None, None, None
-        args: List[str] = self.view.range.value.split(':')
+        args: list[str] = self.view.range.value.split(":")
 
         max_cycle = data[self.X_LABEL].max()
 
@@ -318,7 +319,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
     def _filter_points(self, data: pd.DataFrame) -> pd.DataFrame:
         """docstring"""
-        raw_list: List[str] = self.view.points.value.strip().split()
+        raw_list: list[str] = self.view.points.value.strip().split()
         points = [int(p) for p in raw_list if p.strip('-').isnumeric()]
         max_cycle = data[self.X_LABEL].max() + 1
         valid = [p for p in set(points) if -max_cycle - 1 <= p < max_cycle]

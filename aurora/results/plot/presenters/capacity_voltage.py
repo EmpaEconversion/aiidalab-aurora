@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import ipywidgets as ipw
 import numpy as np
 
@@ -45,7 +43,7 @@ class CapacityVoltagePlotPresenter(MultiSeriesPlotPresenter):
 
         self.add_controls(controls)
 
-    def extract_data(self, dataset: dict) -> Tuple:
+    def extract_data(self, dataset: dict) -> tuple:
         """docstring"""
 
         x = dataset["Ewe"]

@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 
 from .parents import MultiSeriesPlotPresenter
@@ -18,7 +16,7 @@ class VoltageCurrentTimePlotPresenter(MultiSeriesPlotPresenter):
 
     Y2_LABEL = 'I [mA]'
 
-    def extract_data(self, dataset: dict) -> Tuple:
+    def extract_data(self, dataset: dict) -> tuple:
         """docstring"""
         x = dataset["time"] / 3600.
         yv = dataset["Ewe"]
