@@ -24,10 +24,10 @@ class PlotPresenterFactory():
             presenter = presenters.VoltageTimePlotPresenter
         elif plot_type == 'voltagecurrent_time':
             presenter = presenters.VoltageCurrentTimePlotPresenter
+        elif plot_type == 'voltage_capacity':
+            presenter = presenters.VoltageCapacityPlotPresenter
         elif plot_type == 'capacity_cycle':
             presenter = presenters.CapacityCyclePlotPresenter
-        elif plot_type == 'capacity_voltage':
-            presenter = presenters.CapacityVoltagePlotPresenter
         elif plot_type == 'capacity_swarm':
             presenter = presenters.CapacitySwarmPlotPresenter
         else:

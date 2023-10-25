@@ -19,7 +19,7 @@ class ResultsView(ipw.VBox):
         ('Current vs time', 'current_time'),
         ('Voltage vs time', 'voltage_time'),
         ('Voltage & current vs time', 'voltagecurrent_time'),
-        ('Capacity vs voltage', 'capacity_voltage'),
+        ('Voltage vs capacity', 'voltage_capacity'),
         ('Capacity vs cycle', 'capacity_cycle'),
     ]
 

@@ -6,12 +6,12 @@ from ..view import PlotView
 from .parents import MultiSeriesPlotPresenter
 
 
-class CapacityVoltagePlotPresenter(MultiSeriesPlotPresenter):
+class VoltageCapacityPlotPresenter(MultiSeriesPlotPresenter):
     """
     docstring
     """
 
-    TITLE = 'C vs. V'
+    TITLE = 'V vs. C'
 
     X_LABEL = 'Ewe [V]'
 
@@ -45,28 +45,14 @@ class CapacityVoltagePlotPresenter(MultiSeriesPlotPresenter):
 
     def extract_data(self, dataset: dict) -> tuple:
         """docstring"""
-
-        x = dataset["Ewe"]
-
-        if 'Q' not in dataset:
-
-            t = dataset['time']
-            I = dataset['I']
-
-            Q = []
-            for i in range(len(t)):
-                q = np.trapz(I[:i], t[:i])
-                Q.append(q)
-
-            dataset['Q'] = np.array(Q)
-
-        y = dataset['Q'] / 3.6
-
+        x = dataset["Q"]
+        y = dataset["Ewe"]
         return (x, y)
 
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, y = (np.array(a) for a in self.extract_data(dataset))
+        x /= self.model.get_weight(eid, self.view.electrode.value)
         label, color = self.get_series_properties(eid)
         line, = self.model.ax.plot(x, y, label=label, color=color)
         self.store_color(line)
@@ -87,4 +73,4 @@ class CapacityVoltagePlotPresenter(MultiSeriesPlotPresenter):
 
     def _on_electrode_change(self, _=None) -> None:
         """docstring"""
-        self.refresh(skip_x=True)
+        self.refresh()
