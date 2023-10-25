@@ -4,6 +4,7 @@ from aiida.orm import load_node
 from aiida_aurora.utils.cycling_analysis import cycling_analysis
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 
 from ..model import ResultsModel
 
@@ -13,6 +14,18 @@ class PlotModel():
     docstring
     """
     has_ax2 = False
+
+    COLORS = {
+        False: [
+            "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
+            "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78",
+            "#98df8a", "#ff9896", "#c5b0d5", "#c49c94", "#f7b6d2", "#c7c7c7",
+            "#dbdb8d", "#9edae5", "#5254a3", "#393b79", "#637939", "#e6550d",
+            "#ad494a", "#ad494a", "#7b4173", "#d6616b", "#e7ba52", "#d9d9d9",
+            "#ce6dbd", "#bd9e39"
+        ],
+        True: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"]
+    }
 
     def __init__(
         self,
@@ -29,7 +42,11 @@ class PlotModel():
         self.ax: Axes
         self.ax2: Axes
 
-        self.colors: dict[int, str] = {}
+        # True/False are the states of the sub-batch toggle button
+        self.colors: dict[bool, dict[str, str]] = {
+            True: {},
+            False: {},
+        }
 
         self.__results_model.observe(
             names="weights_file",
@@ -69,6 +86,18 @@ class PlotModel():
             if present and not_one:
                 return True
         return False
+
+    def set_color(self, is_by_subbatch: bool, line: Line2D) -> None:
+        """docstring"""
+        if is_by_subbatch not in self.colors:
+            self.colors[is_by_subbatch] = {}
+        self.colors[is_by_subbatch][line.get_label()] = line.get_color()
+
+    def get_color(self, is_by_subbatch: bool, label: str) -> str | None:
+        """docstring"""
+        colors = self.colors[is_by_subbatch]
+        index = len(colors) % (4 if is_by_subbatch else 32)
+        return colors.get(label) or self.COLORS[is_by_subbatch][index]
 
     ###########
     # PRIVATE #

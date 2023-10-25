@@ -76,8 +76,9 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         x, y = (np.array(a) for a in self.extract_data(dataset))
         y *= self.model.get_weights(eid).get(self.view.electrode.value, 1)
         x, y = self._down_select(x, y)
-        color = self.model.colors.get(eid)
-        self.model.ax.plot(x, y, '.', label=eid, color=color)
+        label, color = self.get_series_properties(eid)
+        line, = self.model.ax.plot(x, y, '.', label=label, color=color)
+        self.store_color(line)
 
     ###################
     # PRIVATE METHODS #

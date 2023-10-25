@@ -67,9 +67,9 @@ class CapacityVoltagePlotPresenter(MultiSeriesPlotPresenter):
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, y = (np.array(a) for a in self.extract_data(dataset))
-        y *= self.model.get_weights(eid).get(self.view.electrode.value, 1)
-        color = self.model.colors.get(eid)
-        self.model.ax.plot(x, y, label=eid, color=color)
+        label, color = self.get_series_properties(eid)
+        line, = self.model.ax.plot(x, y, label=label, color=color)
+        self.store_color(line)
 
     ###################
     # PRIVATE METHODS #

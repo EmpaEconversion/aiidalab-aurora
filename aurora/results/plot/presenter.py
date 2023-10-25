@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from re import search
-
 import ipywidgets as ipw
 import numpy as np
 import pandas as pd
@@ -12,6 +10,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import PathPatch
 from traitlets import HasTraits, Unicode
 
+from ..utils import get_experiment_sample_node
 from .model import PlotModel
 from .view import PlotView
 
@@ -82,8 +81,9 @@ class PlotPresenter(HasTraits):
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         x, y = (np.array(a) for a in self.extract_data(dataset))
-        color = self.model.colors.get(eid)
-        self.model.ax.plot(x, y, label=eid, color=color)
+        label, color = self.get_series_properties(eid)
+        line, = self.model.ax.plot(x, y, label=label, color=color)
+        self.store_color(line)
 
     def draw(self) -> None:
         """docstring"""
@@ -95,6 +95,16 @@ class PlotPresenter(HasTraits):
         self.draw()
         self._update_plot_axes(axis='y' if skip_x else 'both')
         self._show_legend()
+
+    def get_series_properties(self, eid: int) -> tuple[str, str | None]:
+        """docstring"""
+        label = self._get_series_label(eid)
+        color = self.model.get_color(self.view.sub_batch_toggle.value, label)
+        return label, color
+
+    def store_color(self, line: Line2D) -> None:
+        """docstring"""
+        self.model.set_color(self.view.sub_batch_toggle.value, line)
 
     ###################
     # PRIVATE METHODS #
@@ -163,6 +173,11 @@ class PlotPresenter(HasTraits):
 
         self.view.delete_button.on_click(self.close_view)
         self.view.reset_button.on_click(self._reset_controls)
+
+        self.view.sub_batch_toggle.observe(
+            names="value",
+            handler=lambda _: self.refresh(skip_x=True),
+        )
 
         self.view.xlim.observe(
             names='value',
@@ -240,17 +255,6 @@ class PlotPresenter(HasTraits):
             for control in self.view.current_controls
         }
 
-        self._store_series_colors()
-
-    def _store_series_colors(self) -> None:
-        """docstring"""
-        line: Line2D
-        for line, eid in zip(*self.model.ax.get_legend_handles_labels()):
-            if isinstance(line, Line2D):
-                match = search(r'\d+', eid)
-                eid = match.group() if match else eid
-                self.model.colors[int(eid)] = line.get_color()
-
     def _add_y2axis_controls(self) -> None:
         """docstring"""
 
@@ -319,6 +323,13 @@ class PlotPresenter(HasTraits):
         self._reset_plot_limits(axis)
         self._set_axes_controls(axis)
 
+    def _get_series_label(self, eid: int) -> str:
+        """docstring"""
+        sample = get_experiment_sample_node(eid)
+        metadata = sample["metadata"]
+        return (f"{metadata['batch']}-{metadata['subbatch']}"
+                if self.view.sub_batch_toggle.value else metadata["name"])
+
     def _show_legend(self) -> None:
         """docstring"""
 
@@ -336,6 +347,8 @@ class PlotPresenter(HasTraits):
                 labels.extend(l2)
                 target = self.model.ax2
 
+            handles, labels = self._get_unique_legend(handles, labels)
+
             if handles and labels:
                 target.legend(
                     handles,
@@ -344,6 +357,15 @@ class PlotPresenter(HasTraits):
                     loc='upper left',
                     bbox_to_anchor=(1 + self.legend_pad, 1),
                 )
+
+    def _get_unique_legend(
+        self,
+        handles: list,
+        labels: list,
+    ) -> tuple[list, ...]:
+        """docstring"""
+        unique = {label: handle for handle, label in zip(handles, labels)}
+        return list(unique.values()), list(unique.keys())
 
     def _show_plot(self) -> None:
         """docstring"""

@@ -135,6 +135,15 @@ class PlotView(ipw.Accordion):
     def _build_controls(self) -> ipw.VBox:
         """docstring"""
 
+        self.sub_batch_toggle = ipw.ToggleButton(
+            layout={
+                "margin": "2px 2px 2px 90px",
+            },
+            button_style="primary",
+            description="By sub-batch",
+            value=False,
+        )
+
         self.xlim = ipw.FloatRangeSlider(
             layout={
                 "width": "90%",
@@ -156,6 +165,7 @@ class PlotView(ipw.Accordion):
                 "flex": "4",
             },
             children=[
+                self.sub_batch_toggle,
                 self.xlim,
                 self.ylim,
             ],
