@@ -120,12 +120,12 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
     def extract_data(self, dataset: dict) -> pd.DataFrame:
         """docstring"""
 
-        self._set_max_cycle(dataset)
+        max_cycle = self.__get_max_cycle(dataset)
 
-        if self.max_cycle < 0:
+        if max_cycle < 0:
             return pd.DataFrame()
 
-        self.view.num_cycles.max = self.max_cycle
+        self.view.num_cycles.max = max_cycle
         num_cycles = self.view.num_cycles.value
 
         df_dict: dict[str, list] = {
@@ -191,29 +191,14 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         swarm_data[self.X_LABEL] = x_series.apply(lambda old: old_new_map[old])
         return swarm_data
 
-    def _set_max_cycle(self, dataset: dict) -> None:
+    def __get_max_cycle(self, dataset: dict) -> int:
         """docstring"""
-
-        max_cycle = np.inf
-        limiting_experiment = 0
-        for eid, data in dataset.items():
-            last_cycle = len(data['Qd'])
-            if last_cycle < max_cycle:
+        max_cycle = -1
+        for data in dataset.values():
+            last_cycle = len(data["Qd"])
+            if last_cycle > max_cycle:
                 max_cycle = last_cycle
-                limiting_experiment = eid
-
-        if max_cycle > 1:
-            message = "Maximum cycle set to lowest final cycle: "
-            message += f"{max_cycle} (eid = {limiting_experiment})"
-            warning = f"<b style='color: red;'>{message}</b>"
-            self.view.warning.value = warning
-        else:
-            message = "Insufficient valid data - see tabs below for details"
-            warning = f"<b style='color: red;'>{message}</b>"
-            self.view.warning.value = warning
-            return
-
-        self.max_cycle = max_cycle
+        return max_cycle
 
     def _set_event_handlers(self) -> None:
         """docstring"""
