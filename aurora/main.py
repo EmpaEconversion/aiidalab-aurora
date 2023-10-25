@@ -64,13 +64,11 @@ class MainPanel(ipw.VBox):
         experiment = ExperimentBuilder()
         manager = InventoryManager()
 
-        results_view = self._build_results_section()
-
         tabs = ipw.Tab(
             children=[
                 experiment,
                 manager,
-                results_view,
+                self._build_results_section(),
             ],
             selected_index=0,
         )
@@ -91,6 +89,6 @@ class MainPanel(ipw.VBox):
             The results view as an `ipw.VBox`.
         """
         model = ResultsModel()
-        results_view = ResultsView()
-        _ = ResultsPresenter(model, results_view)
-        return results_view
+        view = ResultsView()
+        _ = ResultsPresenter(model, view)
+        return view

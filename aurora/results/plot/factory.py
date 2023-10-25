@@ -18,19 +18,19 @@ class PlotPresenterFactory():
         plot_view: PlotView,
     ) -> PlotPresenter:
         """docstring"""
-        if plot_type == 'current_time':
+        if plot_type == "current_time":
             presenter = presenters.CurrentTimePlotPresenter
-        elif plot_type == 'voltage_time':
+        elif plot_type == "voltage_time":
             presenter = presenters.VoltageTimePlotPresenter
-        elif plot_type == 'voltagecurrent_time':
+        elif plot_type == "voltagecurrent_time":
             presenter = presenters.VoltageCurrentTimePlotPresenter
-        elif plot_type == 'voltage_capacity':
+        elif plot_type == "voltage_capacity":
             presenter = presenters.VoltageCapacityPlotPresenter
-        elif plot_type == 'efficiency_cycle':
+        elif plot_type == "efficiency_cycle":
             presenter = presenters.EfficiencyCyclePlotPresenter
-        elif plot_type == 'capacity_cycle':
+        elif plot_type == "capacity_cycle":
             presenter = presenters.CapacityCyclePlotPresenter
-        elif plot_type == 'capacity_swarm':
+        elif plot_type == "capacity_swarm":
             presenter = presenters.CapacitySwarmPlotPresenter
         else:
             presenter = PlotPresenter(plot_model, plot_view)

@@ -6,11 +6,11 @@ class CurrentTimePlotPresenter(MultiSeriesPlotPresenter):
     docstring
     """
 
-    TITLE = 'I vs. t'
+    TITLE = "I vs. t"
 
-    X_LABEL = 't [h]'
+    X_LABEL = "t [h]"
 
-    Y_LABEL = 'I [mA]'
+    Y_LABEL = "I [mA]"
 
     def extract_data(self, dataset: dict) -> tuple:
         """docstring"""

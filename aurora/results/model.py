@@ -93,9 +93,9 @@ class ResultsModel(HasTraits):
 
         group_label = f"{EXPERIMENTS_GROUP_PREFIX}/{group}"
         if experiments := query_jobs(group_label, last_days):
-            df = pd.DataFrame(experiments).sort_values('id')
-            ctime = df['ctime'].dt.strftime('%Y-%m-%d %H:%m:%S')
-            df['ctime'] = ctime
+            df = pd.DataFrame(experiments).sort_values("id")
+            ctime = df["ctime"].dt.strftime(r"%Y-%m-%d %H:%m:%S")
+            df["ctime"] = ctime
         else:
             df = pd.DataFrame()
 
@@ -150,37 +150,37 @@ def query_jobs(
 
     qb = QueryBuilder()
 
-    qb.append(Group, filters={'label': group}, tag='g')
+    qb.append(Group, filters={"label": group}, tag="g")
 
     qb.append(
         BatteryCyclerExperiment,
-        with_group='g',
-        tag='jobs',
+        with_group="g",
+        tag="jobs",
         project=[
-            'id',
-            'label',
-            'ctime',
-            'attributes.process_label',
-            'attributes.state',
-            'attributes.status',
-            'extras.monitored',
+            "id",
+            "label",
+            "ctime",
+            "attributes.process_label",
+            "attributes.state",
+            "attributes.status",
+            "extras.monitored",
         ],
     )
 
     qb.add_filter(
-        'jobs',
+        "jobs",
         {
-            'ctime': {
-                '>=': datetime.now(TZ).date() - timedelta(days=last_days)
+            "ctime": {
+                ">=": datetime.now(TZ).date() - timedelta(days=last_days)
             },
         },
     )
 
-    qb.add_filter('jobs', {'attributes.process_state': 'finished'})
+    qb.add_filter("jobs", {"attributes.process_state": "finished"})
 
-    qb.order_by({'jobs': {'ctime': 'desc'}})
+    qb.order_by({"jobs": {"ctime": "desc"}})
 
-    return [query['jobs'] for query in qb.dict()]
+    return [query["jobs"] for query in qb.dict()]
 
 
 def fetch_weights_from_node(eid: int) -> dict[str, float]:

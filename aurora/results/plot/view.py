@@ -41,8 +41,8 @@ class PlotView(ipw.Accordion):
 
         self.file_explorer = FileChooser(
             layout={
-                'width': 'auto',
-                'margin': '5px 0'
+                "width": "auto",
+                "margin": "5px 0"
             },
             path=Path.home() / "apps/aurora/data/plots",
             select_default=True,
@@ -90,27 +90,27 @@ class PlotView(ipw.Accordion):
             layout={
                 "width": "fit-content",
             },
-            button_style='success',
+            button_style="success",
             tooltip="Download data",
-            icon='download',
+            icon="download",
         )
 
         self.reset_button = ipw.Button(
             layout={
                 "width": "fit-content",
             },
-            button_style='warning',
+            button_style="warning",
             tooltip="Reset controls",
-            icon='refresh',
+            icon="refresh",
         )
 
         self.delete_button = ipw.Button(
             layout={
                 "width": "fit-content",
             },
-            button_style='danger',
+            button_style="danger",
             tooltip="Delete plot",
-            icon='trash',
+            icon="trash",
         )
 
         return ipw.HBox(
@@ -148,7 +148,7 @@ class PlotView(ipw.Accordion):
             selected_index=None,
         )
 
-        controls_container.set_title(0, 'Plot controls')
+        controls_container.set_title(0, "Plot controls")
 
         return controls_container
 

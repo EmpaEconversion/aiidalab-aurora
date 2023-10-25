@@ -80,14 +80,14 @@ class PlotModel():
 
     def get_weight(self, eid: int, electrode: str) -> int:
         """docstring"""
-        if 'weights' not in self.data[eid]:
-            self.data[eid]['weights'] = self.__results_model.get_weights(eid)
-        return self.data[eid]['weights'].get(electrode.replace(" ", "_"), 1)
+        if "weights" not in self.data[eid]:
+            self.data[eid]["weights"] = self.__results_model.get_weights(eid)
+        return self.data[eid]["weights"].get(electrode.replace(" ", "_"), 1)
 
     def has_weights(self) -> bool:
         """docstring"""
         for eid in self.experiment_ids:
-            weights: dict = self.data[eid].get('weights', {})
+            weights: dict = self.data[eid].get("weights", {})
             present = bool(weights)
             not_one = all(weight != 1. for weight in weights.values())
             if present and not_one:
@@ -119,8 +119,8 @@ class PlotModel():
     def __reset_weights(self, _=None) -> None:
         """docstring"""
         for eid in self.experiment_ids:
-            if eid in self.data and 'weights' in self.data[eid]:
-                del self.data[eid]['weights']
+            if eid in self.data and "weights" in self.data[eid]:
+                del self.data[eid]["weights"]
 
     def __add_raw_data_dropdown(self, raw: Styler) -> None:
         """docstring"""

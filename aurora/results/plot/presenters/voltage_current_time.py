@@ -8,11 +8,13 @@ class VoltageCurrentTimePlotPresenter(MultiSeriesPlotPresenter):
     docstring
     """
 
-    TITLE = 'V & I vs. t'
+    TITLE = "V & I vs. t"
 
-    X_LABEL = 't [h]'
+    X_LABEL = "t [h]"
 
-    Y_LABEL = 'Ewe [V]'
+    Y_LABEL = "Ewe [V]"
+
+    Y2_LABEL = "I [mA]"
 
     bbox_to_anchor = (1.4, 1)
 

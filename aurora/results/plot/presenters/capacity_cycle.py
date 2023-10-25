@@ -15,9 +15,11 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
     docstring
     """
 
-    TITLE = 'C vs. Cycle #'
+    TITLE = "C vs. Cycle #"
 
-    X_LABEL = 'Cycle'
+    X_LABEL = "Cycle"
+
+    Y_LABEL = "Discharge Capacity [mAh]"
 
     NORM_AX = "y"
 
@@ -49,18 +51,18 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         electrode = ipw.RadioButtons(
             layout={},
             options=[
-                'anode mass',
-                'cathode mass',
-                'none',
+                "anode mass",
+                "cathode mass",
+                "none",
             ],
-            value='cathode mass',
-            description='normalize by',
+            value="cathode mass",
+            description="normalize by",
         )
 
         controls = {
-            'range': _range,
-            'points': points,
-            'electrode': electrode,
+            "range": _range,
+            "points": points,
+            "electrode": electrode,
         }
 
         self.add_controls(controls)
@@ -77,7 +79,7 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         y /= self.model.get_weight(eid, self.view.electrode.value)
         x, y = self._down_select(x, y)
         label, color = self.get_series_properties(eid)
-        line, = self.model.ax.plot(x, y, '.', label=label, color=color)
+        line, = self.model.ax.plot(x, y, ".", label=label, color=color)
         self.store_color(line)
 
     ###################
@@ -90,32 +92,32 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         super()._set_event_handlers()
 
         self.view.range.observe(
-            names='value',
+            names="value",
             handler=self._on_range_change,
         )
 
         self.view.points.observe(
-            names='value',
+            names="value",
             handler=self._on_points_change,
         )
 
         self.view.electrode.observe(
-            names='value',
-            handler=self._on_electrode_change,
+            names="value",
+            handler=lambda _: self.refresh(skip_x=True),
         )
 
     def _on_range_change(self, _=None) -> None:
         """docstring"""
 
         self.view.points.unobserve(
-            names='value',
+            names="value",
             handler=self._on_points_change,
         )
 
-        self.view.points.value = ''
+        self.view.points.value = ""
 
         self.view.points.observe(
-            names='value',
+            names="value",
             handler=self._on_points_change,
         )
 
@@ -125,22 +127,18 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         """docstring"""
 
         self.view.range.unobserve(
-            names='value',
+            names="value",
             handler=self._on_range_change,
         )
 
-        self.view.range.value = ''
+        self.view.range.value = ""
 
         self.view.range.observe(
-            names='value',
+            names="value",
             handler=self._on_range_change,
         )
 
         self.refresh()
-
-    def _on_electrode_change(self, _=None) -> None:
-        """docstring"""
-        self.refresh(skip_x=True)
 
     def _down_select(self, x: np.ndarray, y: np.ndarray) -> tuple:
         """docstring"""
@@ -152,7 +150,7 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
         """docstring"""
 
         start, end, step = None, None, None
-        args: list[str] = self.view.range.value.split(':')
+        args: list[str] = self.view.range.value.split(":")
 
         if args:
             with suppress(Exception):
@@ -171,6 +169,6 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
     def _filter_points(self, x: np.ndarray, y: np.ndarray) -> tuple:
         """docstring"""
         raw_list: list[str] = self.view.points.value.strip().split()
-        points = [int(p) for p in raw_list if p.strip('-').isnumeric()]
+        points = [int(p) for p in raw_list if p.strip("-").isnumeric()]
         valid = [p for p in set(points) if -len(x) - 1 <= p < len(x)]
         return (x[valid], y[valid]) if valid else (x, y)

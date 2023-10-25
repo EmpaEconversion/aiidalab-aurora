@@ -11,9 +11,11 @@ class VoltageCapacityPlotPresenter(MultiSeriesPlotPresenter):
     docstring
     """
 
-    TITLE = 'V vs. C'
+    TITLE = "V vs. C"
 
-    X_LABEL = 'Ewe [V]'
+    X_LABEL = "Q [mAh]"
+
+    Y_LABEL = "Ewe [V]"
 
     NORM_AX = "x"
 
@@ -29,16 +31,16 @@ class VoltageCapacityPlotPresenter(MultiSeriesPlotPresenter):
         electrode = ipw.RadioButtons(
             layout={},
             options=[
-                'anode mass',
-                'cathode mass',
-                'none',
+                "anode mass",
+                "cathode mass",
+                "none",
             ],
-            value='cathode mass',
-            description='normalize by',
+            value="cathode mass",
+            description="normalize by",
         )
 
         controls = {
-            'electrode': electrode,
+            "electrode": electrode,
         }
 
         self.add_controls(controls)
@@ -67,10 +69,6 @@ class VoltageCapacityPlotPresenter(MultiSeriesPlotPresenter):
         super()._set_event_handlers()
 
         self.view.electrode.observe(
-            names='value',
-            handler=self._on_electrode_change,
+            names="value",
+            handler=self.refresh,
         )
-
-    def _on_electrode_change(self, _=None) -> None:
-        """docstring"""
-        self.refresh()

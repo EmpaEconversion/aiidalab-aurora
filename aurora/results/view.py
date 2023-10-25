@@ -16,16 +16,16 @@ class ResultsView(ipw.VBox):
     """
 
     SINGLE_PLOT_TYPES = [
-        ('Current vs time', 'current_time'),
-        ('Voltage vs time', 'voltage_time'),
-        ('Voltage & current vs time', 'voltagecurrent_time'),
-        ('Voltage vs capacity', 'voltage_capacity'),
-        ('Efficiency vs cycle', 'efficiency_cycle'),
-        ('Capacity vs cycle', 'capacity_cycle'),
+        ("Current vs time", "current_time"),
+        ("Voltage vs time", "voltage_time"),
+        ("Voltage & current vs time", "voltagecurrent_time"),
+        ("Voltage vs capacity", "voltage_capacity"),
+        ("Efficiency vs cycle", "efficiency_cycle"),
+        ("Capacity vs cycle", "capacity_cycle"),
     ]
 
     STATISTICAL_PLOT_TYPES = [
-        ('Capacity swarm', 'capacity_swarm'),
+        ("Capacity swarm", "capacity_swarm"),
     ]
 
     def __init__(self) -> None:
@@ -52,7 +52,7 @@ class ResultsView(ipw.VBox):
             layout={
                 "flex": "1",
             },
-            path=os.path.expanduser('~'),
+            path=os.path.expanduser("~"),
         )
 
         self.group_selector = ipw.Dropdown(
@@ -60,7 +60,7 @@ class ResultsView(ipw.VBox):
                 "width": "50%",
             },
             style={
-                'description_width': '95px',
+                "description_width": "95px",
             },
             description="Select group:",
         )
@@ -90,7 +90,7 @@ class ResultsView(ipw.VBox):
         self.plot_type_selector = ipw.Dropdown(
             layout={},
             style={
-                'description_width': '95px',
+                "description_width": "95px",
             },
             description="Select plot type:",
             value=None,
@@ -99,16 +99,16 @@ class ResultsView(ipw.VBox):
 
         self.plot_button = ipw.Button(
             layout=BUTTON_LAYOUT,
-            button_style='primary',
+            button_style="primary",
             tooltip="Generate plot for selected experiments",
-            icon='line-chart',
+            icon="line-chart",
             disabled=True,
         )
 
         self.update_button = ipw.Button(
             layout=BUTTON_LAYOUT,
             tooltip="Update experiments",
-            icon='refresh',
+            icon="refresh",
         )
 
         self.group_name = ipw.Text(

@@ -21,30 +21,30 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
     X_LABEL = "Cycle"
 
-    Y_LABEL = "Qd [mAh]"
+    Y_LABEL = "Discharge Capacity [mAh]"
 
     NORM_AX = "y"
 
     BOX_PROPS = {
-        'boxprops': {
-            'facecolor': (0.25, 0.25, 0.25, 0.1),
+        "boxprops": {
+            "facecolor": (0.25, 0.25, 0.25, 0.1),
         },
-        'linewidth': 0.25,
+        "linewidth": 0.25,
     }
 
     HIDDEN_BOX_PROPS = {
-        'boxprops': {
-            'facecolor': 'none',
-            'edgecolor': 'none'
+        "boxprops": {
+            "facecolor": "none",
+            "edgecolor": "none"
         },
-        'medianprops': {
-            'color': 'none'
+        "medianprops": {
+            "color": "none"
         },
-        'whiskerprops': {
-            'color': 'none'
+        "whiskerprops": {
+            "color": "none"
         },
-        'capprops': {
-            'color': 'none'
+        "capprops": {
+            "color": "none"
         }
     }
 
@@ -69,13 +69,13 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
         draw_box = ipw.Checkbox(
             layout={},
-            description='show box',
+            description="show box",
             value=True,
         )
 
         draw_swarm = ipw.Checkbox(
             layout={},
-            description='show swarm',
+            description="show swarm",
             value=True,
         )
 
@@ -98,21 +98,21 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         electrode = ipw.RadioButtons(
             layout={},
             options=[
-                'anode mass',
-                'cathode mass',
-                'none',
+                "anode mass",
+                "cathode mass",
+                "none",
             ],
-            value='cathode mass',
-            description='normalize by',
+            value="cathode mass",
+            description="normalize by",
         )
 
         controls = {
-            'num_cycles': num_cycles,
-            'draw_box': draw_box,
-            'draw_swarm': draw_swarm,
-            'range': _range,
-            'points': points,
-            'electrode': electrode,
+            "num_cycles": num_cycles,
+            "draw_box": draw_box,
+            "draw_swarm": draw_swarm,
+            "range": _range,
+            "points": points,
+            "electrode": electrode,
         }
 
         self.add_controls(controls)
@@ -206,47 +206,47 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         super()._set_event_handlers()
 
         self.view.num_cycles.observe(
-            names='value',
+            names="value",
             handler=self.refresh,
         )
 
         self.view.draw_box.observe(
-            names='value',
+            names="value",
             handler=self.refresh,
         )
 
         self.view.draw_swarm.observe(
-            names='value',
+            names="value",
             handler=self.refresh,
         )
 
         self.view.range.observe(
-            names='value',
+            names="value",
             handler=self._on_range_change,
         )
 
         self.view.points.observe(
-            names='value',
+            names="value",
             handler=self._on_points_change,
         )
 
         self.view.electrode.observe(
-            names='value',
-            handler=self._on_electrode_change,
+            names="value",
+            handler=lambda _: self.refresh(skip_x=True),
         )
 
     def _on_range_change(self, _=None) -> None:
         """docstring"""
 
         self.view.points.unobserve(
-            names='value',
+            names="value",
             handler=self._on_points_change,
         )
 
-        self.view.points.value = ''
+        self.view.points.value = ""
 
         self.view.points.observe(
-            names='value',
+            names="value",
             handler=self._on_points_change,
         )
 
@@ -256,22 +256,18 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
         """docstring"""
 
         self.view.range.unobserve(
-            names='value',
+            names="value",
             handler=self._on_range_change,
         )
 
-        self.view.range.value = ''
+        self.view.range.value = ""
 
         self.view.range.observe(
-            names='value',
+            names="value",
             handler=self._on_range_change,
         )
 
         self.refresh()
-
-    def _on_electrode_change(self, _=None) -> None:
-        """docstring"""
-        self.refresh(skip_x=True)
 
     def _down_select(self, data: pd.DataFrame) -> pd.DataFrame:
         """docstring"""
@@ -301,13 +297,13 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
         _range = list(np.array(range(max_cycle + 1))[start:end:step])
 
-        return data.query(f'{self.X_LABEL} == {_range}') if _range else data
+        return data.query(f"{self.X_LABEL} == {_range}") if _range else data
 
     def _filter_points(self, data: pd.DataFrame) -> pd.DataFrame:
         """docstring"""
         raw_list: list[str] = self.view.points.value.strip().split()
-        points = [int(p) for p in raw_list if p.strip('-').isnumeric()]
+        points = [int(p) for p in raw_list if p.strip("-").isnumeric()]
         max_cycle = data[self.X_LABEL].max() + 1
         valid = [p for p in set(points) if -max_cycle - 1 <= p < max_cycle]
         _range = list(np.array(range(max_cycle))[valid])
-        return data.query(f'{self.X_LABEL} == {_range}') if _range else data
+        return data.query(f"{self.X_LABEL} == {_range}") if _range else data

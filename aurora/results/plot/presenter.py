@@ -23,13 +23,13 @@ class PlotPresenter(HasTraits):
     """
     docstring
     """
-    TITLE = ''
+    TITLE = ""
 
-    X_LABEL = ''
+    X_LABEL = ""
 
-    Y_LABEL = ''
+    Y_LABEL = ""
 
-    Y2_LABEL = ''
+    Y2_LABEL = ""
 
     HAS_LEGEND = True
 
@@ -39,7 +39,7 @@ class PlotPresenter(HasTraits):
 
     NORM_AX = ""
 
-    closing_message = Unicode('')
+    closing_message = Unicode("")
 
     def __init__(self, model: PlotModel, view: PlotView) -> None:
         """docstring"""
@@ -59,7 +59,7 @@ class PlotPresenter(HasTraits):
         self._show_plot()
         self._store_defaults()
 
-    def close_view(self, _=None, message='closed') -> None:
+    def close_view(self, _=None, message="closed") -> None:
         """docstring"""
         self.closing_message = message
         self.view.close()
@@ -101,7 +101,7 @@ class PlotPresenter(HasTraits):
         """docstring"""
         self._reset_plot()
         self.draw()
-        self._update_plot_axes(axis='y' if skip_x else 'both')
+        self._update_plot_axes(axis="y" if skip_x else "both")
         self._show_legend()
 
     def download_data(self, _=None) -> None:
@@ -204,10 +204,10 @@ class PlotPresenter(HasTraits):
 
     def __normalize(self, ax_label: str) -> str:
         """docstring"""
-        electrode = getattr(self.view, 'electrode', None)
+        electrode = getattr(self.view, "electrode", None)
         weights_present = self.model.has_weights()
-        if electrode and electrode.value != 'none' and weights_present:
-            return ax_label.replace(']', '/g]')
+        if electrode and electrode.value != "none" and weights_present:
+            return ax_label.replace("]", "/g]")
         return ax_label
 
     def _set_event_handlers(self) -> None:
@@ -223,12 +223,12 @@ class PlotPresenter(HasTraits):
         )
 
         self.view.xlim.observe(
-            names='value',
+            names="value",
             handler=self._update_xlim,
         )
 
         self.view.ylim.observe(
-            names='value',
+            names="value",
             handler=self._update_ylim,
         )
 
@@ -313,15 +313,15 @@ class PlotPresenter(HasTraits):
             handler=self._update_y2lim,
         )
 
-        self.add_controls({'y2lim': y2lim})
+        self.add_controls({"y2lim": y2lim})
 
-    def _set_axes_controls(self, axis='both') -> None:
+    def _set_axes_controls(self, axis="both") -> None:
         """docstring"""
 
-        if axis in ('x', 'both'):
+        if axis in ("x", "both"):
             self._set_xaxis_control()
 
-        if axis in ('y', 'both'):
+        if axis in ("y", "both"):
 
             self._set_yaxis_control()
 
@@ -332,19 +332,19 @@ class PlotPresenter(HasTraits):
         """docstring"""
         min, max = self.model.ax.get_xlim()
         min, max = (min, max) if min < max else (max, min)
-        self._set_axis_limit_control_params('xlim', min, max)
+        self._set_axis_limit_control_params("xlim", min, max)
 
     def _set_yaxis_control(self) -> None:
         """docstring"""
         min, max = self.model.ax.get_ylim()
         min, max = (min, max) if min < max else (max, min)
-        self._set_axis_limit_control_params('ylim', min, max)
+        self._set_axis_limit_control_params("ylim", min, max)
 
     def _set_y2axis_control(self) -> None:
         """docstring"""
         min, max = self.model.ax2.get_ylim()
         min, max = (min, max) if min < max else (max, min)
-        self._set_axis_limit_control_params('y2lim', min, max)
+        self._set_axis_limit_control_params("y2lim", min, max)
 
     def _set_axis_limit_control_params(
         self,
@@ -360,7 +360,7 @@ class PlotPresenter(HasTraits):
         control.value = (min, max)
         control.step = (max - min) / 100
 
-    def _update_plot_axes(self, axis='both') -> None:
+    def _update_plot_axes(self, axis="both") -> None:
         """docstring"""
         self._set_plot_labels()
         self._reset_plot_limits(axis)
@@ -436,9 +436,9 @@ class PlotPresenter(HasTraits):
                 if any(isinstance(artist, art_class) for art_class in classes):
                     artist.remove()
 
-            ax.legend('', frameon=False)
+            ax.legend("", frameon=False)
 
-    def _reset_plot_limits(self, axis='both') -> None:
+    def _reset_plot_limits(self, axis="both") -> None:
         """docstring"""
 
         self.model.ax.relim()

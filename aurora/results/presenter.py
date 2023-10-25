@@ -121,7 +121,7 @@ class ResultsPresenter():
 
         plot_presenter: PlotPresenter = trait["owner"]
 
-        if (message := trait["new"]) != 'closed':
+        if (message := trait["new"]) != "closed":
             self.display_info_message(message)
 
         if plot_presenter.view in self.view.plot_views:
@@ -166,7 +166,7 @@ class ResultsPresenter():
 
     def _build_experiment_selector_options(self) -> list[tuple]:
         """Returns a (option_string, battery_id) list."""
-        return [(as_option(row), row['id'])
+        return [(as_option(row), row["id"])
                 for _, row in self.model.experiments.iterrows()]
 
     def _has_valid_selection(self) -> bool:
