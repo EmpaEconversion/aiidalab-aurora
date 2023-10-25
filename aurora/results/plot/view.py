@@ -16,16 +16,12 @@ class PlotView(ipw.Accordion):
 
         self.id = pid
 
-        plot_area = self._build_plot_area()
-
-        controls_container = self._build_controls_container()
-
         super().__init__([
             ipw.VBox(
                 layout={},
                 children=[
-                    plot_area,
-                    controls_container,
+                    self._build_plot_area(),
+                    self._build_controls_container(),
                 ],
             )
         ])
@@ -36,8 +32,6 @@ class PlotView(ipw.Accordion):
 
     def _build_plot_area(self):
         """docstring"""
-
-        buttons = self._build_buttons()
 
         self.file_explorer = FileChooser(
             layout={
@@ -74,7 +68,7 @@ class PlotView(ipw.Accordion):
                         ipw.VBox(
                             layout={},
                             children=[
-                                buttons,
+                                self._build_buttons(),
                             ],
                         ),
                     ],
@@ -130,7 +124,7 @@ class PlotView(ipw.Accordion):
         self.controls = self._build_controls()
 
         self.info = ipw.Tab(layout={
-            "flex": "5",
+            "width": "50%",
         })
         self.eid_tab_mapping: dict[int, int] = {}
 
@@ -182,7 +176,7 @@ class PlotView(ipw.Accordion):
 
         return ipw.VBox(
             layout={
-                "flex": "4",
+                "width": "50%",
             },
             children=[
                 self.sub_batch_toggle,
