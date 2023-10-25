@@ -1,11 +1,7 @@
+import aurora.results.plot.presenters as presenters
+
 from .model import PlotModel
 from .presenter import PlotPresenter
-from .presenters import (CapacityCyclePlotPresenter,
-                         CapacitySwarmPlotPresenter,
-                         CapacityVoltagePlotPresenter,
-                         CurrentTimePlotPresenter,
-                         VoltageCurrentTimePlotPresenter,
-                         VoltageTimePlotPresenter)
 from .view import PlotView
 
 
@@ -23,17 +19,17 @@ class PlotPresenterFactory():
     ) -> PlotPresenter:
         """docstring"""
         if plot_type == 'current_time':
-            presenter = CurrentTimePlotPresenter
+            presenter = presenters.CurrentTimePlotPresenter
         elif plot_type == 'voltage_time':
-            presenter = VoltageTimePlotPresenter
+            presenter = presenters.VoltageTimePlotPresenter
         elif plot_type == 'voltagecurrent_time':
-            presenter = VoltageCurrentTimePlotPresenter
+            presenter = presenters.VoltageCurrentTimePlotPresenter
         elif plot_type == 'capacity_cycle':
-            presenter = CapacityCyclePlotPresenter
+            presenter = presenters.CapacityCyclePlotPresenter
         elif plot_type == 'capacity_voltage':
-            presenter = CapacityVoltagePlotPresenter
+            presenter = presenters.CapacityVoltagePlotPresenter
         elif plot_type == 'capacity_swarm':
-            presenter = CapacitySwarmPlotPresenter
+            presenter = presenters.CapacitySwarmPlotPresenter
         else:
             presenter = PlotPresenter(plot_model, plot_view)
             message = f"{plot_label} not yet implemented"
