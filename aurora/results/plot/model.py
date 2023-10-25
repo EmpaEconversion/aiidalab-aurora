@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import ipywidgets as ipw
 from aiida.orm import load_node
 from aiida_aurora.utils.cycling_analysis import cycling_analysis
+from IPython.display import display
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from pandas.io.formats.style import Styler
 
 from ..model import ResultsModel
 
@@ -55,10 +58,10 @@ class PlotModel():
 
     def fetch_data(self, eid: int) -> None:
         """docstring"""
+
         if eid in self.__results_model.results:
-            data, log = self.__results_model.results[eid].values()
-            self.data[eid] = data
-            print(log)
+            self.data[eid] = self.__results_model.results[eid]["data"]
+            self.display_experiment_info(eid)
             return
 
         self.run_cycling_analysis(eid)
@@ -66,10 +69,14 @@ class PlotModel():
     def run_cycling_analysis(self, eid: int) -> None:
         """docstring"""
         job_node = load_node(pk=eid)
-        data, log = cycling_analysis(job_node)
-        self.__results_model.results[eid] = {'data': data, 'log': log}
-        self.data[eid] = self.__results_model.results[eid]['data']
-        print(log)
+        data, log, raw = cycling_analysis(job_node)
+        self.__results_model.results[eid] = {
+            "data": data,
+            "log": log,
+            "raw": raw,
+        }
+        self.data[eid] = self.__results_model.results[eid]["data"]
+        self.display_experiment_info(eid)
 
     def get_weight(self, eid: int, electrode: str) -> int:
         """docstring"""
@@ -99,6 +106,12 @@ class PlotModel():
         index = len(colors) % (4 if is_by_subbatch else 32)
         return colors.get(label) or self.COLORS[is_by_subbatch][index]
 
+    def display_experiment_info(self, eid: int) -> None:
+        """docstring"""
+        _, log, raw = self.__results_model.results[eid].values()
+        print(log, end="")
+        self.__add_raw_data_dropdown(raw)
+
     ###########
     # PRIVATE #
     ###########
@@ -108,3 +121,35 @@ class PlotModel():
         for eid in self.experiment_ids:
             if eid in self.data and 'weights' in self.data[eid]:
                 del self.data[eid]['weights']
+
+    def __add_raw_data_dropdown(self, raw: Styler) -> None:
+        """docstring"""
+
+        output = ipw.Output()
+
+        dropdown = ipw.Accordion(
+            children=[output],
+            selected_index=None,
+        )
+
+        dropdown.set_title(0, "Raw data")
+
+        display(dropdown)
+
+        dropdown.observe(
+            lambda change: self.__display_raw_data(change, output, raw),
+            "selected_index",
+        )
+
+    def __display_raw_data(
+        self,
+        change: dict,
+        output: ipw.Output,
+        raw: Styler,
+    ) -> None:
+        """docstring"""
+        if change["new"] == 0:
+            with output:
+                display(raw)
+        else:
+            output.clear_output()
