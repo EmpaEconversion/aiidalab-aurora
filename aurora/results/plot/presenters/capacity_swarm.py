@@ -122,7 +122,7 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
 
         max_cycle = self.__get_max_cycle(dataset)
 
-        if max_cycle < 0:
+        if max_cycle < 1:
             return pd.DataFrame()
 
         self.view.num_cycles.max = max_cycle
@@ -152,9 +152,10 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
     def plot_series(self, eid: int, dataset: dict) -> None:
         """docstring"""
         data = self.extract_data(dataset)
-        data = self._down_select(data)
-        self._plot_boxplot(data, draw=self.view.draw_box.value)
-        self._plot_swarmplot(data, draw=self.view.draw_swarm.value)
+        if not data.empty:
+            data = self._down_select(data)
+            self._plot_boxplot(data, draw=self.view.draw_box.value)
+            self._plot_swarmplot(data, draw=self.view.draw_swarm.value)
 
     ###########
     # PRIVATE #
