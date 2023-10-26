@@ -4,7 +4,10 @@ from aiida.manage.configuration import load_profile
 from aurora import __version__
 from aurora.common.models import ProtocolsModel, SamplesModel
 from aurora.common.models.backends import JSONBackend
-from aurora.experiment.submit_experiment import ExperimentBuilder
+from aurora.experiment.builder import ExperimentBuilder
+from aurora.experiment.controller import ExperimentController
+from aurora.experiment.model import ExperimentModel
+from aurora.experiment.view import ExperimentView
 from aurora.inventory import InventoryManager
 from aurora.results.model import ResultsModel
 from aurora.results.presenter import ResultsPresenter
@@ -77,7 +80,11 @@ class MainPanel(ipw.VBox):
         protocols_model.load()
 
         inventory = InventoryManager(samples_model, protocols_model)
-        experiment = ExperimentBuilder()
+
+        experiment = self.__build_experiment_section(
+            samples_model,
+            protocols_model,
+        )
 
         tabs = ipw.Tab(
             children=[
@@ -92,6 +99,18 @@ class MainPanel(ipw.VBox):
             tabs.set_title(i, title)
 
         return tabs
+
+    def __build_experiment_section(
+        self,
+        samples_model: SamplesModel,
+        protocols_model: ProtocolsModel,
+    ) -> ExperimentView:
+        """docstring"""
+        builder = ExperimentBuilder(samples_model, protocols_model)
+        model = ExperimentModel(builder.model)
+        view = ExperimentView(builder.view)
+        _ = ExperimentController(view, model)
+        return view
 
     def _build_results_section(self) -> ResultsView:
         """Build the results section, connecting the results model,
