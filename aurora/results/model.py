@@ -7,11 +7,10 @@ from aiida.orm import Group, QueryBuilder
 from aiida_aurora.calculations import BatteryCyclerExperiment
 from traitlets import HasTraits, Unicode
 
+from aurora.common.groups import EXPERIMENTS_GROUP_PREFIX
 from aurora.time import TZ
 
 from .utils import get_experiment_sample_id, get_experiment_sample_node
-
-EXPERIMENTS_GROUP_PREFIX = "aurora/experiments"
 
 
 class ResultsModel(HasTraits):
