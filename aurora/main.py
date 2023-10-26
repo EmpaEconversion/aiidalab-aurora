@@ -1,11 +1,24 @@
 import ipywidgets as ipw
+from aiida.manage.configuration import load_profile
 
 from aurora import __version__
-from aurora.experiment import ExperimentBuilder
+from aurora.common.models import ProtocolsModel, SamplesModel
+from aurora.common.models.backends import JSONBackend
+from aurora.experiment.submit_experiment import ExperimentBuilder
 from aurora.inventory import InventoryManager
 from aurora.results.model import ResultsModel
 from aurora.results.presenter import ResultsPresenter
 from aurora.results.view import ResultsView
+
+DATA_DIR = "data"
+AVAILABLE_SAMPLES_FILE = "available_samples.json"
+AVAILABLE_PROTOCOLS_FILE = 'available_protocols.json'
+
+MAIN_LAYOUT = {
+    'width': '100%',
+    'border': 'solid black 4px',
+    'padding': '10px',
+}
 
 
 class MainPanel(ipw.VBox):
@@ -23,32 +36,26 @@ class MainPanel(ipw.VBox):
     """
 
     TAB_LABELS = (
-        "Experiment",
         "Inventory",
+        "Experiment",
         "Results",
     )
 
     def __init__(self) -> None:
         """`MainPanel` constructor."""
 
-        header = ipw.VBox(
-            layout={
-                'width': '100%',
-                'border': 'solid black 4px',
-                'padding': '10px'
-            },
-            children=[
-                ipw.HTML(self.TITLE),
-            ],
-        )
-
-        tabs = self._build_tabs()
+        load_profile()
 
         super().__init__(
             layout={},
             children=[
-                header,
-                tabs,
+                ipw.VBox(
+                    layout=MAIN_LAYOUT,
+                    children=[
+                        ipw.HTML(self.TITLE),
+                    ],
+                ),
+                self._build_tabs(),
             ],
         )
 
@@ -61,13 +68,21 @@ class MainPanel(ipw.VBox):
             The tab sections of the main panel.
         """
 
+        samples_backend = JSONBackend(DATA_DIR, AVAILABLE_SAMPLES_FILE)
+        samples_model = SamplesModel(samples_backend)
+        samples_model.load()
+
+        protocols_backend = JSONBackend(DATA_DIR, AVAILABLE_PROTOCOLS_FILE)
+        protocols_model = ProtocolsModel(protocols_backend)
+        protocols_model.load()
+
+        inventory = InventoryManager(samples_model, protocols_model)
         experiment = ExperimentBuilder()
-        manager = InventoryManager()
 
         tabs = ipw.Tab(
             children=[
+                inventory,
                 experiment,
-                manager,
                 self._build_results_section(),
             ],
             selected_index=0,
