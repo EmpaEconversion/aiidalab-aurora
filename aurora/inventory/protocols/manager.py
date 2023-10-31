@@ -82,6 +82,13 @@ class ProtocolsManager(ipw.VBox):
             disabled=True,
         )
 
+        self.edit = ipw.Button(
+            layout=BUTTON_LAYOUT,
+            button_style="info",
+            icon="fa-pencil",
+            tooltip="Edit protocol",
+        )
+
         super().__init__(
             layout={},
             children=[
@@ -102,6 +109,7 @@ class ProtocolsManager(ipw.VBox):
                                         self.save,
                                         self.delete,
                                         self.reset,
+                                        self.edit,
                                     ],
                                 )
                             ],
@@ -125,6 +133,7 @@ class ProtocolsManager(ipw.VBox):
         """Update selector options."""
         protocols = self.local_model.query()
         self.selector.options = [protocol.name for protocol in protocols]
+        self.refresh_display()
 
     def delete_protocol(self, _=None) -> None:
         """Delete protocols from the local model."""
@@ -139,6 +148,11 @@ class ProtocolsManager(ipw.VBox):
         self.protocols_model.sync(self.local_model)
         self.protocols_model.save()
         self.save.disabled = True
+
+    def edit_protocol(self, _=None) -> None:
+        """docstring"""
+        protocol = self.local_model.get_protocol(self.selector.value)
+        self.editor.load_protocol(protocol)
 
     def sync_reset_with_save(self, _=None) -> None:
         """Sync the reset button with the save button state."""
@@ -164,11 +178,16 @@ class ProtocolsManager(ipw.VBox):
             with self.preview:
                 self.local_model.display(protocol)
 
+    def refresh_display(self) -> None:
+        """docstring"""
+        self.display_selection_preview(self.selector.value)
+
     def _set_event_listeners(self) -> None:
         """Set event listeners."""
         self.save.on_click(self.save_changes)
         self.delete.on_click(self.delete_protocol)
         self.reset.on_click(self.reset_changes)
+        self.edit.on_click(self.edit_protocol)
         self.local_model.observe(self.refresh, "updated")
         self.selector.observe(self.on_selection, "value")
         self.save.observe(self.sync_reset_with_save, "disabled")

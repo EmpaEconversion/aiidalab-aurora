@@ -21,10 +21,17 @@ BOX_STYLE = {
     "description_width": "150px",
 }
 
+MAIN_LAYOUT = {
+    "flex": "1",
+    "width": "auto",
+    "padding": "5px",
+    "margin": "10px",
+}
+
 
 class TechniqueParametersWidget(ipw.VBox):
 
-    def __init__(self, technique: CyclingTechnique, **kwargs):
+    def __init__(self, technique: CyclingTechnique):
 
         if not isinstance(technique, CyclingTechnique):
             raise ValueError("Invalid technique")
@@ -64,13 +71,13 @@ class TechniqueParametersWidget(ipw.VBox):
         )
 
         super().__init__(
+            layout=MAIN_LAYOUT,
             children=[
                 self.label,
                 self.device,
                 self.description,
                 self.parameters,
             ],
-            **kwargs,
         )
 
     @property

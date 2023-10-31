@@ -18,13 +18,6 @@ BOX_STYLE = {
     "description_width": "initial",
 }
 
-PARAMS_LAYOUT = {
-    "flex": "1",
-    "width": "auto",
-    "padding": "5px",
-    "margin": "10px",
-}
-
 BUTTON_LAYOUT = {
     "margin": "5px",
     "width": "40%",
@@ -38,14 +31,6 @@ BUTTON_LAYOUT = {
 class ProtocolEditor(ipw.Accordion):
     """An editor to create new or edit existing cycling protocols."""
 
-    DEFAULT_PROTOCOL = OpenCircuitVoltage
-
-    _TECHNIQUES_OPTIONS = {
-        f'{Technique.schema()["properties"]["short_name"]["default"]}  ({Technique.schema()["properties"]["technique"]["default"]})':
-        Technique
-        for Technique in get_args(ElectroChemPayloads)
-    }
-
     def __init__(self, protocols_model: ProtocolsModel):
         """`ProtocolsManager` constructor.
 
@@ -55,9 +40,13 @@ class ProtocolEditor(ipw.Accordion):
             The manager's local protocols model.
         """
 
+        self.edit = False
+
         self.protocols_model = protocols_model
 
         self.protocol = ElectroChemSequence(method=[])
+
+        self.warning_notice = ipw.Output()
 
         self.name_label = ipw.Label(value="Protocol name:")
 
@@ -69,11 +58,9 @@ class ProtocolEditor(ipw.Accordion):
             placeholder="Enter protocol name",
         )
 
-        self.name_warning = ipw.Output()
-
         self.sequence_label = ipw.Label(value="Sequence:")
 
-        self.technique_list = ipw.Select(
+        self.sequence = ipw.Select(
             layout={
                 "width": "auto",
                 "margin": "0 2px",
@@ -84,9 +71,6 @@ class ProtocolEditor(ipw.Accordion):
         )
 
         self.technique_action_info = ipw.HTML()
-
-        self.add_technique()
-        self._update_technique_list_options()
 
         self.add_button = ipw.Button(
             layout=BUTTON_LAYOUT,
@@ -127,13 +111,8 @@ class ProtocolEditor(ipw.Accordion):
             layout=BOX_LAYOUT,
             style=BOX_STYLE,
             description="Technique:",
-            options=self._TECHNIQUES_OPTIONS,
-            value=type(self.selected_technique),
-        )
-
-        self.technique_parameters = TechniqueParametersWidget(
-            self.selected_technique,
-            layout=PARAMS_LAYOUT,
+            options=self._get_technique_options(),
+            value=type(self.default_technique),
         )
 
         self.save_technique_button = ipw.Button(
@@ -143,12 +122,19 @@ class ProtocolEditor(ipw.Accordion):
             tooltip="Save technique",
         )
 
-        self.discard_technique_button = ipw.Button(
+        self.reset_technique_button = ipw.Button(
             layout=BUTTON_LAYOUT,
-            button_style="danger",
-            icon="fa-trash",
-            tooltip="Discard technique",
+            button_style="warning",
+            icon="refresh",
+            tooltip="Reset technique",
         )
+
+        self._set_event_listeners()
+
+        self.add_technique()
+
+        self.technique_parameters = TechniqueParametersWidget(
+            self.selected_technique)
 
         # initialize widgets
         super().__init__(
@@ -167,9 +153,8 @@ class ProtocolEditor(ipw.Accordion):
                             children=[
                                 self.name_label,
                                 self.name,
-                                self.name_warning,
                                 self.sequence_label,
-                                self.technique_list,
+                                self.sequence,
                                 ipw.HBox(
                                     layout={},
                                     children=[
@@ -180,6 +165,7 @@ class ProtocolEditor(ipw.Accordion):
                                         self.down_button,
                                     ],
                                 ),
+                                self.warning_notice,
                             ],
                         ),
                         ipw.VBox(
@@ -195,7 +181,7 @@ class ProtocolEditor(ipw.Accordion):
                                     layout={"align_items": "center"},
                                     children=[
                                         self.save_technique_button,
-                                        self.discard_technique_button,
+                                        self.reset_technique_button,
                                         self.technique_action_info,
                                     ],
                                 ),
@@ -212,14 +198,35 @@ class ProtocolEditor(ipw.Accordion):
         self._set_event_listeners()
 
     @property
+    def default_technique(self) -> OpenCircuitVoltage:
+        """docstring"""
+        name = self.get_default_technique_name(OpenCircuitVoltage)
+        return OpenCircuitVoltage(name=name)
+
+    @property
     def selected_technique(self) -> CyclingTechnique:
         "The step that is currently selected."
-        return self.protocol.method[self.technique_list.index]
+        return self.protocol.method[self.sequence.index]
 
     @selected_technique.setter
     def selected_technique(self, technique: CyclingTechnique) -> None:
         """docstring"""
-        self.protocol.method[self.technique_list.index] = technique
+        self.protocol.method[self.sequence.index] = technique
+
+    def load_protocol(self, protocol: ElectroChemSequence) -> None:
+        """docstring"""
+        self.edit = True
+        self.name.value = protocol.name
+        self.protocol = protocol
+        old_index = self.sequence.index
+        self._update_technique_list_options()
+        self.selected_index = 0
+        self.sequence.notify_change({
+            "type": "change",
+            "name": "index",
+            "old": old_index,
+            "new": 0,
+        })
 
     def on_name_change(self, change: dict) -> None:
         """docstring"""
@@ -227,140 +234,163 @@ class ProtocolEditor(ipw.Accordion):
         self.save_button.disabled = not self.protocol.name
         self.reset_info_messages()
 
-    def update(self):
-        """Receive updates from the model"""
-        self._update_technique_list_options()
-        self._build_technique_parameters()
-
     def get_default_technique_name(self, technique: CyclingTechnique) -> str:
         """docstring"""
-        name = technique.schema()["properties"]["short_name"]["default"]
-        index = self._count_technique_occurrences(technique) + 1
-        return f"{name}_{index}"
+        return technique.schema()["properties"]["short_name"]["default"]
 
     def add_technique(self, _=None):
         """docstring"""
-        name = self.get_default_technique_name(self.DEFAULT_PROTOCOL)
-        self.protocol.add_step(self.DEFAULT_PROTOCOL(name=name))
+        self.protocol.add_step(self.default_technique)
         self._update_technique_list_options(self.protocol.n_steps - 1)
 
     def remove_technique(self, _=None):
         """docstring"""
-        self.protocol.remove_step(self.technique_list.index)
-        self._update_technique_list_options()
+        if self.protocol.n_steps == 1:
+            return
+        index = self.sequence.index
+        self.protocol.remove_step(index)
+        self._update_technique_list_options(max(index - 1, 0))
 
     def move_technique_up(self, _=None):
         """docstring"""
-        self.protocol.move_step_backward(self.technique_list.index)
-        self._update_technique_list_options(
-            new_index=self.technique_list.index - 1)
+        index = self.sequence.index
+        self.protocol.move_step_backward(index)
+        self._update_technique_list_options(max(index - 1, 0))
 
     def move_technique_down(self, _=None):
         """docstring"""
-        self.protocol.move_step_forward(self.technique_list.index)
-        self._update_technique_list_options(
-            new_index=self.technique_list.index + 1)
+        index = self.sequence.index
+        self.protocol.move_step_forward(index)
+        limit = self.protocol.n_steps
+        self._update_technique_list_options(min(index + 1, limit))
 
     def save_technique(self, _=None):
         """Save label/parameters of the selected step from the
         widget into technique object."""
-        self.selected_technique = self.technique_name.value()
+        tech_class: type = self.technique_name.value
+        self.selected_technique = tech_class()
         self.selected_technique.name = self.technique_parameters.tech_name
 
         for name, val in self.technique_parameters.selected_parameters.items():
             self.selected_technique.parameters[name].value = val
 
-        self._update_technique_list_options()
-        self.technique_action_info.value = "Saved step!"
+        self._update_technique_list_options(self.sequence.index)
+        self.technique_action_info.value = "Technique saved!"
 
-    def discard_technique(self, _=None):
-        """Discard parameters of the selected step and reload them
-        from the technique object."""
-        self._build_technique_parameters()
-        self.technique_action_info.value = "Discarded step!"
+    def reset_technique(self, _=None):
+        """Reset changes to selected step parameters."""
+        self._build_selected_technique()
 
     def reset_info_messages(self) -> None:
         """docstring"""
         self.technique_action_info.value = ""
-        self.name_warning.clear_output()
+        self.warning_notice.clear_output()
 
-    def add_protocol(self, _=None) -> None:
+    def reset(self) -> None:
         """docstring"""
-        self.reset_info_messages()
-        if self.protocol.name in self.protocols_model:
-            with self.name_warning:
-                print(f"Protocol {self.protocol.name} already exists.")
-            return
-        self.protocols_model.add(self.protocol, save=False)
+        self.name.value = ""
+        self.protocol.method = []
+        self.add_technique()
+        self.technique_name.value = type(self.default_technique)
 
-    def _count_technique_occurrences(self, technique):
-        techniques = [type(step) for step in self.protocol.method]
-        return techniques.count(technique)
+    def save_protocol(self, _=None) -> None:
+        """docstring"""
+
+        self.reset_info_messages()
+
+        if self.edit:
+            self.protocols_model.update(self.protocol, save=False)
+            self.edit = False
+        else:
+            if self.protocol.name in self.protocols_model:
+                with self.warning_notice:
+                    print(f"Protocol {self.protocol.name} already exists")
+                return
+            self.protocols_model.add(self.protocol, save=False)
+
+        self.reset()
 
     def _update_technique_list_options(self, new_index=None):
         """docstring"""
-
         self.reset_info_messages()
+        self.update_options()
+        self.set_sequence_index(new_index)
 
-        self.technique_list.options = [
-            f"[{i + 1}] - {technique.name}"
-            for i, technique in enumerate(self.protocol.method)
+    def update_options(self):
+        """docstring"""
+        self.sequence.unobserve(self._build_selected_technique, "index")
+        self.sequence.options = [
+            f"[{i}] - {technique.name}"
+            for i, technique in enumerate(self.protocol.method, 1)
         ]
+        self.sequence.observe(self._build_selected_technique, "index")
 
-        old_index = new_index if new_index is not None else self.technique_list.index
+    def set_sequence_index(self, new) -> None:
+        """docstring"""
 
-        if (old_index is None) or (old_index < 0):
-            self.technique_list.index = 0
-        elif old_index >= self.protocol.n_steps:
-            self.technique_list.index = self.protocol.n_steps - 1
+        old = new if new is not None else self.sequence.index
+
+        if (old is None) or (old < 0):
+            self.sequence.index = 0
+        elif old >= self.protocol.n_steps:
+            self.sequence.index = self.protocol.n_steps - 1
         else:
-            self.technique_list.index = old_index
+            self.sequence.index = old
 
     def toggle_remove_button(self, change: dict) -> None:
         """docstring"""
         self.remove_button.disabled = len(change["new"]) == 1
 
-    def _build_technique_parameters(self, _=None):
+    def _build_selected_technique(self, _=None):
         """Build the list of properties of the current step."""
+        self.technique_name.unobserve(self._build_default_technique, "value")
         self.technique_name.value = type(self.selected_technique)
-        self._build_parameters()
+        self.technique_name.observe(self._build_default_technique, "value")
+        self._build_parameters(self.selected_technique)
 
-    def _build_parameters(self, _=None):
+    def _build_default_technique(self, _=None):
+        """Build widget of parameters for the given technique."""
+        tech_class: type = self.technique_name.value
+        technique = tech_class()
+        technique_name = self.technique_name.value
+        technique.name = self.get_default_technique_name(technique_name)
+        self._build_parameters(technique)
+
+    def _build_parameters(self, technique):
         """Build widget of parameters for the given technique."""
         self.reset_info_messages()
+        self.technique_parameters.__init__(technique)
 
-        if isinstance(
-                self.technique_name.value,
-                type(self.selected_technique),
-        ):
-            self.technique_parameters.__init__(
-                self.selected_technique,
-                layout=PARAMS_LAYOUT,
-            )
-        else:
-            technique = self.technique_name.value()
-            technique_name = self.technique_name.value
-            technique.name = self.get_default_technique_name(technique_name)
-            self.technique_parameters.__init__(
-                technique,
-                layout=PARAMS_LAYOUT,
-            )
+    def _get_technique_options(self) -> dict[str, CyclingTechnique]:
+        """docstring"""
+
+        options: dict[str, CyclingTechnique] = {}
+
+        for technique in get_args(ElectroChemPayloads):
+            properties = technique.schema()["properties"]
+            short_name = properties["short_name"]["default"]
+            long_name = properties["technique"]["default"]
+            key = f"{short_name} ({long_name})"
+            options[key] = technique
+
+        return options
 
     def _set_event_listeners(self) -> None:
         """Set event listeners"""
 
         self.name.observe(self.on_name_change, "value")
-        self.technique_list.observe(self.toggle_remove_button, "options")
-        self.technique_list.observe(self._build_technique_parameters, "index")
+
+        self.sequence.observe(self.toggle_remove_button, "options")
+        self.sequence.observe(self._build_selected_technique, "index")
 
         self.add_button.on_click(self.add_technique)
         self.remove_button.on_click(self.remove_technique)
         self.up_button.on_click(self.move_technique_up)
         self.down_button.on_click(self.move_technique_down)
 
-        self.technique_name.observe(self._build_parameters, "value")
+        self.technique_name.observe(self._build_default_technique, "value")
 
         self.save_technique_button.on_click(self.save_technique)
-        self.discard_technique_button.on_click(self.discard_technique)
+        self.reset_technique_button.on_click(self.reset_technique)
 
-        self.save_button.on_click(self.add_protocol)
+        self.save_button.on_click(self.save_protocol)
