@@ -3,7 +3,9 @@ import ipywidgets as ipw
 from aurora import __version__
 from aurora.experiment import ExperimentBuilder
 from aurora.inventory import InventoryManager
-from aurora.results import CyclingResultsWidget
+from aurora.results.model import ResultsModel
+from aurora.results.presenter import ResultsPresenter
+from aurora.results.view import ResultsView
 
 
 class MainPanel(ipw.VBox):
@@ -61,13 +63,12 @@ class MainPanel(ipw.VBox):
 
         experiment = ExperimentBuilder()
         manager = InventoryManager()
-        visualizer = CyclingResultsWidget()
 
         tabs = ipw.Tab(
             children=[
                 experiment,
                 manager,
-                visualizer,
+                self._build_results_section(),
             ],
             selected_index=0,
         )
@@ -76,3 +77,18 @@ class MainPanel(ipw.VBox):
             tabs.set_title(i, title)
 
         return tabs
+
+    def _build_results_section(self) -> ResultsView:
+        """Build the results section, connecting the results model,
+        view, and presenter. The presenter is set to listen and
+        respond to view events.
+
+        Returns
+        -------
+        `ResultsView`
+            The results view as an `ipw.VBox`.
+        """
+        model = ResultsModel()
+        view = ResultsView()
+        _ = ResultsPresenter(model, view)
+        return view
