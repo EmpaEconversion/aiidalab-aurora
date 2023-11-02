@@ -38,6 +38,9 @@ class ExperimentModel(HasTraits):
         """docstring"""
         return orm.QueryBuilder().append(
             orm.Code,
+            filters={
+                "attributes.input_plugin": "aurora.cycler",
+            },
             project=["label"],
         ).all(flat=True)
 
