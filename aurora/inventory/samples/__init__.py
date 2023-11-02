@@ -1,5 +1,5 @@
-from .manage_samples import ManageSamplesMenu
+from .manager import SamplesManager
 
 __all__ = [
-    "ManageSamplesMenu",
+    "SamplesManager",
 ]
