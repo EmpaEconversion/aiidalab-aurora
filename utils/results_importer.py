@@ -557,6 +557,9 @@ def load_ec_lab_experiment_into_aiida(
         protocol_name,
     )
 
+    cycling_node.seal()
+    workchain_node.seal()
+
 
 def natural_sort(filenames: list[str]) -> list[str]:
     """Return filenames sorted in natural order.
