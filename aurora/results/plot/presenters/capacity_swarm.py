@@ -138,7 +138,10 @@ class CapacitySwarmPlotPresenter(StatisticalPlotPresenter):
             label, _ = self.get_series_properties(eid)
             weight = self.model.get_weight(eid, self.view.electrode.value)
             factor = 1 / weight
-            for cycle, capacity in enumerate(data["Qd"][:num_cycles]):
+            for cycle, capacity in zip(
+                    data["cycle-number"][:num_cycles],
+                    data["Qd"][:num_cycles],
+            ):
                 df_dict["hue"].append(label)
                 df_dict[self.X_LABEL].append(cycle)
                 df_dict[self.Y_LABEL].append(capacity * factor)

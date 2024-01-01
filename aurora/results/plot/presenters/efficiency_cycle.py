@@ -60,7 +60,7 @@ class EfficiencyCyclePlotPresenter(MultiSeriesPlotPresenter):
         min_length = min(len(Qc), len(Qd))
         Qc = Qc[:min_length]
         Qd = Qd[:min_length]
-        x = np.arange(min_length)
+        x = dataset["cycle-number"][:min_length]
         y = Qd / Qc
         return (x, y)
 

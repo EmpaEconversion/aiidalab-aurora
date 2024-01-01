@@ -70,7 +70,7 @@ class CapacityCyclePlotPresenter(MultiSeriesPlotPresenter):
     def extract_data(self, dataset: dict) -> tuple:
         """docstring"""
         y = dataset["Qd"]
-        x = np.arange(len(y))
+        x = dataset["cycle-number"]
         return (x, y)
 
     def plot_series(self, eid: int, dataset: dict) -> None:
