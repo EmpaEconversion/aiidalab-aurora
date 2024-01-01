@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 
 import pandas as pd
-from aiida.orm import Group, QueryBuilder
+from aiida.orm import CalcJobNode, Group, QueryBuilder, load_node
 from aiida_aurora.calculations import BatteryCyclerExperiment
 from traitlets import HasTraits, Unicode
 
@@ -87,11 +87,16 @@ class ResultsModel(HasTraits):
         self.weights.clear()
         self.weights_file = ""
 
-    def update_experiments(self, group: str, last_days: int) -> None:
+    def update_experiments(
+        self,
+        group: str,
+        last_days: int,
+        active_only: bool,
+    ) -> None:
         """docstring"""
 
         group_label = f"{EXPERIMENTS_GROUP_PREFIX}/{group}"
-        if experiments := query_jobs(group_label, last_days):
+        if experiments := query_jobs(group_label, last_days, active_only):
             df = pd.DataFrame(experiments).sort_values("id")
             ctime = df["ctime"].dt.strftime(r"%Y-%m-%d %H:%m:%S")
             df["ctime"] = ctime
@@ -140,10 +145,37 @@ class ResultsModel(HasTraits):
         group = Group.collection.get_or_create(label)[0]
         group.add_nodes(nodes)
 
+    def schedule_monitor_kill_order(self, eid: int):
+        """docstring"""
+        node: CalcJobNode = load_node(eid)
+        flag: str = node.base.extras.get("flag", "")
+        if "🍅" in flag and "❌" not in flag:
+            node.base.extras.set_many({
+                "flag": f"{flag}❌",
+                "marked_for_death": True,
+            })
+
+    def cancel_monitor_kill_order(self, eid: int):
+        """docstring"""
+        node: CalcJobNode = load_node(eid)
+        flag: str = node.base.extras.get("flag", "")
+        if "❌" in flag:
+            node.base.extras.set_many({
+                "flag": flag.replace("❌", ""),
+                "marked_for_death": False,
+            })
+
+    def get_experiment_extras(self, eid: int, field: str) -> str:
+        """docstring"""
+        query = f"id == {eid}"
+        column = f"extras.{field}"
+        return self.experiments.query(query)[column].values[0]
+
 
 def query_jobs(
     group: str,
     last_days: int,
+    active_only: bool,
 ) -> list[BatteryCyclerExperiment]:
     """docstring"""
 
@@ -159,10 +191,10 @@ def query_jobs(
             "id",
             "label",
             "ctime",
-            "attributes.process_label",
-            "attributes.state",
-            "attributes.status",
+            "attributes.process_state",
             "extras.monitored",
+            "extras.flag",
+            "extras.status",
         ],
     )
 
@@ -175,7 +207,28 @@ def query_jobs(
         },
     )
 
-    qb.add_filter("jobs", {"attributes.process_state": "finished"})
+    qb.add_filter(
+        "jobs",
+        {
+            "and": [
+                {
+                    "attributes.process_state": "waiting",
+                },
+                {
+                    "extras.monitored": True,
+                },
+            ],
+        } if active_only else {
+            "or": [
+                {
+                    "attributes.process_state": "finished"
+                },
+                {
+                    "extras.monitored": True,
+                },
+            ],
+        },
+    )
 
     qb.order_by({"jobs": {"ctime": "desc"}})
 

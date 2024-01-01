@@ -45,6 +45,7 @@ class SettingsSelectorController:
                 self.view.check_type,
                 self.view.threshold,
                 self.view.consecutive,
+                self.view.keep_last,
             ]
         else:
             self.view.monitor_parameters.children = []
