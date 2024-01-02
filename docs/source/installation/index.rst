@@ -45,7 +45,7 @@ Configure the environment
 Lastly, we need to configure a few things in the environment to support the app.
 
 Passwordless SSH Access
-^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------
 
 AiiDA requires passwordless ssh access to the *tomato* server in order to periodically poll its jobs. This requires you generate an ssh key pair locally and deploy the public key onto the remote server. To set this up, open a terminal from the AiiDAlab home page.
 
@@ -71,7 +71,7 @@ To test that the access has been properly set up, run the following in terminal:
 If passwordless access was correctly set up, it will not prompt you for your credentials.
 
 AiiDA Database Setup
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 Lastly, we need to setup the AiiDA database with reference nodes to the *tomato* server and the path to the *ketchup* executable (*tomato*'s command-line tool) on the server. These will be used by AiiDA during cycling experiments.
 
@@ -84,7 +84,7 @@ Lastly, we need to setup the AiiDA database with reference nodes to the *tomato*
    For more advanced (and interested) users, instead of running the provided code, you can run ``verdi computer setup``, ``verdi computer configure ssh2win``, and ``verdi code create``. Each command will walk you through its respective steps and provide additional information on request.
 
 Computer
-""""""""
+^^^^^^^^
 
 The *computer* node is a reference to the remote machine (the *tomato* server). Run the following code to set it up.
 
