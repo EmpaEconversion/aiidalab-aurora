@@ -49,7 +49,7 @@ Welcome Page
 
          To the installation guide
 
-   .. grid-item-card:: Tutorials
+   .. grid-item-card:: Tutorial
       :text-align: center
       :shadow: md
 
@@ -57,14 +57,14 @@ Welcome Page
 
       ++++
 
-      .. button-ref:: tutorials/index
+      .. button-ref:: tutorial/index
          :ref-type: doc
          :click-parent:
          :expand:
          :color: primary
          :outline:
 
-         To the tutorials
+         To the tutorial
 
    .. grid-item-card:: How-to Guides
       :text-align: center
@@ -122,7 +122,7 @@ Welcome Page
    :hidden:
 
    installation/index
-   tutorials/index
+   tutorial/index
    howto/index
    development/index
    report
