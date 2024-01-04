@@ -89,4 +89,5 @@ rst_epilog = """
 .. _AiiDA: https://www.aiida.net
 .. _AiiDAlab: https://www.aiidalab.net/
 .. _tomato: https://dgbowl.github.io/tomato/master/index.html
+.. _BIG-MAP App Store: https://big-map.github.io/big-map-registry/apps/aiidalab-aurora.html
 """

@@ -143,4 +143,4 @@ If you use the app for research, please follow these links to:
 Acknowledgements
 ****************
 
-The Aurora project is supported by the BIG-MAP Stakeholder Initiative. You can find the app on the `BIG-MAP App Store <https://big-map.github.io/big-map-registry/apps/aiidalab-aurora.html>`_ We acknowledge both the `AiiDA`_ and `AiiDAlab`_ teams for developing the platforms leveraged by the Aurora app.
+The Aurora project is supported by the BIG-MAP Stakeholder Initiative. You can find the app on the `BIG-MAP App Store`_. We acknowledge both the `AiiDA`_ and `AiiDAlab`_ teams for developing the platforms leveraged by the Aurora app.
