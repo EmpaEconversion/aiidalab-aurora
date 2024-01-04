@@ -19,6 +19,10 @@ Installing the AiiDAlab Aurora app involves the following steps:
 #. Installing the Aurora app
 #. Configuring the environment
 
+.. tip::
+
+   A live installation guide is available on the `BIG-MAP App Store`_ following the local Docker-based method.
+
 Access AiiDAlab
 ===============
 
@@ -122,6 +126,8 @@ The *computer* node is a reference to the remote machine (the *tomato* server). 
    --use_login_shell true
    --username "<username-on-remote-server>"
 
+.. _code_setup:
+
 Code
 ^^^^
 
@@ -139,6 +145,10 @@ The *code* node is a reference to the *ketchup* executable on the remote machine
    --use_double_quotes False
    --prepend_text ""
    --append_text ""
+
+.. tip::
+
+   You can label the code as you wish. The label will appear in the *Select code* dropdown menu in the :ref:`submission <submit_experiment>` section of the the experiment builder.
 
 ----
 

@@ -66,23 +66,6 @@ Welcome Page
 
          To the tutorial
 
-   .. grid-item-card:: How-to Guides
-      :text-align: center
-      :shadow: md
-
-      Learn more advanced app features
-
-      ++++
-
-      .. button-ref:: howto/index
-         :ref-type: doc
-         :click-parent:
-         :expand:
-         :color: primary
-         :outline:
-
-         To the how-to guides
-
    .. grid-item-card:: Development
       :text-align: center
       :shadow: md
@@ -123,7 +106,6 @@ Welcome Page
 
    installation/index
    tutorial/index
-   howto/index
    development/index
    report
 
