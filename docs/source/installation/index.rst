@@ -74,6 +74,8 @@ To test that the access has been properly set up, run the following in terminal:
 
 If passwordless access was correctly set up, it will not prompt you for your credentials.
 
+.. _aiida_setup:
+
 AiiDA Database Setup
 --------------------
 
