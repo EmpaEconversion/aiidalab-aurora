@@ -93,7 +93,7 @@ class ProtocolsManager(ipw.VBox):
             layout={},
             children=[
                 self.editor,
-                self.filters,
+                # self.filters,
                 ipw.HBox(
                     layout={},
                     children=[
