@@ -9,6 +9,10 @@ BUTTON_LAYOUT = {
     "width": "fit-content",
 }
 
+ACTIVE_CHECK_STYLE = {
+    "description_width": "5px",
+}
+
 
 class ResultsView(ipw.VBox):
     """
@@ -70,6 +74,7 @@ class ResultsView(ipw.VBox):
                 "width": "auto",
             },
             min=0,
+            max=999,
             value=10,
             description="Last days:",
         )
@@ -86,6 +91,7 @@ class ResultsView(ipw.VBox):
         )
 
         self.experiment_selector.add_class("select-monospace")
+        self.experiment_selector.add_class("select-min-height")
 
         self.plot_type_selector = ipw.Dropdown(
             layout={},
@@ -107,8 +113,30 @@ class ResultsView(ipw.VBox):
 
         self.update_button = ipw.Button(
             layout=BUTTON_LAYOUT,
+            button_style="warning",
             tooltip="Update experiments",
             icon="refresh",
+        )
+
+        self.thumb_down = ipw.Button(
+            layout=BUTTON_LAYOUT,
+            button_style="danger",
+            tooltip="Schedule monitor kill order",
+            icon="thumbs-down",
+        )
+
+        self.thumb_up = ipw.Button(
+            layout=BUTTON_LAYOUT,
+            button_style="success",
+            tooltip="Cancel monitor kill order",
+            icon="thumbs-up",
+        )
+
+        self.active_check = ipw.Checkbox(
+            layout=BUTTON_LAYOUT,
+            style=ACTIVE_CHECK_STYLE,
+            description="active jobs only",
+            value=False,
         )
 
         self.group_name = ipw.Text(
@@ -141,6 +169,9 @@ class ResultsView(ipw.VBox):
                                 self.plot_type_selector,
                                 self.plot_button,
                                 self.update_button,
+                                self.thumb_down,
+                                self.thumb_up,
+                                self.active_check,
                             ],
                         ),
                         ipw.HBox(

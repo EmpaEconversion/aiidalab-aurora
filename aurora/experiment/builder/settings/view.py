@@ -83,6 +83,7 @@ class SettingsSelectorView(ResettableView):
                 "check_type": self.check_type.value,
                 "threshold": self.threshold.value,
                 "consecutive_cycles": self.consecutive.value,
+                "keep_last": self.keep_last.value,
             }
 
         return state
@@ -167,6 +168,16 @@ class SettingsSelectorView(ResettableView):
             value=2,
         )
         self.defaults[self.consecutive] = self.consecutive.value
+
+        self.keep_last = ipw.BoundedIntText(
+            style=BOX_STYLE,
+            description="keep last:",
+            min=1,
+            max=50,
+            step=1,
+            value=10,
+        )
+        self.defaults[self.keep_last] = self.keep_last.value
 
         self.monitor_parameters = ipw.VBox()
 

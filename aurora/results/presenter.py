@@ -37,6 +37,7 @@ class ResultsPresenter():
         self.model.update_experiments(
             group=self.view.group_selector.value,
             last_days=self.view.last_days.value,
+            active_only=self.view.active_check.value,
         )
 
         options = self._build_experiment_selector_options()
@@ -143,11 +144,26 @@ class ResultsPresenter():
         self.toggle_plot_button()
         self.update_group_name_state()
 
+    def schedule_monitor_kill_order(self, _=None) -> None:
+        """docstring"""
+        for eid in self.view.experiment_selector.value:
+            self.model.schedule_monitor_kill_order(eid)
+        self.update_view_experiments()
+
+    def cancel_monitor_kill_order(self, _=None) -> None:
+        """docstring"""
+        for eid in self.view.experiment_selector.value:
+            self.model.cancel_monitor_kill_order(eid)
+        self.update_view_experiments()
+
     def _set_event_handlers(self) -> None:
         """docstring"""
         self.view.on_displayed(self.update_view_experiments)
         self.view.plot_button.on_click(self.on_plot_button_clicked)
         self.view.update_button.on_click(self.update_view_experiments)
+        self.view.thumb_down.on_click(self.schedule_monitor_kill_order)
+        self.view.thumb_up.on_click(self.cancel_monitor_kill_order)
+        self.view.active_check.observe(self.update_view_experiments, "value")
         self.view.group_selector.observe(self.update_view_experiments, "value")
         self.view.last_days.observe(self.update_view_experiments, "value")
         self.view.experiment_selector.observe(self.toggle_widgets, "value")
@@ -166,8 +182,19 @@ class ResultsPresenter():
 
     def _build_experiment_selector_options(self) -> list[tuple]:
         """Returns a (option_string, battery_id) list."""
-        return [(as_option(row), row["id"])
+        return [(self._cast_row_as_option(row), row["id"])
                 for _, row in self.model.experiments.iterrows()]
+
+    def _cast_row_as_option(self, row: dict) -> str:
+        """docstring"""
+        pk = row["id"]
+        flag = self.model.get_experiment_extras(pk, "flag") or "❓"
+        label = row["label"] or "Experiment"
+        timestamp = row["ctime"]
+        option = f" {flag} {pk} : {label} : {timestamp}"
+        return option + f" : {status}" \
+            if (status := self.model.get_experiment_extras(pk, "status")) \
+            else option
 
     def _has_valid_selection(self) -> bool:
         """docstring"""
@@ -182,8 +209,3 @@ class ResultsPresenter():
             return False
 
         return True
-
-
-def as_option(row: dict) -> str:
-    """docstring"""
-    return f"{row['id']:5} : {row['ctime']} : {row['label'] or 'Experiment'}"

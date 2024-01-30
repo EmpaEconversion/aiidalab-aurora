@@ -106,8 +106,8 @@ class ExperimentModel(HasTraits):
             inputs["control_settings"][step] = settings_node
 
             monitors = self.builder.get_monitors(step)
-            monitors_node = self.__build_monitors_input(deepcopy(monitors))
-            inputs["monitor_settings"][step] = monitors_node
+            monitors_dict = self.__build_monitors_input(deepcopy(monitors))
+            inputs["monitor_settings"][step] = monitors_dict
 
         return inputs
 
