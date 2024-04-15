@@ -1,4 +1,4 @@
-from typing import Literal, get_args, get_origin, get_type_hints
+import typing as t
 
 import ipywidgets as ipw
 from aiida_aurora.schemas.cycling import CyclingParameter, CyclingTechnique
@@ -32,7 +32,6 @@ MAIN_LAYOUT = {
 class TechniqueParametersWidget(ipw.VBox):
 
     def __init__(self, technique: CyclingTechnique):
-
         if not isinstance(technique, CyclingTechnique):
             raise ValueError("Invalid technique")
 
@@ -44,7 +43,8 @@ class TechniqueParametersWidget(ipw.VBox):
             value=technique.name,
         )
 
-        device_options = get_args(get_type_hints(technique)['device'])
+        device_options = t.get_args(
+            technique.model_fields["device"].annotation)
 
         self.device = ipw.Dropdown(
             layout=BOX_LAYOUT,
@@ -56,7 +56,8 @@ class TechniqueParametersWidget(ipw.VBox):
 
         self.description = ipw.HTML(
             layout={"margin": "10px 0"},
-            value=f"<b>Technique:</b> <i>{technique.description}</i>")
+            value=f"<b>Technique:</b> <i>{technique.description}</i>",
+        )
 
         self.tech_parameters_names = []
 
@@ -115,17 +116,17 @@ def build_parameter_widget(param: CyclingParameter) -> ipw.HBox:
     w_check = ipw.Checkbox(
         value=param.required or (param.value is not None),
         disabled=param.required,
-        description='',
+        description="",
         style=CHECKBOX_STYLE,
         layout=CHECKBOX_LAYOUT,
     )
 
     param_value = param.default_value if param.value is None else param.value
-    value_type = get_type_hints(param)['value']
+    annotation = param.model_fields["value"].annotation
 
     # since 'value' is `Optional`, all values are unions of their
     # actual type and `NoneType`. Here we discard `NoneType`.
-    types = get_args(value_type)[:-1]
+    types = t.get_args(annotation)[:-1]
 
     if len(types) > 1:
         # Optional[Union] case
@@ -140,30 +141,34 @@ def build_parameter_widget(param: CyclingParameter) -> ipw.HBox:
         # pick actual type
         value_type = types[0]
 
-    if get_origin(value_type) is Literal:
+    # In pydantic 2.0, `NonNegativeFloat` yields `typing.Annotated[float, Ge(ge=0)]`,
+    # so we have to further extract the primitive type
+    if t.get_origin(value_type) is t.Annotated:
+        value_type = t.get_args(value_type)[0]
+
+    if t.get_origin(value_type) is t.Literal:
         w_param = ipw.Dropdown(
             description=param.label,
             placeholder=param.description,
-            options=get_args(value_type),
+            options=t.get_args(value_type),
             value=param_value,
             style=BOX_STYLE,
         )
 
-    elif issubclass(value_type, bool):
+    elif value_type is bool:
         w_param = ipw.Dropdown(
             description=param.label,
             placeholder=param.description,
-            options=[('False', False), ('True', True)],
+            options=[("False", False), ("True", True)],
             value=param_value,
             style=BOX_STYLE,
         )
 
-    elif issubclass(value_type, float):
-
+    elif value_type is float:
         if value_type in [NonNegativeFloat]:
-            value_min, value_max = (0., 1.e99)
+            value_min, value_max = (0.0, 1.0e99)
         else:
-            value_min, value_max = (-1.e99, 1.e99)
+            value_min, value_max = (-1.0e99, 1.0e99)
 
         w_param = ipw.BoundedFloatText(
             description=param.label,
@@ -173,8 +178,7 @@ def build_parameter_widget(param: CyclingParameter) -> ipw.HBox:
             style=BOX_STYLE,
         )
 
-    elif issubclass(value_type, int):
-
+    elif value_type is int:
         if value_type in [NonNegativeInt]:
             value_min, value_max = (0, 1e99)
         else:
@@ -188,10 +192,10 @@ def build_parameter_widget(param: CyclingParameter) -> ipw.HBox:
             style=BOX_STYLE,
         )
 
-    elif issubclass(value_type, str):
+    elif value_type is str:
         w_param = ipw.Text(
             description=param.label,
-            placeholder='',
+            placeholder="",
             value=param_value,
             style=BOX_STYLE,
         )
@@ -204,7 +208,7 @@ def build_parameter_widget(param: CyclingParameter) -> ipw.HBox:
 
     enable_w_param()
 
-    w_check.observe(enable_w_param, names='value')
+    w_check.observe(enable_w_param, names="value")
 
     tooltip = param.description
     tooltip += f" ({param.units})" if param.units else ""
