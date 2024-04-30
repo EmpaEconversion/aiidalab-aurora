@@ -97,36 +97,33 @@ The *computer* node is a reference to the remote machine (the *tomato* server). 
 .. code::
 
    verdi computer setup \
-   --label "<label>"
-   --hostname "<hostname>"
-   --description "Tomato server"
-   --transport "ssh2win"
-   --scheduler "tomato"
-   --work_dir "/tomato/scratch"
-   --mpirun_command "mpirun -np {tot_num_mpiprocs}"
-   --mpiprocs_per_machine 1
-   --shebang "#!/usr/local/bin/pwsh"
-   --prepend_text ""
-   --append_text ""
+   --label "<computer-label>" \
+   --hostname "<hostname>" \
+   --description "Tomato server" \
+   --transport "ssh2win" \
+   --scheduler "tomato" \
+   --work_dir "/tomato/scratch" \
+   --mpiprocs_per_machine 1 \
+   --shebang "#!/usr/local/bin/pwsh" \
+   --non-interactive
 
    verdi computer configure ssh2win \
-   --allow_agent true
-   --compress true
-   --gss_auth false
-   --gss_deleg_creds false
-   --gss_host "<hostname>"
-   --gss_kex false
-   --key_filename /home/jovyan/.ssh/id_rsa
-   --key_policy AutoAddPolicy
-   --load_system_host_keys true
-   --look_for_keys true
-   --port 22
-   --proxy_command ''
-   --proxy_jump ''
-   --safe_interval 30.0
-   --timeout 60
-   --use_login_shell true
-   --username "<username-on-remote-server>"
+   --username "<username-on-remote-server>" \
+   --key_filename "/home/jovyan/.ssh/id_rsa" \
+   --gss_host "<hostname>" \
+   --gss_auth false \
+   --gss_deleg_creds false \
+   --gss_kex false \
+   --key_policy "AutoAddPolicy" \
+   --load_system_host_keys \
+   --use_login_shell \
+   --look_for_keys \
+   --allow_agent \
+   --compress \
+   --safe_interval 30.0 \
+   --timeout 60 \
+   --non-interactive \
+   "<computer-label>"
 
 .. _code_setup:
 
@@ -137,16 +134,13 @@ The *code* node is a reference to the *ketchup* executable on the remote machine
 
 .. code::
 
-   verdi code create \
-   --label "ketchup"
-   --computer "<label>"
-   --description "ketchup submit"
-   --input_plugin "aurora.cycler"
-   --on_computer true
-   --remote_abs_path "<path-to-ketchup-executable-on-remote-server>"
-   --use_double_quotes False
-   --prepend_text ""
-   --append_text ""
+   verdi code create core.code.installed \
+   --label "ketchup" \
+   --computer "<computer-label>" \
+   --description "ketchup submit" \
+   --default-calc-job-plugin "aurora.cycler" \
+   --filepath-executable "<path-to-ketchup-executable-on-remote-server>" \
+   --non-interactive
 
 .. tip::
 
