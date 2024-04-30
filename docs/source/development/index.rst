@@ -11,8 +11,8 @@ Aurora is open-source and as such, welcomes community contribution. To contribut
 
 #. Fork the plugin and app repositories
 
-   * plugin: ``https://github.com/epfl-theos/aiida-aurora.git``
-   * app: ``https://github.com/epfl-theos/aiidalab-aurora.git``
+   * plugin: ``https://github.com/EmpaEconversion/aiida-aurora.git``
+   * app: ``https://github.com/EmpaEconversion/aiidalab-aurora.git``
 
    .. important::
 
@@ -77,4 +77,4 @@ Aurora is open-source and as such, welcomes community contribution. To contribut
 
 ----
 
-Once you finish applying, committing, and pushing your changes, please create a PR to the `epfl-theos` accounts and await review.
+Once you finish applying, committing, and pushing your changes, please create a PR to the `EmpaEconversion` organization and await review.
