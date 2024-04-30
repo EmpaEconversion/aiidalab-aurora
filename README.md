@@ -4,7 +4,7 @@ An AiiDAlab application for the Aurora BIG-MAP Stakeholder initiative.
 
 ## Installation
 
-Please see the [Installation guide](INSTALLATION_GUIDE.md).
+Please see the [installation guide](http://aiidalab-aurora.readthedocs.io/en/latest/installation/index.html) for more information.
 
 ## Usage
 
