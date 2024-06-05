@@ -5,4 +5,4 @@ aurora-app
 An AiiDAlab application for the Aurora BIG-MAP Stakeholder initiative.
 """
 
-__version__ = "0.12.2"
+__version__ = "0.12.3"

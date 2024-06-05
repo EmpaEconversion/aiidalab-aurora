@@ -6,14 +6,15 @@
 # -- Imports -----------------------------------------------------------------
 
 import time
-from aurora import __version__
+
+# from aurora import __version__  # TODO RTD can't find it. Resolve!
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "AiiDAlab-Aurora"
 author = "Edan Bainglass"
-release = __version__
+release = "0.12.3"  # TODO change to __version__ when RTD can find it
 
 copyright_first_year = "2021"
 
