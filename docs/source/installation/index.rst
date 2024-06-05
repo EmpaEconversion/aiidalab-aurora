@@ -102,25 +102,25 @@ The *computer* node is a reference to the remote machine (the *tomato* server). 
    --description "Tomato server" \
    --transport "ssh2win" \
    --scheduler "tomato" \
-   --work_dir "/tomato/scratch" \
-   --mpiprocs_per_machine 1 \
+   --work-dir "/tomato/scratch" \
+   --mpiprocs-per-machine 1 \
    --shebang "#!/usr/local/bin/pwsh" \
    --non-interactive
 
    verdi computer configure ssh2win \
    --username "<username-on-remote-server>" \
-   --key_filename "/home/jovyan/.ssh/id_rsa" \
-   --gss_host "<hostname>" \
-   --gss_auth false \
-   --gss_deleg_creds false \
-   --gss_kex false \
-   --key_policy "AutoAddPolicy" \
-   --load_system_host_keys \
-   --use_login_shell \
-   --look_for_keys \
-   --allow_agent \
+   --key-filename "/home/jovyan/.ssh/id_rsa" \
+   --gss-host "<hostname>" \
+   --gss-auth false \
+   --gss-deleg_creds false \
+   --gss-kex false \
+   --key-policy "AutoAddPolicy" \
+   --load-system-host-keys \
+   --use-login-shell \
+   --look-for-keys \
+   --allow-agent \
    --compress \
-   --safe_interval 30.0 \
+   --safe-interval 30.0 \
    --timeout 60 \
    --non-interactive \
    "<computer-label>"

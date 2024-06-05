@@ -6,13 +6,14 @@
 # -- Imports -----------------------------------------------------------------
 
 import time
+from aurora import __version__
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "AiiDAlab-Aurora"
 author = "Edan Bainglass"
-release = "0.11.1"
+release = __version__
 
 copyright_first_year = "2021"
 
