@@ -255,7 +255,7 @@ class SamplesImporter(ipw.Accordion):
             "id": df["id"],
             "specs": {
                 "manufacturer": base["manufacturer"],
-                "case": df["Casing Type"],
+                "case": str(df["Casing Type"]),
                 "composition": {
                     "description": base["description"],
                     "anode": {
