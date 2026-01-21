@@ -36,13 +36,14 @@ class ExperimentModel(HasTraits):
 
     def get_codes(self) -> list[str]:
         """docstring"""
-        return orm.QueryBuilder().append(
+        qb = orm.QueryBuilder().append(
             orm.Code,
             filters={
                 "attributes.input_plugin": "aurora.cycler",
             },
             project=["label"],
-        ).all(flat=True)
+        )
+        return [f"{code.label}@{code.computer.label}" for code in qb.all()]
 
     # TODO make async!
     def submit(
